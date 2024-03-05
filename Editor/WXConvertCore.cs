@@ -93,6 +93,7 @@ namespace WeChatWASM
                 Debug.LogError("若游戏曾使用旧版本微信SDK，需删除 Assets/WX-WASM-SDK 文件夹后再导入最新工具包。");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
+            CheckBuildTarget();
             Init();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -157,6 +158,20 @@ namespace WeChatWASM
                 }
             }
             return WXExportError.SUCCEED;
+        }
+
+        private static void CheckBuildTarget()
+        {
+            if (UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Unity)
+            {
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+            }
+            else
+            {
+#if TUANJIE_2022_3_OR_NEWER
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
+#endif
+            }
         }
 
         public static void UpdateGraphicAPI()
