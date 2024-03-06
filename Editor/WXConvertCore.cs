@@ -28,7 +28,7 @@ namespace WeChatWASM
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             // string templateHeader = (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package && UnityUtil.GetEngineVersion() >= UnityUtil.EngineVersion.Tuanjie) ? "PACKAGE:com.qq.wx.minigame:" : "PROJECT:";
             string templateHeader = "PROJECT:";
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
             PlayerSettings.WeixinMiniGame.threadsSupport = false;
             PlayerSettings.runInBackground = false;
             PlayerSettings.WeixinMiniGame.compressionFormat = WeixinMiniGameCompressionFormat.Disabled;
@@ -177,7 +177,7 @@ namespace WeChatWASM
         public static void UpdateGraphicAPI()
         {
             GraphicsDeviceType[] targets = new GraphicsDeviceType[] { };
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.WeixinMiniGame, false);
             if (config.CompileOptions.Webgl2)
             {
@@ -281,7 +281,7 @@ namespace WeChatWASM
             {
                 text = RemoveFunctionsWithPrefix(text, prefix);
             }
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
             if (PlayerSettings.WeixinMiniGame.exceptionSupport == WeixinMiniGameExceptionSupport.None)
 #else
             if (PlayerSettings.WebGL.exceptionSupport == WebGLExceptionSupport.None)
@@ -354,7 +354,7 @@ namespace WeChatWASM
 
         private static int Build()
         {
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
             PlayerSettings.WeixinMiniGame.emscriptenArgs = string.Empty;
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
@@ -383,14 +383,14 @@ namespace WeChatWASM
                 {
                     UnityEngine.Debug.LogWarningFormat($"UnityHeap大于500M时，32位Android与iOS普通模式较大概率启动失败，中轻度游戏建议小于该值。请查看GIT文档<a href=\"https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/OptimizationMemory.md\">优化Unity WebGL的内存</a>");
                 }
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                 PlayerSettings.WeixinMiniGame.emscriptenArgs += $" -s TOTAL_MEMORY={config.ProjectConf.MemorySize}MB";
 #else
                 PlayerSettings.WebGL.emscriptenArgs += $" -s TOTAL_MEMORY={config.ProjectConf.MemorySize}MB";
 #endif
             }
 
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
             if (config.CompileOptions.ProfilingMemory)
             {
                 PlayerSettings.WeixinMiniGame.emscriptenArgs += " --memoryprofiler ";
@@ -1201,7 +1201,7 @@ namespace WeChatWASM
             {
                 var importer = AssetImporter.GetAtPath(jsLibs[i]) as PluginImporter;
                 bool value = i == index;
-#if WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                 importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, value);
 #else
                 importer.SetCompatibleWithPlatform(BuildTarget.WebGL, value);

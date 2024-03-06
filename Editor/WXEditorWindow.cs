@@ -255,7 +255,7 @@ namespace WeChatWASM
                         ShowNotification(new GUIContent("转换完成"));
                     else
                     {
-#if (UNITY_WEBGL || WEIXINMINIGAME) && UNITY_INSTANTGAME
+#if (UNITY_WEBGL || PLATFORM_WEIXINMINIGAME) && UNITY_INSTANTGAME
                         // 上传首包资源
                         if (!string.IsNullOrEmpty(WXConvertCore.FirstBundlePath) && File.Exists(WXConvertCore.FirstBundlePath))
                         {
