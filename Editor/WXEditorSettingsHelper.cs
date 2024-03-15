@@ -26,10 +26,10 @@ namespace WeChatWASM
     {
         public WXSettingsHelper()
         {
-            WeixinMiniGamePackageHelpers.OnPackageSettingsGUI += OnSettingsGUI;
-            WeixinMiniGamePackageHelpers.OnPackageFocus += OnFocus;
-            WeixinMiniGamePackageHelpers.OnPackageLostFocus += OnLostFocus;
-            WeixinMiniGamePackageHelpers.OnPackageBuildButtonGUI += OnBuildButtonGUI;
+            WeixinPackageHelpers.OnPackageSettingsGUI += OnSettingsGUI;
+            WeixinPackageHelpers.OnPackageFocus += OnFocus;
+            WeixinPackageHelpers.OnPackageLostFocus += OnLostFocus;
+            WeixinPackageHelpers.OnPackageBuildButtonGUI += OnBuildButtonGUI;
             loadData();
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
         }
