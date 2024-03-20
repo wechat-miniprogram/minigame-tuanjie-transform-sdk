@@ -508,7 +508,11 @@ mergeInto(LibraryManager.library, {
         if (typeof TOTAL_MEMORY !== "undefined") {
             return TOTAL_MEMORY
         }
-        return buffer.byteLength;
+        if (wasmMemory && wasmMemory.buffer) {
+            return wasmMemory.buffer.byteLength;
+        }
+        console.error('Fail to find wasmMemory.buffer, TotalMemorySize is not correct.');
+        return 0;
     },
     WXGetTotalStackSize: function() {
         return TOTAL_STACK;
