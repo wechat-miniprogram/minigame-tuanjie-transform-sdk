@@ -90,7 +90,7 @@ namespace WeChatWASM
             foldBaseInfo = EditorGUILayout.Foldout(foldBaseInfo, "基本信息");
             if (foldBaseInfo)
             {
-                EditorGUILayout.BeginVertical("frameBox", GUILayout.Width(EditorGUIUtility.currentViewWidth - 15));
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
 
                 this.formInput("appid", "游戏AppID");
                 this.formInput("cdn", "游戏资源CDN");
@@ -134,7 +134,7 @@ namespace WeChatWASM
             foldLoadingConfig = EditorGUILayout.Foldout(foldLoadingConfig, "启动Loading配置");
             if (foldLoadingConfig)
             {
-                EditorGUILayout.BeginVertical("frameBox", GUILayout.Width(EditorGUIUtility.currentViewWidth - 15));
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
 
                 GUILayout.BeginHorizontal();
                 string targetBg = "bgImageSrc";
@@ -161,7 +161,7 @@ namespace WeChatWASM
             foldSDKOptions = EditorGUILayout.Foldout(foldSDKOptions, "SDK功能选项");
             if (foldSDKOptions)
             {
-                EditorGUILayout.BeginVertical("frameBox", GUILayout.Width(EditorGUIUtility.currentViewWidth - 15));
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
 
                 this.formCheckbox("useFriendRelation", "使用好友关系链");
                 this.formCheckbox("useMiniGameChat", "使用社交组件");
@@ -173,7 +173,7 @@ namespace WeChatWASM
             foldDebugOptions = EditorGUILayout.Foldout(foldDebugOptions, "调试编译选项");
             if (foldDebugOptions)
             {
-                EditorGUILayout.BeginVertical("frameBox", GUILayout.Width(EditorGUIUtility.currentViewWidth - 15));
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
 
 
                 this.formCheckbox("developBuild", "Development Build");
@@ -203,7 +203,7 @@ namespace WeChatWASM
             foldInstantGame = EditorGUILayout.Foldout(foldInstantGame, "Instant Game - AutoStreaming");
             if (foldInstantGame)
             {
-                EditorGUILayout.BeginVertical("frameBox", GUILayout.Width(EditorGUIUtility.currentViewWidth - 15));
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
                 this.formInput("bundlePathIdentifier", "Bundle Path Identifier");
                 this.formInput("dataFileSubPrefix", "Data File Sub Prefix");
 
