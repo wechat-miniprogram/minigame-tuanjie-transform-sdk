@@ -373,7 +373,14 @@ export default {
     },
     WX_FileSystemManagerReaddirSync(dirPath) {
         const fs = wx.getFileSystemManager();
-        return JSON.stringify(fs.readdirSync(dirPath));
+        try {
+            
+            return JSON.stringify(fs.readdirSync(dirPath) || []);
+        }
+        catch (e) {
+            console.error(e);
+            return '[]';
+        }
     },
     WX_FileSystemManagerReadCompressedFileSync(option, callbackId) {
         const fs = wx.getFileSystemManager();

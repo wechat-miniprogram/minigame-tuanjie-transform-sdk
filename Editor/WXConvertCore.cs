@@ -161,7 +161,7 @@ namespace WeChatWASM
                     {
                         if (!result)
                         {
-                            Debug.LogError("【首包资源优化异常】：" + info);
+                            Debug.LogWarning("[首资源包跳过优化]：因处理失败自动跳过" + info);
                         }
 
                         finishExport();
