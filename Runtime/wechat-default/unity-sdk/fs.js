@@ -24,32 +24,32 @@ function runMethod(method, option, callbackId, isString = false) {
                     cacheArrayBuffer(callbackId, res.arrayBuffer);
                     returnRes = JSON.stringify({
                         bytesRead: res.bytesRead,
-                        arrayBufferLength: res.arrayBuffer.byteLength,
+                        arrayBufferLength: res.arrayBuffer?.byteLength ?? 0,
                     });
                 }
                 else if (method === 'readCompressedFile') {
                     cacheArrayBuffer(callbackId, res.data);
                     returnRes = JSON.stringify({
-                        arrayBufferLength: res.data.byteLength,
+                        arrayBufferLength: res.data?.byteLength ?? 0,
                     });
                 }
                 else if (method === 'readFile') {
                     if (config.encoding) {
                         returnRes = JSON.stringify({
-                            stringData: res.data,
+                            stringData: res.data || '',
                         });
                     }
                     else {
                         cacheArrayBuffer(callbackId, res.data);
                         returnRes = JSON.stringify({
-                            arrayBufferLength: res.data.byteLength,
+                            arrayBufferLength: res.data?.byteLength ?? 0,
                         });
                     }
                 }
                 else {
                     returnRes = JSON.stringify(res);
                 }
-                
+                // console.log(`fs.${method} success:`, res);
                 moduleHelper.send('FileSystemManagerCallback', JSON.stringify({
                     callbackId, type: 'success', res: returnRes, method: isString ? `${method}_string` : method,
                 }));
@@ -400,7 +400,7 @@ export default {
         cacheArrayBuffer(callbackId, res.arrayBuffer);
         return JSON.stringify({
             bytesRead: res.bytesRead,
-            arrayBufferLength: res.arrayBuffer.byteLength,
+            arrayBufferLength: res.arrayBuffer?.byteLength ?? 0,
         });
     },
     WX_FileSystemManagerFstatSync(option) {

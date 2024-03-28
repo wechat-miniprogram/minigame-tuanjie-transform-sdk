@@ -225,6 +225,9 @@ function convertBase64ToData(input) {
     return input;
 }
 export function cacheArrayBuffer(callbackId, data) {
+    if (!callbackId || !data) {
+        return;
+    }
     tempCacheObj[callbackId] = data;
 }
 export function setArrayBuffer(buffer, offset, callbackId) {

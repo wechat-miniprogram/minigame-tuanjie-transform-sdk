@@ -105,6 +105,10 @@ namespace WeChatWASM
             // #endif
             //                 return null;
             //             });
+            WXExtEnvDef.RegisterAction("WXConvertCore.UseIL2CPP", (args) =>
+            {
+                return WXConvertCore.UseIL2CPP;
+            });
         }
     }
 }

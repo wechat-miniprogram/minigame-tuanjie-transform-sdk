@@ -6,6 +6,13 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-3-28 【普通更新】
+* 普通：优化对团结版的导出支持
+### Fixed
+* 普通：兼容PlayDelayed播放
+* 普通：兼容FMOD2.02版本
+* 普通：修复FState偶现报错
+
 ## 2024-3-5 【普通更新】
 * 普通：WXAssetBundle支持切换CDN
 * 普通：优化VideoPlayer组件

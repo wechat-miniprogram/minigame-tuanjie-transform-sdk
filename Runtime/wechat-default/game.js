@@ -6,7 +6,7 @@ import './weapp-adapter';
 import './events';
 import 'texture-config.js';
 import unityNamespace from './unity-namespace';
-import './$GAME_NAME.wasm.framework.unityweb';
+import '.$DOTNET_RUNTIME_FOLD/$GAME_NAME.wasm.framework.unityweb';
 import './unity-sdk/index.js';
 import checkVersion from './check-version';
 import { launchEventType, scaleMode } from './plugin-config';
