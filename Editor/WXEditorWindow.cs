@@ -14,8 +14,6 @@ namespace WeChatWASM
             win.minSize = new Vector2(350, 400);
             win.position = new Rect(100, 100, 600, 700);
             win.Show();
-            // 打开面板时自动检查更新
-            PluginUpdateManager.CheckUpdte();
         }
 
         // 向前兼容，请使用 WXConvertCore.cs

@@ -30,7 +30,15 @@ namespace WeChatWASM
             PlayerSettings.WeixinMiniGame.threadsSupport = false;
             PlayerSettings.runInBackground = false;
             PlayerSettings.WeixinMiniGame.compressionFormat = WeixinMiniGameCompressionFormat.Disabled;
-            PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+            if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
+            {
+                var absolutePath = Path.GetFullPath("Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ");
+                PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+            }
+            else
+            {
+                PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+            }
             PlayerSettings.WeixinMiniGame.linkerTarget = WeixinMiniGameLinkerTarget.Wasm;
             PlayerSettings.WeixinMiniGame.dataCaching = false;
             PlayerSettings.WeixinMiniGame.debugSymbolMode = WeixinMiniGameDebugSymbolMode.External;
@@ -497,7 +505,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
 
         private static void ConvertCode()
         {
-            UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framewor. Dst: " + config.ProjectConf.DST);
+            UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framework. Dst: " + config.ProjectConf.DST);
 
             UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, miniGameDir));
             string text = String.Empty;
@@ -611,8 +619,11 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             }
 
             text = header + text;
+
+            var targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, target);
             if (!UseIL2CPP)
             {
+                targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target);
                 Rule[] nativeRules =
                 {
                     new Rule()
@@ -654,7 +665,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 }
             }
 
-            File.WriteAllText(Path.Combine(config.ProjectConf.DST, miniGameDir, target), text, new UTF8Encoding(false));
+            File.WriteAllText(targetPath, text, new UTF8Encoding(false));
 
             UnityEngine.Debug.LogFormat("[Converter]  adapt framework done! ");
         }

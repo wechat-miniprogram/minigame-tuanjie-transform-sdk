@@ -21,10 +21,6 @@ namespace WeChatWASM
         public WXSettingsHelper()
         {
             Type weixinMiniGamePackageHelpersType = Type.GetType("UnityEditor.WeixinPackageHelpers,UnityEditor");
-            if (weixinMiniGamePackageHelpersType == null)
-            {
-                weixinMiniGamePackageHelpersType = Type.GetType("UnityEditor.WeixinMiniGamePackageHelpers,UnityEditor");
-            }
             if (weixinMiniGamePackageHelpersType != null)
             {
                 EventInfo onSettingsGUIEvent = weixinMiniGamePackageHelpersType.GetEvent("OnPackageSettingsGUI");
@@ -77,6 +73,7 @@ namespace WeChatWASM
         public Texture tex;
         public void OnSettingsGUI(EditorWindow window)
         {
+            PluginUpdateManager.CheckUpdateOnce();
             scrollRoot = EditorGUILayout.BeginScrollView(scrollRoot);
 
             GUIStyle linkStyle = new GUIStyle(GUI.skin.label);
