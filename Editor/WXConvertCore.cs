@@ -497,7 +497,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
 
         private static void ConvertCode()
         {
-            UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framewor. Dst: " + config.ProjectConf.DST);
+            UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framework. Dst: " + config.ProjectConf.DST);
 
             UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, miniGameDir));
             string text = String.Empty;
@@ -611,8 +611,11 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             }
 
             text = header + text;
+
+            var targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, target);
             if (!UseIL2CPP)
             {
+                targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target);
                 Rule[] nativeRules =
                 {
                     new Rule()
@@ -654,7 +657,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 }
             }
 
-            File.WriteAllText(Path.Combine(config.ProjectConf.DST, miniGameDir, target), text, new UTF8Encoding(false));
+            File.WriteAllText(targetPath, text, new UTF8Encoding(false));
 
             UnityEngine.Debug.LogFormat("[Converter]  adapt framework done! ");
         }
