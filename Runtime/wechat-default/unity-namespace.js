@@ -127,6 +127,18 @@ function bindGloblException() {
     // 上报初始信息
     function printSystemInfo(systemInfo) {
         GameGlobal.systemInfoCached = systemInfo;
+        const { version, SDKVersion, platform, renderer, system } = systemInfo;
+        unityNamespace.version = version;
+        unityNamespace.SDKVersion = SDKVersion;
+        unityNamespace.platform = platform;
+        unityNamespace.renderer = renderer;
+        unityNamespace.system = system;
+        unityNamespace.isPc = platform === 'windows' || platform === 'mac';
+        unityNamespace.isDevtools = platform === 'devtools';
+        unityNamespace.isMobile = !unityNamespace.isPc && !unityNamespace.isDevtools;
+        unityNamespace.isH5Renderer = unityNamespace.isMobile && unityNamespace.renderer === 'h5';
+        unityNamespace.isIOS = platform === 'ios';
+        unityNamespace.isAndroid = platform === 'android';
         const bootinfo = {
             renderer: systemInfo.renderer || '',
             isH5Plus: GameGlobal.isIOSHighPerformanceModePlus || false,

@@ -294,7 +294,7 @@ export function convertDataToPointer(data) {
     if (typeof data === 'string') {
         return convertStringToPointer(data);
     }
-    if (data instanceof ArrayBuffer) {
+    if (data instanceof ArrayBuffer || typeof data === 'object') {
         return convertArrayBufferToPointer(data);
     }
     return 0;

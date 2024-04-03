@@ -6,6 +6,13 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-3-28 【重要更新】
+包含重要bugfix、特性支持
+### Feature
+### Fixed
+* 重要：修复UDP接口处理buffer
+* 重要：修复unity-namespace.js部分环境变量丢失问题
+
 ## 2024-3-28 【普通更新】
 * 普通：优化对团结版的导出支持
 ### Fixed
