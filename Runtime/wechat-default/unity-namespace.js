@@ -47,6 +47,8 @@ const unityNamespace = {
     usedAutoStreaming: $USED_AUTO_STREAMING,
     // 是否显示渲染日志(dev only)
     enableRenderAnalysisLog: $ENABLE_RENDER_ANALYSIS_LOG,
+    // 是否dotnet runtime
+    useDotnetRuntime: $USE_DOTNET_RUNTIME,
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {

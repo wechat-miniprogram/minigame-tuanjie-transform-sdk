@@ -23,7 +23,7 @@ namespace WeChatWASM
 
         public static void Init()
         {
-            config = UnityUtil.GetEditorConf();
+            //config = UnityUtil.GetEditorConf();
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             string templateHeader = "PROJECT:";
 #if TUANJIE_2022_3_OR_NEWER
@@ -71,7 +71,7 @@ namespace WeChatWASM
             BUILD_WEBGL_FAILED = 2,
         }
 
-        public static WXEditorScriptObject config;
+        public static WXEditorScriptObject config => UnityUtil.GetEditorConf();
         public static string webglDir = "webgl"; // 导出的webgl目录
         public static string miniGameDir = "minigame"; // 生成小游戏的目录
         public static string audioDir = "Assets"; // 音频资源目录
@@ -677,14 +677,14 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
                 // PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_main,_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
-                PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
+                PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
             }
 
 #else
             PlayerSettings.WebGL.emscriptenArgs = string.Empty;
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
-                PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
+                PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
 #if UNITY_2021_2_5
                     PlayerSettings.WebGL.emscriptenArgs += ",_main";
 #endif
@@ -1407,6 +1407,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 (config.CompileOptions.DevelopBuild && config.CompileOptions.enableRenderAnalysis) ? "true" : "false",
                 config.ProjectConf.IOSDevicePixelRatio.ToString(),
                 UseIL2CPP ? "" : "/framework",
+                UseIL2CPP ? "false" : "true",
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

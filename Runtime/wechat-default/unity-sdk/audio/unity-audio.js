@@ -210,7 +210,8 @@ export class AudioChannelInstance {
                     this.source.isPlaying = true;
                     if (!this.source.loop && this.source.mediaElement) {
                         const { duration } = this.source.mediaElement;
-                        if (duration) {
+                        
+                        if (duration > 0) {
                             if (this.source.stopTicker) {
                                 clearTimeout(this.source.stopTicker);
                                 this.source.stopTicker = undefined;
@@ -279,7 +280,7 @@ export class AudioChannelInstance {
                     const { duration } = this.source.mediaElement;
                     setTimeout(() => {
                         if (soundClip && this.source && this.source.mediaElement) {
-                            soundClip.length = Math.round(this.source.mediaElement.duration * 44100);
+                            soundClip.length = Math.round(Math.max(this.source.mediaElement.duration, 0) * 44100);
                         }
                     }, 0);
                 }
