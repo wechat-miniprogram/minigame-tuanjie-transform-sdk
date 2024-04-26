@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#if UNITY_WEBGL || WEIXINMINIGAME || UNITY_EDITOR
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using AOT;
@@ -106,3 +107,4 @@ namespace WeChatWASM
         }
     }
 }
+#endif

@@ -18,12 +18,11 @@ namespace WeChatWASM
 
         static WXConvertCore()
         {
-            Init();
+            // Init();
         }
 
         public static void Init()
         {
-            //config = UnityUtil.GetEditorConf();
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             string templateHeader = "PROJECT:";
 #if TUANJIE_2022_3_OR_NEWER

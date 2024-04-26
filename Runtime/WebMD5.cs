@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_WEBGL || WEIXINMINIGAME || UNITY_EDITOR
+using System;
 using System.Runtime.InteropServices;
 
 namespace WeChatWASM
@@ -29,3 +30,4 @@ namespace WeChatWASM
         } 
     }
 }
+#endif
