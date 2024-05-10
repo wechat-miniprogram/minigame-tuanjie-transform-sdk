@@ -840,6 +840,23 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
         {
             var bootJson = Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", "blazor.boot.json");
             var boot = JsonMapper.ToObject(File.ReadAllText(bootJson, Encoding.UTF8));
+            // Disable jiterpreter if haven't set
+            if (!boot.ContainsKey("environmentVariables")) {
+                var jd = new JsonData();
+                jd["INTERP_OPTS"] = "-jiterp";
+                boot["environmentVariables"] = jd;
+                JsonWriter writer = new JsonWriter();
+                boot.ToJson(writer);
+                File.WriteAllText(bootJson, writer.TextWriter.ToString());
+                Debug.Log("Env INTERP_OPTS added to blazor.boot.json");
+            } else if (!boot["environmentVariables"].ContainsKey("INTERP_OPTS")) {
+                boot["environmentVariables"]["INTERP_OPTS"] = "-jiterp";
+                JsonWriter writer = new JsonWriter();
+                boot.ToJson(writer);
+                File.WriteAllText(bootJson, writer.TextWriter.ToString());
+                Debug.Log("Env INTERP_OPTS added to blazor.boot.json"); 
+            }
+
             return boot["resources"][key].Keys.Select(file => Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", file)).ToArray();
         }
 
