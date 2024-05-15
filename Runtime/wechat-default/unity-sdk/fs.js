@@ -1,6 +1,7 @@
 import response from './response';
 import moduleHelper from './module-helper';
 import { cacheArrayBuffer, formatJsonStr, formatResponse } from './utils';
+import { fileInfoHandler, fileInfoType, responseWrapper } from './file-info';
 function runMethod(method, option, callbackId, isString = false) {
     try {
         const fs = wx.getFileSystemManager();
@@ -82,6 +83,7 @@ export default {
             const fs = wx.getFileSystemManager();
             
             fs.writeFileSync(filePath, data, encoding);
+            fileInfoHandler.addFileInfo(filePath, data);
         }
         catch (e) {
             console.error(e);
@@ -139,6 +141,7 @@ export default {
         try {
             const fs = wx.getFileSystemManager();
             fs.unlinkSync(filePath);
+            fileInfoHandler.removeFileInfo(filePath);
             return 'unlink:ok';
         }
         catch (e) {
@@ -153,7 +156,7 @@ export default {
         const fs = wx.getFileSystemManager();
         fs.unlink({
             filePath,
-            ...response.handleText(s, f, c),
+            ...responseWrapper(response.handleText(s, f, c), { filePath, type: fileInfoType.remove }),
         });
     },
     WXWriteFile(filePath, data, encoding, s, f, c) {
@@ -162,7 +165,7 @@ export default {
             filePath,
             data: data.buffer,
             encoding,
-            ...response.handleTextLongBack(s, f, c),
+            ...responseWrapper(response.handleTextLongBack(s, f, c), { filePath, data: data.buffer, type: fileInfoType.add }),
         });
     },
     WXWriteStringFile(filePath, data, encoding, s, f, c) {
@@ -171,7 +174,7 @@ export default {
             filePath,
             data,
             encoding,
-            ...response.handleTextLongBack(s, f, c),
+            ...responseWrapper(response.handleTextLongBack(s, f, c), { filePath, data, type: fileInfoType.add }),
         });
     },
     WXAppendFile(filePath, data, encoding, s, f, c) {
@@ -196,6 +199,7 @@ export default {
         const fs = wx.getFileSystemManager();
         try {
             fs.writeFileSync(filePath, data.buffer, encoding);
+            fileInfoHandler.addFileInfo(filePath, data.buffer);
         }
         catch (e) {
             console.error(e);

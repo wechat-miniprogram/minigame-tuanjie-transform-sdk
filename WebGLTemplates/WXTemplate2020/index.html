@@ -126,7 +126,7 @@
           delete storage[key];
         },
         WXStorageHasKeySync(key) {
-          return typeof storage[key] === 'undefined';
+          return typeof storage[key] !== 'undefined';
         },
         WXCheckSession(s, f, c) {},
         WXAuthorize(scope, s, f, c) {},

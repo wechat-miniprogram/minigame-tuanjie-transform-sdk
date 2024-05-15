@@ -14,6 +14,36 @@ PluginImporter:
   - first:
       Any: 
     second:
+      enabled: 0
+      settings:
+        Exclude Editor: 1
+        Exclude Linux: 1
+        Exclude Linux64: 1
+        Exclude LinuxUniversal: 1
+        Exclude OSXUniversal: 1
+        Exclude WebGL: 1
+        Exclude WeixinMiniGame: 0
+        Exclude Win: 1
+        Exclude Win64: 1
+  - first:
+      Editor: Editor
+    second:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+  - first:
+      Facebook: WebGL
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      WebGL: WebGL
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      WeixinMiniGame: WeixinMiniGame
+    second:
       enabled: 1
       settings: {}
   userData: 

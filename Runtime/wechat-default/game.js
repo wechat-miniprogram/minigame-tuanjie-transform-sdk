@@ -94,7 +94,8 @@ checkVersion().then((enable) => {
             hideAfterCallmain: $HIDE_AFTER_CALLMAIN,
             loadingPageConfig: {
                 // 以下是默认值
-                totalLaunchTime: 15000,
+                totalLaunchTime: 7000,
+                animationDuration: 100,
                 /**
                  * !!注意：修改设计宽高和缩放模式后，需要修改文字和进度条样式。默认设计尺寸为667*375
                  */

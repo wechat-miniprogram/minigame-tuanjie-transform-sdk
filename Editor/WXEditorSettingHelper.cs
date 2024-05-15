@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace WeChatWASM
 {
-    
+
     [InitializeOnLoad]
     public class WXSettingsHelperInterface
     {
@@ -183,7 +183,7 @@ namespace WeChatWASM
                 this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
                 this.formCheckbox("cleanBuild", "Clean WebGL Build");
                 // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
-                this.formCheckbox("fbslim", "首包资源优化(?)", "导出时自动清理UnityEditor默认打包但游戏项目从未使用的资源，瘦身首包资源体积，建议所有游戏启用。(Dotnet Runtime模式下该选项暂不支持)", !UseIL2CPP, (res) =>
+                this.formCheckbox("fbslim", "首包资源优化(?)", "导出时自动清理UnityEditor默认打包但游戏项目从未使用的资源，瘦身首包资源体积。（团结引擎已无需开启该能力）", UnityUtil.GetEngineVersion() > 0, (res) =>
                 {
                     var fbWin = EditorWindow.GetWindow(typeof(WXFbSettingWindow), false, "首包资源优化配置面板", true);
                     fbWin.minSize = new Vector2(680, 350);
@@ -242,6 +242,31 @@ namespace WeChatWASM
                 EditorGUILayout.EndVertical();
             }
 #endif
+            foldFontOptions = EditorGUILayout.Foldout(foldFontOptions, "字体配置");
+            if (foldFontOptions)
+            {
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
+                this.formCheckbox("CJK_Unified_Ideographs", "基本汉字(?)", "Unicode [0x4e00, 0x9fff]");
+                this.formCheckbox("C0_Controls_and_Basic_Latin", "基本拉丁语（英文大小写、数字、英文标点）(?)", "Unicode [0x0, 0x7f]");
+                this.formCheckbox("CJK_Symbols_and_Punctuation", "中文标点符号(?)", "Unicode [0x3000, 0x303f]");
+                this.formCheckbox("General_Punctuation", "通用标点符号(?)", "Unicode [0x2000, 0x206f]");
+                this.formCheckbox("Enclosed_CJK_Letters_and_Months", "CJK字母及月份(?)", "Unicode [0x3200, 0x32ff]");
+                this.formCheckbox("Vertical_Forms", "中文竖排标点(?)", "Unicode [0xfe10, 0xfe1f]");
+                this.formCheckbox("CJK_Compatibility_Forms", "CJK兼容符号(?)", "Unicode [0xfe30, 0xfe4f]");
+                this.formCheckbox("Miscellaneous_Symbols", "杂项符号(?)", "Unicode [0x2600, 0x26ff]");
+                this.formCheckbox("CJK_Compatibility", "CJK特殊符号(?)", "Unicode [0x3300, 0x33ff]");
+                this.formCheckbox("Halfwidth_and_Fullwidth_Forms", "全角ASCII、全角中英文标点、半宽片假名、半宽平假名、半宽韩文字母(?)", "Unicode [0xff00, 0xffef]");
+                this.formCheckbox("Dingbats", "装饰符号(?)", "Unicode [0x2700, 0x27bf]");
+                this.formCheckbox("Letterlike_Symbols", "字母式符号(?)", "Unicode [0x2100, 0x214f]");
+                this.formCheckbox("Enclosed_Alphanumerics", "带圈或括号的字母数字(?)", "Unicode [0x2460, 0x24ff]");
+                this.formCheckbox("Number_Forms", "数字形式(?)", "Unicode [0x2150, 0x218f]");
+                this.formCheckbox("Currency_Symbols", "货币符号(?)", "Unicode [0x20a0, 0x20cf]");
+                this.formCheckbox("Arrows", "箭头(?)", "Unicode [0x2190, 0x21ff]");
+                this.formCheckbox("Geometric_Shapes", "几何图形(?)", "Unicode [0x25a0, 0x25ff]");
+                this.formCheckbox("Mathematical_Operators", "数学运算符号(?)", "Unicode [0x2200, 0x22ff]");
+                this.formInput("CustomUnicode", "自定义Unicode(?)", "将填入的所有字符强制加入字体预加载列表");
+                EditorGUILayout.EndVertical();
+            }
 
             EditorGUILayout.EndScrollView();
         }
@@ -314,7 +339,7 @@ namespace WeChatWASM
             EditorGUILayout.LabelField(string.Empty);
             if (GUILayout.Button(new GUIContent("了解如何实现自定义构建", ""), linkStyle))
             {
-                Application.OpenURL("https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/DevelopmentQAList.md#13%E5%A6%82%E4%BD%95%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8E%A5%E5%85%A5%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B");
+                Application.OpenURL("https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/Design/DevelopmentQAList.html#_13-%E5%A6%82%E4%BD%95%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8E%A5%E5%85%A5%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B");
                 GUIUtility.ExitGUI();
             }
             EditorGUILayout.EndHorizontal();
@@ -326,6 +351,7 @@ namespace WeChatWASM
         private bool foldSDKOptions = true;
         private bool foldDebugOptions = true;
         private bool foldInstantGame = false;
+        private bool foldFontOptions = false;
         private Dictionary<string, string> formInputData = new Dictionary<string, string>();
         private Dictionary<string, int> formIntPopupData = new Dictionary<string, int>();
         private Dictionary<string, bool> formCheckboxData = new Dictionary<string, bool>();
@@ -426,6 +452,27 @@ namespace WeChatWASM
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
             this.setData("autoUploadFirstBundle", true);
+
+            // font options
+            this.setData("CJK_Unified_Ideographs", config.FontOptions.CJK_Unified_Ideographs);
+            this.setData("C0_Controls_and_Basic_Latin", config.FontOptions.C0_Controls_and_Basic_Latin);
+            this.setData("CJK_Symbols_and_Punctuation", config.FontOptions.CJK_Symbols_and_Punctuation);
+            this.setData("General_Punctuation", config.FontOptions.General_Punctuation);
+            this.setData("Enclosed_CJK_Letters_and_Months", config.FontOptions.Enclosed_CJK_Letters_and_Months);
+            this.setData("Vertical_Forms", config.FontOptions.Vertical_Forms);
+            this.setData("CJK_Compatibility_Forms", config.FontOptions.CJK_Compatibility_Forms);
+            this.setData("Miscellaneous_Symbols", config.FontOptions.Miscellaneous_Symbols);
+            this.setData("CJK_Compatibility", config.FontOptions.CJK_Compatibility);
+            this.setData("Halfwidth_and_Fullwidth_Forms", config.FontOptions.Halfwidth_and_Fullwidth_Forms);
+            this.setData("Dingbats", config.FontOptions.Dingbats);
+            this.setData("Letterlike_Symbols", config.FontOptions.Letterlike_Symbols);
+            this.setData("Enclosed_Alphanumerics", config.FontOptions.Enclosed_Alphanumerics);
+            this.setData("Number_Forms", config.FontOptions.Number_Forms);
+            this.setData("Currency_Symbols", config.FontOptions.Currency_Symbols);
+            this.setData("Arrows", config.FontOptions.Arrows);
+            this.setData("Geometric_Shapes", config.FontOptions.Geometric_Shapes);
+            this.setData("Mathematical_Operators", config.FontOptions.Mathematical_Operators);
+            this.setData("CustomUnicode", config.FontOptions.CustomUnicode);
         }
 
         private void saveData()
@@ -472,6 +519,27 @@ namespace WeChatWASM
             config.CompileOptions.showMonitorSuggestModal = this.getDataCheckbox("showMonitorSuggestModal");
             config.CompileOptions.enableProfileStats = this.getDataCheckbox("enableProfileStats");
             config.CompileOptions.enableRenderAnalysis = this.getDataCheckbox("enableRenderAnalysis");
+
+            // font options
+            config.FontOptions.CJK_Unified_Ideographs = this.getDataCheckbox("CJK_Unified_Ideographs");
+            config.FontOptions.C0_Controls_and_Basic_Latin = this.getDataCheckbox("C0_Controls_and_Basic_Latin");
+            config.FontOptions.CJK_Symbols_and_Punctuation = this.getDataCheckbox("CJK_Symbols_and_Punctuation");
+            config.FontOptions.General_Punctuation = this.getDataCheckbox("General_Punctuation");
+            config.FontOptions.Enclosed_CJK_Letters_and_Months = this.getDataCheckbox("Enclosed_CJK_Letters_and_Months");
+            config.FontOptions.Vertical_Forms = this.getDataCheckbox("Vertical_Forms");
+            config.FontOptions.CJK_Compatibility_Forms = this.getDataCheckbox("CJK_Compatibility_Forms");
+            config.FontOptions.Miscellaneous_Symbols = this.getDataCheckbox("Miscellaneous_Symbols");
+            config.FontOptions.CJK_Compatibility = this.getDataCheckbox("CJK_Compatibility");
+            config.FontOptions.Halfwidth_and_Fullwidth_Forms = this.getDataCheckbox("Halfwidth_and_Fullwidth_Forms");
+            config.FontOptions.Dingbats = this.getDataCheckbox("Dingbats");
+            config.FontOptions.Letterlike_Symbols = this.getDataCheckbox("Letterlike_Symbols");
+            config.FontOptions.Enclosed_Alphanumerics = this.getDataCheckbox("Enclosed_Alphanumerics");
+            config.FontOptions.Number_Forms = this.getDataCheckbox("Number_Forms");
+            config.FontOptions.Currency_Symbols = this.getDataCheckbox("Currency_Symbols");
+            config.FontOptions.Arrows = this.getDataCheckbox("Arrows");
+            config.FontOptions.Geometric_Shapes = this.getDataCheckbox("Geometric_Shapes");
+            config.FontOptions.Mathematical_Operators = this.getDataCheckbox("Mathematical_Operators");
+            config.FontOptions.CustomUnicode = this.getDataInput("CustomUnicode");
         }
 
         private string getDataInput(string target)
@@ -598,5 +666,5 @@ namespace WeChatWASM
 
     }
 
-    
+
 }

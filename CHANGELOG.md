@@ -6,11 +6,20 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2024-4-26 【普通更新】
+## 2024-5-15 【普通更新】
+### Feature
+* 普通：支持JS构建模板，请查阅[模板文档](https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/Design/BuildTemplate.html)
+* 普通：调整启动封面表现，默认进度动画加速
+* 普通：writeFile/unlink操作文件时同步更新启动插件维护的缓存信息
+* 普通：支持自定义微信系统字体字符集
+* 普通：网络接口如UnityWebRequest支持通过添加特殊请求头`request.SetRequestHeader("wechatminigame-preload", "1")`做预下载，缓存到用户目录但不增加unity内存。当需要使用时不增加请求头重新请求即可从用户目录读取缓存使用。
+* 普通：网络接口如UnityWebRequest支持通过添加特殊请求头`request.SetRequestHeader("wechatminigame-skipclean", "1")`不做旧缓存淘汰。
+* 普通：适配插件版本升级到1.2.50
+
 ### Fixed
-* 普通：修复Unity2018/2019的兼容
-* 普通：兼容Windows 1.0.4版本template问题
-* 普通：修复Android平台导出时的
+* 普通：修复团结版dotnet wasm加载报错
+* 普通：修复音频的长度为负数时的异常stop
+* 普通：修复配置文件重置bug
 
 ## 2024-4-17 【普通更新】
 ### Feature

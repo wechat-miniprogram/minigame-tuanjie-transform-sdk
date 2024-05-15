@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 using LitJson;
 using UnityEditor.Build;
 using System.Linq;
+using static WeChatWASM.LifeCycleEvent;
 
 namespace WeChatWASM
 {
@@ -18,7 +19,7 @@ namespace WeChatWASM
 
         static WXConvertCore()
         {
-            // Init();
+            
         }
 
         public static void Init()
@@ -94,9 +95,16 @@ namespace WeChatWASM
         // 可以调用这个来集成
         public static WXExportError DoExport(bool buildWebGL = true)
         {
+            LifeCycleEvent.Init();
+            Emit(LifeCycle.beforeExport);
             if (!CheckSDK())
             {
                 Debug.LogError("若游戏曾使用旧版本微信SDK，需删除 Assets/WX-WASM-SDK 文件夹后再导入最新工具包。");
+                return WXExportError.BUILD_WEBGL_FAILED;
+            }
+            if (!CheckBuildTemplate())
+            {
+                Debug.LogError("因构建模板检查失败终止导出。");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
             CheckBuildTarget();
@@ -129,7 +137,7 @@ namespace WeChatWASM
                 {
                     // 如果是2021版本，官方symbols产生有BUG，这里需要用工具将函数名提取出来
                     var symFile1 = "";
-                    if(!UseIL2CPP)
+                    if (!UseIL2CPP)
                     {
                         symFile1 = Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", "dotnet.native.js.symbols");
                     }
@@ -162,7 +170,7 @@ namespace WeChatWASM
                 }
                 File.Copy(dataFilePath, dataFilePathBackupPath);
 
-                if (UseIL2CPP && config.CompileOptions.fbslim && !IsInstantGameAutoStreaming())
+                if (UnityUtil.GetEngineVersion() == 0 && config.CompileOptions.fbslim && !IsInstantGameAutoStreaming())
                 {
                     WXAssetsTextTools.FirstBundleSlim(dataFilePath, (result, info) =>
                     {
@@ -184,6 +192,7 @@ namespace WeChatWASM
 
         private static void CheckBuildTarget()
         {
+            Emit(LifeCycle.beforeSwitchActiveBuildTarget);
             if (UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Unity)
             {
                 EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
@@ -194,6 +203,7 @@ namespace WeChatWASM
                 EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
 #endif
             }
+            Emit(LifeCycle.afterSwitchActiveBuildTarget);
         }
 
         public static void UpdateGraphicAPI()
@@ -270,7 +280,26 @@ namespace WeChatWASM
             return output.ToString();
         }
 
-        
+        private static bool CheckBuildTemplate()
+        {
+            string[] res = BuildTemplate.CheckCustomCoverBaseConflict(
+                Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default"),
+                Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
+                new string[]{ @"\.(js|ts|json)$" }
+                );
+            if (res.Length != 0)
+            {
+                Debug.LogError("系统发现自定义构建模板中存在以下文件对应的基础模板已被更新，为确保游戏导出正常工作请自行解决可能存在的冲突：");
+                for (int i = 0; i < res.Length; i++)
+                {
+                    Debug.LogError($"自定义模板文件 [{i}]: [ {res[i]} ]");
+                }
+                Debug.LogError("有关上述警告产生原因及处理办法请阅读：https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/Design/BuildTemplate.html#%E6%96%B0%E7%89%88%E6%9C%ACsdk%E5%BC%95%E8%B5%B7%E7%9A%84%E5%86%B2%E7%AA%81%E6%8F%90%E9%86%92");
+                return false;
+            }
+            return true;
+        }
+
         private static void ConvertDotnetCode()
         {
             CompressAssemblyBrotli();
@@ -298,7 +327,8 @@ namespace WeChatWASM
             };
             foreach (var rule in rules)
             {
-                if (ShowMatchFailedWarning(dotnetJs, rule.old, "runtime") == false) {
+                if (ShowMatchFailedWarning(dotnetJs, rule.old, "runtime") == false)
+                {
                     dotnetJs = Regex.Replace(dotnetJs, rule.old, rule.newStr);
                 }
             }
@@ -318,188 +348,17 @@ namespace WeChatWASM
                 Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", "dotnet.js");
             var dotnetJs = File.ReadAllText(dotnetJsPath, Encoding.UTF8);
             // todo: handle dotnet js
-            Rule[] rules =
-                {
-                    new Rule()
-                    {
-                        old = "import\\.meta\\.url",
-                        newStr = $"pathToFileURL('/{frameworkDir}/webgl.wasm.framework.unityweb.js')",
-                    },
-                    new Rule()
-                    {
-                        old = " *(\\w*) *= *(\\w*)\\(\"js-module-runtime\"\\) *, *(\\w*) *= *(\\w*)\\(\"js-module-native\"\\)",
-                        newStr = $" $1 = $2(\"js-module-runtime\"), $3 = $4(\"js-module-native\"); $1.resolvedUrl = \"{Path.GetFileName(GetWeixinMiniGameFilePath("jsModuleRuntime")[0])}\";$3.resolvedUrl = \"{Path.GetFileName(GetWeixinMiniGameFilePath("jsModuleNative")[0])}\";",
-                    },
-                    new Rule()
-                    {
-                        old = "export *\\{ *(.*) *as *default *,(.*) *as *dotnet *,(.*) *as *exit *\\} *;",
-                        newStr = "return {legacyEntrypoint: $1, dotnet: $2, exit: $3}",
-                    },
-                    new Rule()
-                    { // add symbol property for monoToBlazorAssetTypeMap
-                        old = "\"js-module-runtime\": *\"dotnetjs\", *\"js-module-threads\": *\"dotnetjs\"",
-                        newStr = "\"js-module-runtime\": \"dotnetjs\", \"js-module-threads\": \"dotnetjs\", \"symbols\": \"symbols\"",
-                    },
-                    new Rule()
-                    {
-                        old = "_e *\\|\\| *\"function\" *== *typeof *globalThis.URL[\\s\\S]*asm-features\"\\);",
-                        newStr = ""
-                    },
-                    new Rule()
-                    {
-                        old = "if *\\(!\\(ENVIRONMENT_IS_SHELL *\\|\\| *typeof *globalThis.URL *=== *\"function\"\\)\\)[\\s\\S]*BigInt64Array *API. *Please *use *a *modern *version. *See *also *https:\\/\\/aka.ms\\/dotnet\\-wasm\\-features\"\\);",
-                        newStr = ""
-                    }
-                };
-            foreach (var rule in rules)
+            foreach (var rule in ReplaceRules.DoenetRules(new string[] { frameworkDir,
+                Path.GetFileName(GetWeixinMiniGameFilePath("jsModuleRuntime")[0]),
+                Path.GetFileName(GetWeixinMiniGameFilePath("jsModuleNative")[0]),
+            }))
             {
-                if (ShowMatchFailedWarning(dotnetJs, rule.old, "dotnet") == false) {
+                if (ShowMatchFailedWarning(dotnetJs, rule.old, "dotnet") == false)
+                {
                     dotnetJs = Regex.Replace(dotnetJs, rule.old, rule.newStr);
                 }
             }
-            var header = @"WebAssembly.validate = () => true;
-const dotnet = (function () {";
-            var footer = @"})();
-
-function pathToFileURL(path) {
-    return `file://${path}`;
-}
-
-const wxFetchFile = async (url, config) => new Promise((resolve, reject) => {
-    const folderPath = `${GameGlobal.manager.PLUGIN_CACHE_PATH}/${config.hash}`;
-    const filePath = `${folderPath}/${config.filename}`;
-    const fs = wx.getFileSystemManager();
-    var readFile = fs.readFile;
-    const readFileInfo = {
-        filePath: filePath,
-        success: async (res) => {
-            resolve(res.data);
-        },
-        fail: (err) => {
-            reject(err);
-        }
-    }
-    if (config.brotli) {
-        readFile = fs.readCompressedFile;
-        readFileInfo.compressionAlgorithm = 'br';
-    }
-    const downloadFileInfo = {
-        url: url,
-        success: (res) => {
-            if (res.statusCode === 200) {
-                try {
-                    fs.accessSync(folderPath);
-                } catch (e) {
-                    fs.mkdirSync(folderPath, true);
-                }
-                saveFile(res.tempFilePath, filePath, res.dataLength);
-            } else {
-                reject(res);
-            }
-        },
-        fail: (err) => {
-            reject(err);
-        }
-    };
-    const saveFile = (tempFilePath, filePath, dataLength, retry = 0) => {
-        try {
-            fs.saveFileSync(tempFilePath, filePath);
-            readFile(readFileInfo);
-        } catch (e) {
-            if (e.message === 'saveFileSync:fail exceeded the maximum size of the file storage limit') {
-                if (retry < 3) {
-                    GameGlobal.manager.cleanCache(dataLength).then(() => {
-                        saveFile(tempFilePath, filePath, dataLength, ++retry);
-                    });
-                } else {
-                    GameGlobal.manager.cleanAllCache().then(() => {
-                        wx.downloadFile(downloadFileInfo);
-                    });
-                }
-            } else {
-                reject(e);
-            }
-        }
-    };
-    // if not use cache or cache not exists, download file
-    fs.access({
-        path: filePath,
-        success: (res) => {
-            if (config.cache && res.errMsg === 'access:ok') {
-                readFile(readFileInfo);
-            } else {
-                wx.downloadFile(downloadFileInfo);
-            }
-        },
-        fail: (err) => {
-            wx.downloadFile(downloadFileInfo);
-        }
-    });
-});
-
-dotnet.dotnet.withResourceLoader((resourceType, assetName, url, requestHash, behavior) => {
-    const remoteUrl = `${GameGlobal.unityNamespace.DATA_CDN}Code/wwwroot/_framework/${assetName}`;
-    switch (resourceType) {
-        case 'dotnetjs':
-            return assetName;
-        case 'manifest':
-            return new Promise((resolve, reject) => {
-                wx.request({
-                    url: remoteUrl,
-                    success: (res) => {
-                        resolve({
-                            json: async () => res.data,
-                            headers: {
-                                get: () => undefined
-                            }
-                        });
-                    },
-                    fail: (err) => {
-                        reject(err);
-                    }
-                });
-            });
-        case 'symbols':
-        case 'dotnetwasm':
-            return new Promise((resolve, reject) => {
-                resolve({
-                    arrayBuffer: async () => undefined,
-                    status: 200,
-                    ok: true
-                })
-            });
-        case 'assembly':
-            const config = {
-                filename: assetName + '.br',
-                cache: true,
-                hash: requestHash,
-                brotli: true
-            };
-            return wxFetchFile(remoteUrl + '.br', config).then(res => ({
-                arrayBuffer: async () => res,
-                status: 200,
-                ok: true,
-            }));
-        default:
-            return url;
-    }
-});
-var executed = false;
-var unityFramework = function (module) {
-    if (executed) return;
-    executed = true;
-    module['noInitialRun'] = true;
-    return (dotnet.legacyEntrypoint(module)).then(() => {
-        module['callMain']();
-    });
-};
-if (typeof exports === 'object' && typeof module === 'object') module.exports = unityFramework;
-else if (typeof define === 'function' && define['amd']) define([], function () {
-    return unityFramework;
-});
-else if (typeof exports === 'object') exports['unityFramework'] = unityFramework;
-GameGlobal.unityNamespace.UnityModule = unityFramework;";
-            File.WriteAllText(Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target), header + dotnetJs + footer, new UTF8Encoding(false));
+            File.WriteAllText(Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target), ReplaceRules.DotnetHeader + dotnetJs + ReplaceRules.DotnetFooter, new UTF8Encoding(false));
         }
 
         private static void ConvertCode()
@@ -529,14 +388,19 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             int i;
             for (i = 0; i < ReplaceRules.rules.Length; i++)
             {
+                var current = i + 1;
+                var total = ReplaceRules.rules.Length;
+                EditorUtility.DisplayProgressBar($"Converting...，{current}/{total}", "Replace holder...", current * 1.0f / total);
                 var rule = ReplaceRules.rules[i];
                 // text = Regex.Replace(text, rule.old, rule.newStr);
-                if (ShowMatchFailedWarning(text, rule.old, "WXReplaceRules") == false) {
+                if (ShowMatchFailedWarning(text, rule.old, "WXReplaceRules") == false)
+                {
                     text = Regex.Replace(text, rule.old, rule.newStr);
                 }
             }
-           string[] prefixs =
-            {
+            EditorUtility.ClearProgressBar();
+            string[] prefixs =
+             {
                 "_JS_Video_",
                 //"jsVideo",
                 "_JS_Sound_",
@@ -606,7 +470,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             }
 
             var header = "var OriginalAudioContext = window.AudioContext || window.webkitAudioContext;window.AudioContext = function() {if (this instanceof window.AudioContext) {return wx.createWebAudioContext();} else {return new OriginalAudioContext();}};";
-            
+
             if (config.CompileOptions.DevelopBuild)
             {
                 header = header + RenderAnalysisRules.header;
@@ -623,44 +487,13 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             if (!UseIL2CPP)
             {
                 targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target);
-                Rule[] nativeRules =
+                
+                foreach (var rule in ReplaceRules.NativeRules)
                 {
-                    new Rule()
+                    if (ShowMatchFailedWarning(text, rule.old, "native") == false)
                     {
-                        old = "if\\(Module\\.IsWxGame\\)return Math\\.random\\(\\)\\*256\\|0;abort\\(\"randomDevice\"\\)",
-                        newStr = "{if(Module.IsWxGame)return Math.random()*256|0;abort(\"randomDevice\")}"
-                    },
-                    new Rule()
-                    {
-                        old = "var *_scriptDir *= *import\\.meta\\.url;",
-                        newStr = $"var _scriptDir = \"file:///framework/webgl.wasm.framework.unityweb.js\"",
-                    },
-                    new Rule()
-                    {
-                        old = "import\\.meta\\.url",
-                        newStr = "_scriptDir"
-                    },
-                    new Rule()
-                    {
-                        old = "Module\\[['\"](HEAP[U,F,1-9]*)['\"]\\] *=",
-                        newStr = "Module['$1'] = GameGlobal.unityNamespace.Module['$1'] =",
-                    },
-                    new Rule()
-                    {
-                        old = "return *handleException\\(e\\);?",
-                        newStr = "return handleException(e);} finally {if (ABORT === true) return; if (Module.calledMainCb) Module.calledMainCb(); if (GameGlobal.unityNamespace.enableProfileStats) {setTimeout(() => {SendMessage('WXSDKManagerHandler', 'OpenProfileStats');}, 10000);}"
-                    },
-                    new Rule()
-                    {
-                        old = "function *callMain\\(args *= *\\[\\]\\)",
-                        newStr = "Object.keys(Module).forEach(key=>{if(!(key in Object.keys(GameGlobal.unityNamespace.Module))){GameGlobal.unityNamespace.Module[key]=Module[key];}});function callMain(args = [])"
-                    },
-                };
-                foreach (var rule in nativeRules)
-                {
-                    if (ShowMatchFailedWarning(text, rule.old, "native") == false) {
                         text = Regex.Replace(text, rule.old, rule.newStr);
-                    } 
+                    }
                 }
             }
 
@@ -840,6 +673,25 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
         {
             var bootJson = Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", "blazor.boot.json");
             var boot = JsonMapper.ToObject(File.ReadAllText(bootJson, Encoding.UTF8));
+            // Disable jiterpreter if haven't set
+            if (!boot.ContainsKey("environmentVariables"))
+            {
+                var jd = new JsonData();
+                jd["INTERP_OPTS"] = "-jiterp";
+                boot["environmentVariables"] = jd;
+                JsonWriter writer = new JsonWriter();
+                boot.ToJson(writer);
+                File.WriteAllText(bootJson, writer.TextWriter.ToString());
+                Debug.Log("Env INTERP_OPTS added to blazor.boot.json");
+            }
+            else if (!boot["environmentVariables"].ContainsKey("INTERP_OPTS"))
+            {
+                boot["environmentVariables"]["INTERP_OPTS"] = "-jiterp";
+                JsonWriter writer = new JsonWriter();
+                boot.ToJson(writer);
+                File.WriteAllText(bootJson, writer.TextWriter.ToString());
+                Debug.Log("Env INTERP_OPTS added to blazor.boot.json");
+            }
             return boot["resources"][key].Keys.Select(file => Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", file)).ToArray();
         }
 
@@ -851,6 +703,7 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 convertDataPackage(false);
                 UnityEngine.Debug.LogFormat("[Converter] All done!");
                 //ShowNotification(new GUIContent("转换完成"));
+                Emit(LifeCycle.exportDone);
             }
             else
             {
@@ -1032,80 +885,6 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             }
         }
 
-        private static bool CopyDirectory(string SourcePath, string DestinationPath, bool overwriteexisting)
-        {
-            bool ret = false;
-            var separator = Path.DirectorySeparatorChar;
-            var ignoreFiles = new List<string>() { "unityNamespace.js" };
-
-            // eventEmitter - 改名为event-emitter
-            // loading和libs 是可交互视频用到的文件，先下掉可交互方案
-            var ignoreDirs = new List<string>() { "eventEmitter", "loading", "libs" };
-            try
-            {
-                if (Directory.Exists(SourcePath))
-                {
-                    if (Directory.Exists(DestinationPath) == false)
-                    {
-                        Directory.CreateDirectory(DestinationPath);
-                    }
-                    else
-                    {
-                        // 已经存在，删掉目录下无用的文件
-                        foreach (string filename in ignoreFiles)
-                        {
-                            var filepath = Path.Combine(DestinationPath, filename);
-                            if (File.Exists(filepath))
-                            {
-                                File.Delete(filepath);
-                            }
-                        }
-
-                        foreach (string dir in ignoreDirs)
-                        {
-                            var dirpath = Path.Combine(DestinationPath, dir);
-                            if (Directory.Exists(dirpath))
-                            {
-                                Directory.Delete(dirpath);
-                            }
-                        }
-                    }
-
-                    foreach (string fls in Directory.GetFiles(SourcePath))
-                    {
-                        FileInfo flinfo = new FileInfo(fls);
-                        if (flinfo.Extension == ".meta" || ignoreFiles.Contains(flinfo.Name))
-                        {
-                            continue;
-                        }
-                        flinfo.CopyTo(Path.Combine(DestinationPath, flinfo.Name), overwriteexisting);
-                    }
-
-                    foreach (string drs in Directory.GetDirectories(SourcePath))
-                    {
-                        DirectoryInfo drinfo = new DirectoryInfo(drs);
-                        if (ignoreDirs.Contains(drinfo.Name))
-                        {
-                            continue;
-                        }
-                        if (CopyDirectory(drs, Path.Combine(DestinationPath, drinfo.Name), overwriteexisting) == false)
-                        {
-                            ret = false;
-                        }
-                    }
-                }
-
-                ret = true;
-            }
-            catch (Exception ex)
-            {
-                ret = false;
-                UnityEngine.Debug.LogError(ex);
-            }
-
-            return ret;
-        }
-
         public static string FirstBundlePath = "";
         public static int GenerateBinFile(bool isFromConvert = false)
         {
@@ -1119,8 +898,12 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
 
             RemoveOldAssetPackage(Path.Combine(config.ProjectConf.DST, webglDir));
             RemoveOldAssetPackage(Path.Combine(config.ProjectConf.DST, webglDir + "-min"));
-            // CopyDirectory(Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default"), Path.Combine(config.ProjectConf.DST, miniGameDir), true);
-            CopyDirectory(Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default"), Path.Combine(config.ProjectConf.DST, miniGameDir), true);
+            var buildTemplate = new BuildTemplate(
+                Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default"),
+                Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
+                Path.Combine(config.ProjectConf.DST, miniGameDir)
+                );
+            buildTemplate.start();
             // FIX: 2021.2版本生成symbol有bug，导出时生成symbol报错，有symbol才copy
             // 代码分包需要symbol文件以进行增量更新
             if (File.Exists(symbolPath))
@@ -1353,6 +1136,59 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             return preloadList;
         }
 
+        private static string GetCustomUnicodeRange(string customUnicode)
+        {
+            if (customUnicode == string.Empty)
+            {
+                return "[]";
+            }
+
+            List<int> unicodeCodes = new List<int>();
+            // 将字符串中的每个字符转换为Unicode编码并存储在数组中
+            foreach (char c in customUnicode)
+            {
+                unicodeCodes.Add(char.ConvertToUtf32(c.ToString(), 0));
+            }
+
+            // 对数组进行排序
+            unicodeCodes.Sort();
+
+            // 将连续的编码合并为范围
+            List<Tuple<int, int>> ranges = new List<Tuple<int, int>>();
+            int startRange = unicodeCodes[0];
+            int endRange = unicodeCodes[0];
+
+            for (int i = 1; i < unicodeCodes.Count; i++)
+            {
+                if(unicodeCodes[i] == endRange)
+                {
+                    continue;
+                }
+                else if (unicodeCodes[i] == endRange + 1)
+                {
+                    endRange = unicodeCodes[i];
+                }
+                else
+                {
+                    ranges.Add(Tuple.Create(startRange, endRange));
+                    startRange = endRange = unicodeCodes[i];
+                }
+            }
+            ranges.Add(Tuple.Create(startRange, endRange));
+
+            StringBuilder ret = new StringBuilder();
+            // 输出范围
+            foreach (var range in ranges)
+            {
+                ret.AppendFormat("[0x{0:X}, 0x{1:X}], ", range.Item1, range.Item2);
+            }
+            // 移除字符串末尾的多余", "
+            ret.Length -= 2;
+            ret.Insert(0, "[");
+            ret.Append("]");
+
+            return ret.ToString();
+        }
 
         public static void ModifyWeChatConfigs(bool isFromConvert = false)
         {
@@ -1367,6 +1203,9 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
             var excludeFileExtensionsStr = GetArrayString(config.ProjectConf.bundleExcludeExtensions);
 
             var screenOrientation = new List<string>() { "portrait", "landscape", "landscapeLeft", "landscapeRight" }[(int)config.ProjectConf.Orientation];
+
+            var customUnicodeRange = GetCustomUnicodeRange(config.FontOptions.CustomUnicode);
+            Debug.Log("customUnicodeRange: " + customUnicodeRange);
 
             Rule[] replaceArrayList = ReplaceRules.GenRules(new string[] {
                 config.ProjectConf.projectName == string.Empty ? "webgl" : config.ProjectConf.projectName,
@@ -1407,13 +1246,33 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 config.ProjectConf.IOSDevicePixelRatio.ToString(),
                 UseIL2CPP ? "" : "/framework",
                 UseIL2CPP ? "false" : "true",
+                // FontOptions
+                config.FontOptions.CJK_Unified_Ideographs ? "true" : "false",
+                config.FontOptions.C0_Controls_and_Basic_Latin ? "true" : "false",
+                config.FontOptions.CJK_Symbols_and_Punctuation ? "true" : "false",
+                config.FontOptions.General_Punctuation ? "true" : "false",
+                config.FontOptions.Enclosed_CJK_Letters_and_Months ? "true" : "false",
+                config.FontOptions.Vertical_Forms ? "true" : "false",
+                config.FontOptions.CJK_Compatibility_Forms ? "true" : "false",
+                config.FontOptions.Miscellaneous_Symbols ? "true" : "false",
+                config.FontOptions.CJK_Compatibility ? "true" : "false",
+                config.FontOptions.Halfwidth_and_Fullwidth_Forms ? "true" : "false",
+                config.FontOptions.Dingbats ? "true" : "false",
+                config.FontOptions.Letterlike_Symbols ? "true" : "false",
+                config.FontOptions.Enclosed_Alphanumerics ? "true" : "false",
+                config.FontOptions.Number_Forms ? "true" : "false",
+                config.FontOptions.Currency_Symbols ? "true" : "false",
+                config.FontOptions.Arrows ? "true" : "false",
+                config.FontOptions.Geometric_Shapes ? "true" : "false",
+                config.FontOptions.Mathematical_Operators ? "true" : "false",
+                customUnicodeRange,
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
-            List<string> files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js" };
+            List<string> files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js", "unity-sdk/font/index.js" };
 
             ReplaceFileContent(files.ToArray(), replaceList.ToArray());
-
+            Emit(LifeCycle.afterBuildTemplate);
             UnityEngine.Debug.LogFormat("[Converter] that to modify configs ended");
         }
 
@@ -1511,13 +1370,13 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
                 string jsLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
 
                 // 下方顺序不可变动
-                 jsLibs = new string[]
-                 {
+                jsLibs = new string[]
+                {
                      $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL1.jslib",
                      $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL2.jslib",
                      $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL2-Linear.jslib",
-                 };
-            }       
+                };
+            }
             int index = 0;
             if (config.CompileOptions.Webgl2)
             {
@@ -1575,7 +1434,8 @@ GameGlobal.unityNamespace.UnityModule = unityFramework;";
 
         public static bool ShowMatchFailedWarning(string text, string rule, string file)
         {
-            if (Regex.IsMatch(text, rule) == false) {
+            if (Regex.IsMatch(text, rule) == false)
+            {
                 Debug.LogWarning($"UnMatched {file} rule: {rule}");
                 return true;
             }
