@@ -72,3 +72,23 @@ MonoBehaviour:
     debugMode: 0
     force: 0
   PlayerPrefsKeys: []
+  FontOptions:
+    CJK_Unified_Ideographs: 1
+    C0_Controls_and_Basic_Latin: 1
+    CJK_Symbols_and_Punctuation: 1
+    General_Punctuation: 1
+    Enclosed_CJK_Letters_and_Months: 1
+    Vertical_Forms: 1
+    CJK_Compatibility_Forms: 1
+    Miscellaneous_Symbols: 1
+    CJK_Compatibility: 1
+    Halfwidth_and_Fullwidth_Forms: 1
+    Dingbats: 1
+    Letterlike_Symbols: 1
+    Enclosed_Alphanumerics: 1
+    Number_Forms: 1
+    Currency_Symbols: 1
+    Arrows: 1
+    Geometric_Shapes: 1
+    Mathematical_Operators: 1
+    CustomUnicode: 

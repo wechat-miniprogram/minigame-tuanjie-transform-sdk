@@ -16,6 +16,7 @@ Others - 其他
 * 普通：网络接口如UnityWebRequest支持通过添加特殊请求头`request.SetRequestHeader("wechatminigame-skipclean", "1")`不做旧缓存淘汰。
 * 普通：适配插件版本升级到1.2.50
 
+## 2024-5-15 【普通更新】
 ### Fixed
 * 普通：修复团结版dotnet wasm加载报错
 * 普通：修复音频的长度为负数时的异常stop
