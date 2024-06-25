@@ -1186,16 +1186,18 @@ const isWK = false;
             this.stopPropagation = _util.noop;
             this.type = type;
         };
-        function formatTouchEvent(v) {
-            v.identifier = formatIdentifier(v.identifier);
-            return v;
+        function formatTouchEvent(v, type) {
+            return {
+                ...v,
+                identifier: formatIdentifier(v.identifier, type)
+            };
         }
         function touchEventHandlerFactory(type) {
             return function (event) {
                 const touchEvent = new TouchEvent(type);
-                touchEvent.touches = event.touches.map(v => formatTouchEvent(v));
-                touchEvent.targetTouches = Array.prototype.slice.call(event.touches).map(v => formatTouchEvent(v));
-                touchEvent.changedTouches = event.changedTouches.map(v => formatTouchEvent(v));
+                touchEvent.touches = event.touches.map(v => formatTouchEvent(v, event.type));
+                touchEvent.targetTouches = Array.prototype.slice.call(event.touches).map(v => formatTouchEvent(v, event.type));
+                touchEvent.changedTouches = event.changedTouches.map(v => formatTouchEvent(v, event.type));
                 touchEvent.timeStamp = event.timeStamp;
                 _document2.default.dispatchEvent(touchEvent);
             };
