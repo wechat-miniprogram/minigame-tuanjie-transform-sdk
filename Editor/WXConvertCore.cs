@@ -1496,7 +1496,7 @@ namespace WeChatWASM
         {
             if (Regex.IsMatch(text, rule) == false)
             {
-                Debu.LogDebug($"UnMatched {file} rule: {rule}");
+                Debug.LogDebug($"UnMatched {file} rule: {rule}");
                 return true;
             }
             return false;
