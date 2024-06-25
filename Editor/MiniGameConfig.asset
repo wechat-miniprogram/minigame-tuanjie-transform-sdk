@@ -62,6 +62,7 @@ MonoBehaviour:
     enableRenderAnalysis: 0
     iOSAutoGCInterval: 10000
     enableIOSPerformancePlus: 0
+    brotliMT: 0
   CompressTexture:
     halfSize: 0
     useDXT5: 0
