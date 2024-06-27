@@ -249,6 +249,7 @@ var WXAssetBundleLibrary = {
       if(WXFS._url2path.has(url)){
         return WXFS._url2path.get(url);
       }
+      url = url.replaceAll(' ', '%20')
       if(url.startsWith('/vfs_streamingassets/')){
         var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/StreamingAssets/");
       }
