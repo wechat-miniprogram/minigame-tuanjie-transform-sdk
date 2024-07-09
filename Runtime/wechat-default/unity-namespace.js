@@ -49,6 +49,8 @@ const unityNamespace = {
     enableRenderAnalysisLog: $ENABLE_RENDER_ANALYSIS_LOG,
     // 是否dotnet runtime
     useDotnetRuntime: $USE_DOTNET_RUNTIME,
+    // 是否用了多线程brotli压缩
+    useBrotliMT: $USE_BROTLI_MT,
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {

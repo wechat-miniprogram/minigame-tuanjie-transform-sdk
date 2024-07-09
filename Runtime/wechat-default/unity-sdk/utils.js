@@ -12,6 +12,7 @@ function realUid(length = 20, char = true) {
     return id.join('');
 }
 const identifierCache = [];
+const clearIdTicker = {};
 const tempCacheObj = {};
 const typeMap = {
     array: [],
@@ -30,36 +31,38 @@ const interfaceTypeMap = {
     object: 'object',
 };
 export const uid = () => realUid(20, true);
-export function formatIdentifier(identifier) {
-    if (identifier >= 0 && Math.abs(identifier) < 2147483648) {
-        return Math.round(identifier);
+export function formatIdentifier(identifier, eventType) {
+    if (clearIdTicker[identifier]) {
+        clearTimeout(clearIdTicker[identifier]);
     }
-    
-    for (const key in identifierCache) {
-        if (identifierCache[key] && identifierCache[key].key === identifier) {
-            return identifierCache[key].value;
+    let id = identifierCache.indexOf(identifier);
+    if (id <= -1) {
+        for (let key = 0; key < identifierCache.length; key++) {
+            if (identifierCache[key] === null) {
+                identifierCache[key] = identifier;
+                id = key;
+                break;
+            }
         }
     }
-    let value = parseInt(`${Math.random() * 2147483648}`, 10);
-    
-    while (identifierCache.some(v => v.value === value)) {
-        value += 1;
+    if (id <= -1) {
+        identifierCache.push(identifier);
+        id = identifierCache.length - 1;
     }
-    identifierCache.push({
-        key: identifier,
-        value,
-    });
-    if (identifierCache.length > 30) {
-        identifierCache.shift();
+    if (eventType === 'touchend' || eventType === 'touchcancel') {
+        clearIdTicker[identifier] = setTimeout(() => {
+            identifierCache[id] = null;
+            delete clearIdTicker[identifier];
+        }, 50);
     }
-    return value;
+    return id;
 }
-export function formatTouchEvent(v) {
+export function formatTouchEvent(v, type) {
     return {
         clientX: v.clientX * window.devicePixelRatio,
         clientY: (window.innerHeight - v.clientY) * window.devicePixelRatio,
         force: v.force,
-        identifier: formatIdentifier(v.identifier),
+        identifier: formatIdentifier(v.identifier, type),
         pageX: v.pageX * window.devicePixelRatio,
         pageY: (window.innerHeight - v.pageY) * window.devicePixelRatio,
     };

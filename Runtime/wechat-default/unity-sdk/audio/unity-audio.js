@@ -1,4 +1,4 @@
-import { isAndroid, isPc, webAudioNeedResume, isSupportBufferURL, isSupportPlayBackRate, isSupportInnerAudio } from '../../check-version';
+import { isAndroid, isPc, webAudioNeedResume, isSupportBufferURL, isSupportPlayBackRate, isSupportInnerAudio, } from '../../check-version';
 import { WEBAudio, unityAudioVolume } from './store';
 import { TEMP_DIR_PATH } from './const';
 import { createInnerAudio, destroyInnerAudio, printErrMsg, resumeWebAudio } from './utils';
@@ -395,7 +395,7 @@ export class AudioChannelInstance {
             return;
         }
         if (source.mediaElement) {
-            source._pauseMediaElement();
+            source._pauseMediaElement?.();
             return;
         }
         if (source.isPausedMockNode) {
@@ -664,12 +664,12 @@ export class AudioChannelInstance {
                     this.source.playTimeout = setTimeout(() => {
                         if (typeof this.source !== 'undefined') {
                             delete this.source.playTimeout;
-                            this.source._startPlayback(offset || 0);
+                            this.source._startPlayback?.(offset || 0);
                         }
                     }, startDelayMS);
                 }
                 else {
-                    this.source._startPlayback(offset);
+                    this.source._startPlayback?.(offset);
                 }
             };
             const stop = (stopTime) => {
@@ -879,7 +879,10 @@ export default {
                     clearTimeout(webAutoResumeTicker);
                     webAutoResumeTicker = null;
                 }
-                WEBAudio.audioContext?.suspend();
+                
+                if (!GameGlobal.isIOSHighPerformanceMode) {
+                    WEBAudio.audioContext?.suspend();
+                }
             });
             wx.onShow(() => {
                 WEBAudio.audioContext?.resume();
@@ -1171,5 +1174,30 @@ export default {
         buffer[metaData >> 2] = soundClip.getNumberOfChannels() ?? 0;
         buffer[(metaData >> 2) + 1] = soundClip.getFrequency() ?? 0;
         return true;
+    },
+    _JS_Sound_GetAudioBufferSampleRate(soundInstance) {
+        if (WEBAudio.audioWebEnabled === 0) {
+            return WEBAudio.FAKEMOD_SAMPLERATE;
+        }
+        const audioInstance = WEBAudio.audioInstances[soundInstance];
+        if (!audioInstance) {
+            return WEBAudio.FAKEMOD_SAMPLERATE;
+        }
+        
+        const buffer = audioInstance.buffer
+            ? audioInstance.buffer
+            : audioInstance.source
+                ? audioInstance.source?.buffer
+                : null;
+        if (!buffer) {
+            return WEBAudio.FAKEMOD_SAMPLERATE;
+        }
+        return buffer.sampleRate;
+    },
+    _JS_Sound_GetAudioContextSampleRate() {
+        if (WEBAudio.audioWebEnabled === 0 || !WEBAudio.audioContext) {
+            return WEBAudio.FAKEMOD_SAMPLERATE;
+        }
+        return WEBAudio.audioContext.sampleRate;
     },
 };
