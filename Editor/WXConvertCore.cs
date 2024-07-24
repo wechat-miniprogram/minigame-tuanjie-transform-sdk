@@ -19,7 +19,7 @@ namespace WeChatWASM
 
         static WXConvertCore()
         {
-            
+
         }
 
         public static void Init()
@@ -61,7 +61,6 @@ namespace WeChatWASM
             PlayerSettings.WebGL.debugSymbols = true;
 #endif
 #endif
-            EditorSettings.spritePackerMode = SpritePackerMode.AlwaysOnAtlas;
         }
 
         public enum WXExportError
@@ -285,7 +284,7 @@ namespace WeChatWASM
             string[] res = BuildTemplate.CheckCustomCoverBaseConflict(
                 Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default"),
                 Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
-                new string[]{ @"\.(js|ts|json)$" }
+                new string[] { @"\.(js|ts|json)$" }
                 );
             if (res.Length != 0)
             {
@@ -487,7 +486,7 @@ namespace WeChatWASM
             if (!UseIL2CPP)
             {
                 targetPath = Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, target);
-                
+
                 foreach (var rule in ReplaceRules.NativeRules)
                 {
                     if (ShowMatchFailedWarning(text, rule.old, "native") == false)
@@ -1160,7 +1159,7 @@ namespace WeChatWASM
 
             for (int i = 1; i < unicodeCodes.Count; i++)
             {
-                if(unicodeCodes[i] == endRange)
+                if (unicodeCodes[i] == endRange)
                 {
                     continue;
                 }
@@ -1272,6 +1271,10 @@ namespace WeChatWASM
             List<string> files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js", "unity-sdk/font/index.js" };
 
             ReplaceFileContent(files.ToArray(), replaceList.ToArray());
+            BuildTemplate.mergeJSON(
+                Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template", "minigame"),
+                Path.Combine(config.ProjectConf.DST, miniGameDir)
+            );
             Emit(LifeCycle.afterBuildTemplate);
             UnityEngine.Debug.LogFormat("[Converter] that to modify configs ended");
         }
