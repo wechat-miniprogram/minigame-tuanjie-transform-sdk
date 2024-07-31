@@ -8200,6 +8200,11 @@
             分区 ID
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentOption.extraInfo">
+            <summary>
+            其他参数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.MidasPaymentError.errMsg">
             <summary>
             错误信息
@@ -9724,6 +9729,11 @@
         <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signature">
             <summary>
             用户态签名
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.extraInfo">
+            <summary>
+            其他参数
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">

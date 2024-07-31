@@ -970,7 +970,7 @@ namespace WeChatWASM
                     }
                 }
             }
-            if(config.CompileOptions.brotliMT)
+            if (config.CompileOptions.brotliMT)
             {
                 MultiThreadBrotliCompress(sourcePath, targetPath);
             }
@@ -992,7 +992,7 @@ namespace WeChatWASM
             var sourceBuffer = File.ReadAllBytes(sourcePath);
             byte[] outputBuffer = new byte[0];
             int ret = 0;
-            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == "wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
+            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == ".wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
             {
                 ret = BrotliEnc.CompressWasmMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
@@ -1001,11 +1001,13 @@ namespace WeChatWASM
                 ret = BrotliEnc.CompressBufferMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
 
-            if (ret == 0) { 
-                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write)) { 
-                    fileStream.Write(outputBuffer, 0, outputBuffer.Length); 
+            if (ret == 0)
+            {
+                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write))
+                {
+                    fileStream.Write(outputBuffer, 0, outputBuffer.Length);
                 }
-                return true; 
+                return true;
             }
             else
             {
