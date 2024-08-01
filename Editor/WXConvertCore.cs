@@ -937,6 +937,7 @@ namespace WeChatWASM
             ModifyWeChatConfigs(isFromConvert);
             ModifySDKFile();
             ClearFriendRelationCode();
+            GameJsPlugins();
 
             // 如果没有StreamingAssets目录，默认生成
             if (!Directory.Exists(Path.Combine(config.ProjectConf.DST, webglDir, "StreamingAssets")))
@@ -1018,7 +1019,7 @@ namespace WeChatWASM
 
 
         /// <summary>
-        /// 如果没有使用好友关系链的话，自动删掉无用代码
+        /// 更新game.json
         /// </summary>
         private static void ClearFriendRelationCode()
         {
@@ -1027,7 +1028,7 @@ namespace WeChatWASM
             string content = File.ReadAllText(filePath, Encoding.UTF8);
             JsonData gameJson = JsonMapper.ToObject(content);
 
-            if (!config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat)
+            if (!config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat || config.CompileOptions.autoAdaptScreen)
             {
                 JsonWriter writer = new JsonWriter();
                 writer.IndentValue = 2;
@@ -1051,9 +1052,58 @@ namespace WeChatWASM
                     UnityEngine.Debug.Log(gameJson["plugins"]);
                 }
 
+                if (config.CompileOptions.autoAdaptScreen)
+                {
+                    gameJson["displayMode"] = "desktop";
+                }
+
                 // 将配置写回到文件夹
                 gameJson.ToJson(writer);
                 File.WriteAllText(filePath, writer.TextWriter.ToString());
+            }
+        }
+
+        /// <summary>
+        /// 更新game.js
+        /// </summary>
+        private static void GameJsPlugins()
+        {
+            var filePath = Path.Combine(config.ProjectConf.DST, miniGameDir, "game.js");
+
+            string content = File.ReadAllText(filePath, Encoding.UTF8);
+
+            Regex regex = new Regex(@"^import .*;$", RegexOptions.Multiline);
+            MatchCollection matches = regex.Matches(content);
+
+            int lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
+
+            bool changed = false;
+            StringBuilder sb = new StringBuilder(content);
+            if (config.ProjectConf.needCheckUpdate)
+            {
+                sb.Insert(lastIndex, Environment.NewLine + "import './plugins/check-update';");
+                changed = true;
+            }
+            else
+            {
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins", "check-update.js"));
+            }
+            if (config.CompileOptions.autoAdaptScreen)
+            {
+                sb.Insert(lastIndex, Environment.NewLine + "import './plugins/screen-adapter';");
+                changed = true;
+            }
+            else
+            {
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins", "screen-adapter.js"));
+            }
+
+            if (changed) {
+                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+            }
+            else
+            {
+                Directory.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins"), true);
             }
         }
 
@@ -1290,7 +1340,6 @@ namespace WeChatWASM
                 config.ProjectConf.texturesPath,
                 config.ProjectConf.needCacheTextures ? "true" : "false",
                 config.ProjectConf.loadingBarWidth.ToString(),
-                config.ProjectConf.needCheckUpdate ? "true" : "false",
                 GetColorSpace(),
                 config.ProjectConf.disableHighPerformanceFallback ? "true" : "false",
                 config.SDKOptions.PreloadWXFont ? "true" : "false",
