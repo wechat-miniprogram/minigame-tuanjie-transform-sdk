@@ -108,6 +108,13 @@ namespace WeChatWASM
                 Debug.LogError("因构建模板检查失败终止导出。");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
+            if (CheckInvalidPerfIntegration())
+            {
+                Debug.LogError("性能分析工具只能用于Development Build, 终止导出! ");
+                return WXExportError.BUILD_WEBGL_FAILED;
+            }
+
+
             CheckBuildTarget();
             Init();
             // JSLib
@@ -315,6 +322,16 @@ namespace WeChatWASM
                 return false;
             }
             return true;
+        }
+
+
+        // Assert when release + Perf-feature
+        private static bool CheckInvalidPerfIntegration()
+        {
+            const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
+            string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            
+            return (!EditorUserBuildSettings.development) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
         }
 
         private static void ConvertDotnetCode()
@@ -970,7 +987,7 @@ namespace WeChatWASM
                     }
                 }
             }
-            if(config.CompileOptions.brotliMT)
+            if (config.CompileOptions.brotliMT)
             {
                 MultiThreadBrotliCompress(sourcePath, targetPath);
             }
@@ -992,7 +1009,7 @@ namespace WeChatWASM
             var sourceBuffer = File.ReadAllBytes(sourcePath);
             byte[] outputBuffer = new byte[0];
             int ret = 0;
-            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == "wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
+            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == ".wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
             {
                 ret = BrotliEnc.CompressWasmMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
@@ -1001,11 +1018,13 @@ namespace WeChatWASM
                 ret = BrotliEnc.CompressBufferMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
 
-            if (ret == 0) { 
-                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write)) { 
-                    fileStream.Write(outputBuffer, 0, outputBuffer.Length); 
+            if (ret == 0)
+            {
+                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write))
+                {
+                    fileStream.Write(outputBuffer, 0, outputBuffer.Length);
                 }
-                return true; 
+                return true;
             }
             else
             {
@@ -1322,6 +1341,9 @@ namespace WeChatWASM
                 config.FontOptions.Geometric_Shapes ? "true" : "false",
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
+                config.CompileOptions.DevelopBuild ? "true" : "false", 
+                config.CompileOptions.enablePerfAnalysis ? "true" : "false", 
+                config.ProjectConf.MemorySize.ToString(), 
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
