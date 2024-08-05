@@ -51,6 +51,12 @@ const unityNamespace = {
     useDotnetRuntime: $USE_DOTNET_RUNTIME,
     // 是否用了多线程brotli压缩
     useBrotliMT: $USE_BROTLI_MT,
+    // 是否以Development Build构建
+    isDevelopmentBuild: $Is_Development_Build,
+    // 是否以Profiling Build导出
+    isProfilingBuild: $Is_Profiling_Build,
+    // 预留的堆内存
+    unityHeapReservedMemory: $UnityHeapReservedMemory,
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {
