@@ -16,7 +16,7 @@ function jsAudioCreateUncompressedSoundClip(buffer, error, length) {
         },
         getLength() {
             if (!this.buffer) {
-                console.log('Trying to get length of sound which is not loaded.');
+                
                 return 0;
             }
             const sampleRateRatio = 44100 / this.buffer.sampleRate;

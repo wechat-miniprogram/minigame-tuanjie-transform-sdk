@@ -8200,6 +8200,11 @@
             分区 ID
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentOption.extraInfo">
+            <summary>
+            其他参数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.MidasPaymentError.errMsg">
             <summary>
             错误信息
@@ -9726,6 +9731,11 @@
             用户态签名
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.extraInfo">
+            <summary>
+            其他参数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
@@ -10608,6 +10618,16 @@
             需要基础库： `2.11.1`
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
             </summary>
+        </member>
+        <member name="M:WXSDKPerf.WXPerfEngine_Implementation.Annotation(System.String)">
+            <summary>
+            This method is used to add an annotation to the performance data.
+            The annotation string is uploaded to the server along with the current frame ID.
+            </summary>
+            <param name="InAnnotationString">The annotation string to be added. It should not be null or empty.</param>
+            <remarks>
+            If the provided annotation string is null or empty, an error message will be logged.
+            </remarks>
         </member>
     </members>
 </doc>
