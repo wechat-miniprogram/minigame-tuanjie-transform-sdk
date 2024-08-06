@@ -51,6 +51,8 @@ const unityNamespace = {
     useDotnetRuntime: $USE_DOTNET_RUNTIME,
     // 是否用了多线程brotli压缩
     useBrotliMT: $USE_BROTLI_MT,
+    // Boot config配置，包含例如wait-for-native-debugger、player-connection-ip等信息
+    bootConfig: '$BOOT_CONFIG_INFO',
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {

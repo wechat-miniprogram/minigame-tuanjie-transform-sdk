@@ -6,7 +6,7 @@ let wxOnTouchStartCallback;
 function handleTouchEvent(res, callback) {
     const dataPtr = convertOnTouchStartListenerResultToPointer({
         touches: res.touches.map(v => formatTouchEvent(v, res.type)),
-        changedTouches: res.changedTouches.map(v => formatTouchEvent(v, res.type)),
+        changedTouches: res.changedTouches.map(v => formatTouchEvent(v, res.type, 1)),
         timeStamp: parseInt(res.timeStamp.toString(), 10),
     });
     GameGlobal.Module.dynCall_viii(callback, dataPtr, res.touches.length, res.changedTouches.length);
