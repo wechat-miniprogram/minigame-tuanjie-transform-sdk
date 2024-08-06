@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 using LitJson;
 using UnityEditor.Build;
 using System.Linq;
+using System.Net;
 using static WeChatWASM.LifeCycleEvent;
 
 namespace WeChatWASM
@@ -1297,6 +1298,26 @@ namespace WeChatWASM
             return ret.ToString();
         }
 
+        /// <summary>
+        /// 生成Unitynamespace下的bootconfig
+        /// </summary>
+        private static string GenerateBootInfo()
+        {
+            StringBuilder sb = new StringBuilder();
+            // 添加player-connection-ip信息
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    sb.Append($"player-connection-ip={ip.ToString()}");
+                    break; 
+                }
+            }
+            
+            return sb.ToString(); 
+        }
+
         public static void ModifyWeChatConfigs(bool isFromConvert = false)
         {
             UnityEngine.Debug.LogFormat("[Converter] Starting to modify configs");
@@ -1313,6 +1334,8 @@ namespace WeChatWASM
 
             var customUnicodeRange = GetCustomUnicodeRange(config.FontOptions.CustomUnicode);
             Debug.Log("customUnicodeRange: " + customUnicodeRange);
+
+            var boolConfigInfo = GenerateBootInfo(); 
 
             Rule[] replaceArrayList = ReplaceRules.GenRules(new string[] {
                 config.ProjectConf.projectName == string.Empty ? "webgl" : config.ProjectConf.projectName,
@@ -1373,6 +1396,7 @@ namespace WeChatWASM
                 config.FontOptions.Geometric_Shapes ? "true" : "false",
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
+                boolConfigInfo, 
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
