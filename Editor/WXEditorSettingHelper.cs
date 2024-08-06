@@ -704,7 +704,7 @@ namespace WeChatWASM
         {
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            if (this.getDataCheckbox("enablePerfAnalysis") && EditorUserBuildSettings.development) 
+            if (this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild")) 
             {
                 if (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) == -1)
                 {
