@@ -1075,9 +1075,12 @@ namespace WeChatWASM
 
             Regex regex = new Regex(@"^import .*;$", RegexOptions.Multiline);
             MatchCollection matches = regex.Matches(content);
-
-            int lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
-
+            int lastIndex = 0;
+            if (matches.Count > 0)
+            {
+                lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
+            }
+            
             bool changed = false;
             StringBuilder sb = new StringBuilder(content);
             if (config.ProjectConf.needCheckUpdate)
