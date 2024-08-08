@@ -555,6 +555,8 @@ mergeInto(LibraryManager.library, {
                     GameGlobal.avgExFrameTime = exTotalTime / 60;
                     frameCount = 0;
                     exTotalTime = 0;
+                  } else if (typeof GameGlobal.avgExFrameTime === "undefined") {
+                    GameGlobal.avgExFrameTime = exTotalTime / frameCount; 
                   }
                 };
             }();
