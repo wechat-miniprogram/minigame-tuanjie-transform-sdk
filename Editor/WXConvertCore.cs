@@ -331,7 +331,7 @@ namespace WeChatWASM
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
             
-            return (!EditorUserBuildSettings.development) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
+            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
         }
 
         private static void ConvertDotnetCode()
