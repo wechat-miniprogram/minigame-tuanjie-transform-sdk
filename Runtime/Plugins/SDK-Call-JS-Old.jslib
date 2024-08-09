@@ -560,6 +560,8 @@ mergeInto(LibraryManager.library, {
                   }
                 };
             }();
+            //Set initial value to 0 for preventing GameGlobal.avgExFrameTime from being undefined in Unity 2019
+            GameGlobal.avgExFrameTime = 0;
         } 
         return GameGlobal.avgExFrameTime
     },
