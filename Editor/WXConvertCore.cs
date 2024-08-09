@@ -1076,7 +1076,11 @@ namespace WeChatWASM
             Regex regex = new Regex(@"^import .*;$", RegexOptions.Multiline);
             MatchCollection matches = regex.Matches(content);
 
-            int lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
+            int lastIndex = 0;
+            if (matches.Count > 0)
+            {
+                lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
+            }
 
             bool changed = false;
             StringBuilder sb = new StringBuilder(content);
@@ -1099,7 +1103,8 @@ namespace WeChatWASM
                 File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins", "screen-adapter.js"));
             }
 
-            if (changed) {
+            if (changed)
+            {
                 File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
             }
             else
@@ -1311,11 +1316,11 @@ namespace WeChatWASM
                 if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                 {
                     sb.Append($"player-connection-ip={ip.ToString()}");
-                    break; 
+                    break;
                 }
             }
-            
-            return sb.ToString(); 
+
+            return sb.ToString();
         }
 
         public static void ModifyWeChatConfigs(bool isFromConvert = false)
@@ -1335,7 +1340,7 @@ namespace WeChatWASM
             var customUnicodeRange = GetCustomUnicodeRange(config.FontOptions.CustomUnicode);
             Debug.Log("customUnicodeRange: " + customUnicodeRange);
 
-            var boolConfigInfo = GenerateBootInfo(); 
+            var boolConfigInfo = GenerateBootInfo();
 
             Rule[] replaceArrayList = ReplaceRules.GenRules(new string[] {
                 config.ProjectConf.projectName == string.Empty ? "webgl" : config.ProjectConf.projectName,
@@ -1396,7 +1401,7 @@ namespace WeChatWASM
                 config.FontOptions.Geometric_Shapes ? "true" : "false",
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
-                boolConfigInfo, 
+                boolConfigInfo,
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
