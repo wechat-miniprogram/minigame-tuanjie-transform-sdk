@@ -598,6 +598,11 @@
             CustomNodePath
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.autoAdaptScreen">
+            <summary>
+            是否自适应屏幕尺寸变化
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.showMonitorSuggestModal">
             <summary>
             是否显示最佳实践检测弹框

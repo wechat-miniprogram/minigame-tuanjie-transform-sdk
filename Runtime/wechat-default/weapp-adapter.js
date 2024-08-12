@@ -1186,10 +1186,10 @@ const isWK = false;
             this.stopPropagation = _util.noop;
             this.type = type;
         };
-        function formatTouchEvent(v, type) {
+        function formatTouchEvent(v, type, changed) {
             return {
                 ...v,
-                identifier: formatIdentifier(v.identifier, type)
+                identifier: formatIdentifier(v.identifier, type, changed)
             };
         }
         function touchEventHandlerFactory(type) {
@@ -1197,7 +1197,7 @@ const isWK = false;
                 const touchEvent = new TouchEvent(type);
                 touchEvent.touches = event.touches.map(v => formatTouchEvent(v, event.type));
                 touchEvent.targetTouches = Array.prototype.slice.call(event.touches).map(v => formatTouchEvent(v, event.type));
-                touchEvent.changedTouches = event.changedTouches.map(v => formatTouchEvent(v, event.type));
+                touchEvent.changedTouches = event.changedTouches.map(v => formatTouchEvent(v, event.type, 1));
                 touchEvent.timeStamp = event.timeStamp;
                 _document2.default.dispatchEvent(touchEvent);
             };

@@ -106,6 +106,16 @@ if (isIOS && typeof $IOS_DEVICE_PIXEL_RATIO === 'number' && $IOS_DEVICE_PIXEL_RA
     // @ts-ignore
     window.devicePixelRatio = $IOS_DEVICE_PIXEL_RATIO;
 }
+else if (isPc) {
+    try {
+        if (window.devicePixelRatio < 2) {
+            window.devicePixelRatio = 2;
+        }
+    }
+    catch (e) {
+        console.warn(e);
+    }
+}
 export default () => new Promise((resolve) => {
     if (!isDevtools) {
         if (isPcInvalid

@@ -1,41 +1,13 @@
 // @ts-nocheck
-/* eslint-disable no-prototype-builtins */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 import './weapp-adapter';
 import './events';
-import 'texture-config.js';
+import './texture-config';
 import unityNamespace from './unity-namespace';
 import '.$DOTNET_RUNTIME_FOLD/$GAME_NAME.wasm.framework.unityweb';
-import './unity-sdk/index.js';
+import './unity-sdk/index';
 import checkVersion from './check-version';
 import { launchEventType, scaleMode } from './plugin-config';
 import { preloadWxCommonFont } from './unity-sdk/font/index';
-function checkUpdate() {
-    const updateManager = wx.getUpdateManager();
-    updateManager.onCheckForUpdate(() => {
-        // 请求完新版本信息的回调
-        // console.log(res.hasUpdate)
-    });
-    updateManager.onUpdateReady(() => {
-        wx.showModal({
-            title: '更新提示',
-            content: '新版本已经准备好，是否重启应用？',
-            success(res) {
-                if (res.confirm) {
-                    // 新的版本已经下载好，调用 applyUpdate 应用新版本并重启
-                    updateManager.applyUpdate();
-                }
-            },
-        });
-    });
-    updateManager.onUpdateFailed(() => {
-        // 新版本下载失败
-    });
-}
-if ($NEED_CHECK_UPDATE) {
-    checkUpdate();
-}
 const managerConfig = {
     DATA_FILE_MD5: '$DATA_MD5',
     CODE_FILE_MD5: '$CODE_MD5',

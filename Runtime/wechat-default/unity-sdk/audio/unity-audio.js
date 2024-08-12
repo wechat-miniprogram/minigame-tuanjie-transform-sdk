@@ -16,7 +16,7 @@ function jsAudioCreateUncompressedSoundClip(buffer, error, length) {
         },
         getLength() {
             if (!this.buffer) {
-                console.log('Trying to get length of sound which is not loaded.');
+                
                 return 0;
             }
             const sampleRateRatio = 44100 / this.buffer.sampleRate;
@@ -157,6 +157,7 @@ export class AudioChannelInstance {
     loopStart = 0;
     loopEnd = 0;
     deleyTime = 0; 
+    deleyOffset = 0; 
     constructor(callback, userData) {
         if (WEBAudio.audioContext) {
             this.gain = WEBAudio.audioContext.createGain();
@@ -292,6 +293,7 @@ export class AudioChannelInstance {
             this.source.mediaElement.onCanplay(fn);
             this.source.mediaElement.loop = this.loop;
             this.deleyTime = startTime;
+            this.deleyOffset = startOffset;
             this.source.start(startTime, startOffset);
             this.source.playbackStartTime = startTime - startOffset / this.source.playbackRateValue;
         }
@@ -426,8 +428,9 @@ export class AudioChannelInstance {
             return;
         }
         if (this.source.mediaElement) {
-            this.source.start(this.deleyTime);
+            this.source.start(this.deleyTime, this.deleyOffset);
             delete this.deleyTime;
+            delete this.deleyOffset;
             return;
         }
         const pausedSource = this.source;
@@ -1030,12 +1033,12 @@ export default {
         WEBAudio.lOrientation.yUp = yUp;
         WEBAudio.lOrientation.zUp = zUp;
         if (WEBAudio.audioContext.listener.forwardX) {
-            WEBAudio.audioContext.listener.forwardX.setValueAtTime(-x, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.forwardY.setValueAtTime(-y, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.forwardZ.setValueAtTime(-z, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upX.setValueAtTime(xUp, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upY.setValueAtTime(yUp, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upZ.setValueAtTime(zUp, WEBAudio.audioContext.currentTime);
+            WEBAudio.audioContext.listener.forwardX = -x;
+            WEBAudio.audioContext.listener.forwardY = -y;
+            WEBAudio.audioContext.listener.forwardZ = -z;
+            WEBAudio.audioContext.listener.upX = xUp;
+            WEBAudio.audioContext.listener.upY = yUp;
+            WEBAudio.audioContext.listener.upZ = zUp;
         }
         else {
             WEBAudio.audioContext.listener.setOrientation(-x, -y, -z, xUp, yUp, zUp);
@@ -1058,9 +1061,9 @@ export default {
         WEBAudio.lPosition.y = y;
         WEBAudio.lPosition.z = z;
         if (WEBAudio.audioContext.listener.positionX) {
-            WEBAudio.audioContext.listener.positionX.setValueAtTime(x, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.positionY.setValueAtTime(y, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.positionZ.setValueAtTime(z, WEBAudio.audioContext.currentTime);
+            WEBAudio.audioContext.listener.positionX = x;
+            WEBAudio.audioContext.listener.positionY = y;
+            WEBAudio.audioContext.listener.positionZ = z;
         }
         else {
             WEBAudio.audioContext.listener.setPosition(x, y, z);

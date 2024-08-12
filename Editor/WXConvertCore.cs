@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 using LitJson;
 using UnityEditor.Build;
 using System.Linq;
+using System.Net;
 using static WeChatWASM.LifeCycleEvent;
 
 namespace WeChatWASM
@@ -937,6 +938,7 @@ namespace WeChatWASM
             ModifyWeChatConfigs(isFromConvert);
             ModifySDKFile();
             ClearFriendRelationCode();
+            GameJsPlugins();
 
             // 如果没有StreamingAssets目录，默认生成
             if (!Directory.Exists(Path.Combine(config.ProjectConf.DST, webglDir, "StreamingAssets")))
@@ -970,7 +972,7 @@ namespace WeChatWASM
                     }
                 }
             }
-            if(config.CompileOptions.brotliMT)
+            if (config.CompileOptions.brotliMT)
             {
                 MultiThreadBrotliCompress(sourcePath, targetPath);
             }
@@ -992,7 +994,7 @@ namespace WeChatWASM
             var sourceBuffer = File.ReadAllBytes(sourcePath);
             byte[] outputBuffer = new byte[0];
             int ret = 0;
-            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == "wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
+            if (sourceBuffer.Length > 50 * 1024 * 1024 && Path.GetExtension(sourcePath) == ".wasm") // 50MB以上的wasm压缩率低了可能导致小游戏包超过20MB，需提高压缩率
             {
                 ret = BrotliEnc.CompressWasmMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
@@ -1001,11 +1003,13 @@ namespace WeChatWASM
                 ret = BrotliEnc.CompressBufferMT(sourceBuffer, ref outputBuffer, quality, window, maxCpuThreads);
             }
 
-            if (ret == 0) { 
-                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write)) { 
-                    fileStream.Write(outputBuffer, 0, outputBuffer.Length); 
+            if (ret == 0)
+            {
+                using (FileStream fileStream = new FileStream(dstPath, FileMode.Create, FileAccess.Write))
+                {
+                    fileStream.Write(outputBuffer, 0, outputBuffer.Length);
                 }
-                return true; 
+                return true;
             }
             else
             {
@@ -1016,7 +1020,7 @@ namespace WeChatWASM
 
 
         /// <summary>
-        /// 如果没有使用好友关系链的话，自动删掉无用代码
+        /// 更新game.json
         /// </summary>
         private static void ClearFriendRelationCode()
         {
@@ -1025,7 +1029,7 @@ namespace WeChatWASM
             string content = File.ReadAllText(filePath, Encoding.UTF8);
             JsonData gameJson = JsonMapper.ToObject(content);
 
-            if (!config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat)
+            if (!config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat || config.CompileOptions.autoAdaptScreen)
             {
                 JsonWriter writer = new JsonWriter();
                 writer.IndentValue = 2;
@@ -1049,9 +1053,63 @@ namespace WeChatWASM
                     UnityEngine.Debug.Log(gameJson["plugins"]);
                 }
 
+                if (config.CompileOptions.autoAdaptScreen)
+                {
+                    gameJson["displayMode"] = "desktop";
+                }
+
                 // 将配置写回到文件夹
                 gameJson.ToJson(writer);
                 File.WriteAllText(filePath, writer.TextWriter.ToString());
+            }
+        }
+
+        /// <summary>
+        /// 更新game.js
+        /// </summary>
+        private static void GameJsPlugins()
+        {
+            var filePath = Path.Combine(config.ProjectConf.DST, miniGameDir, "game.js");
+
+            string content = File.ReadAllText(filePath, Encoding.UTF8);
+
+            Regex regex = new Regex(@"^import .*;$", RegexOptions.Multiline);
+            MatchCollection matches = regex.Matches(content);
+
+            int lastIndex = 0;
+            if (matches.Count > 0)
+            {
+                lastIndex = matches[matches.Count - 1].Index + matches[matches.Count - 1].Length;
+            }
+
+            bool changed = false;
+            StringBuilder sb = new StringBuilder(content);
+            if (config.ProjectConf.needCheckUpdate)
+            {
+                sb.Insert(lastIndex, Environment.NewLine + "import './plugins/check-update';");
+                changed = true;
+            }
+            else
+            {
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins", "check-update.js"));
+            }
+            if (config.CompileOptions.autoAdaptScreen)
+            {
+                sb.Insert(lastIndex, Environment.NewLine + "import './plugins/screen-adapter';");
+                changed = true;
+            }
+            else
+            {
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins", "screen-adapter.js"));
+            }
+
+            if (changed)
+            {
+                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+            }
+            else
+            {
+                Directory.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "plugins"), true);
             }
         }
 
@@ -1245,6 +1303,26 @@ namespace WeChatWASM
             return ret.ToString();
         }
 
+        /// <summary>
+        /// 生成Unitynamespace下的bootconfig
+        /// </summary>
+        private static string GenerateBootInfo()
+        {
+            StringBuilder sb = new StringBuilder();
+            // 添加player-connection-ip信息
+            var host = Dns.GetHostEntry("");
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    sb.Append($"player-connection-ip={ip.ToString()}");
+                    break;
+                }
+            }
+
+            return sb.ToString();
+        }
+
         public static void ModifyWeChatConfigs(bool isFromConvert = false)
         {
             UnityEngine.Debug.LogFormat("[Converter] Starting to modify configs");
@@ -1261,6 +1339,8 @@ namespace WeChatWASM
 
             var customUnicodeRange = GetCustomUnicodeRange(config.FontOptions.CustomUnicode);
             Debug.Log("customUnicodeRange: " + customUnicodeRange);
+
+            var boolConfigInfo = GenerateBootInfo();
 
             Rule[] replaceArrayList = ReplaceRules.GenRules(new string[] {
                 config.ProjectConf.projectName == string.Empty ? "webgl" : config.ProjectConf.projectName,
@@ -1288,7 +1368,6 @@ namespace WeChatWASM
                 config.ProjectConf.texturesPath,
                 config.ProjectConf.needCacheTextures ? "true" : "false",
                 config.ProjectConf.loadingBarWidth.ToString(),
-                config.ProjectConf.needCheckUpdate ? "true" : "false",
                 GetColorSpace(),
                 config.ProjectConf.disableHighPerformanceFallback ? "true" : "false",
                 config.SDKOptions.PreloadWXFont ? "true" : "false",
@@ -1322,6 +1401,7 @@ namespace WeChatWASM
                 config.FontOptions.Geometric_Shapes ? "true" : "false",
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
+                boolConfigInfo,
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
