@@ -1086,21 +1086,21 @@ namespace WeChatWASM
             StringBuilder sb = new StringBuilder(content);
             if (config.ProjectConf.needCheckUpdate)
             {
-                sb.Insert(lastIndex, Environment.NewLine + "import './minigamePlugins/check-update';");
+                sb.Insert(lastIndex, Environment.NewLine + "import './utils/check-update';");
                 changed = true;
             }
             else
             {
-                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "minigamePlugins", "check-update.js"));
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "utils", "check-update.js"));
             }
             if (config.CompileOptions.autoAdaptScreen)
             {
-                sb.Insert(lastIndex, Environment.NewLine + "import './minigamePlugins/screen-adapter';");
+                sb.Insert(lastIndex, Environment.NewLine + "import './utils/screen-adapter';");
                 changed = true;
             }
             else
             {
-                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "minigamePlugins", "screen-adapter.js"));
+                File.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "utils", "screen-adapter.js"));
             }
 
             if (changed)
@@ -1109,7 +1109,7 @@ namespace WeChatWASM
             }
             else
             {
-                Directory.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "minigamePlugins"), true);
+                Directory.Delete(Path.Combine(config.ProjectConf.DST, miniGameDir, "utils"), true);
             }
         }
 
