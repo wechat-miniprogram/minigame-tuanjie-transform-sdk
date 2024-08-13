@@ -189,6 +189,7 @@ namespace WeChatWASM
                     fbWin.minSize = new Vector2(680, 350);
                     fbWin.Show();
                 });
+                this.formCheckbox("autoAdaptScreen", "自适应屏幕尺寸(?)", "移动端旋转屏幕和PC端拉伸窗口时，自动调整画布尺寸");
                 this.formCheckbox("showMonitorSuggestModal", "显示优化建议弹窗");
                 this.formCheckbox("enableProfileStats", "显示性能面板");
                 this.formCheckbox("enableRenderAnalysis", "显示渲染日志(dev only)");
@@ -449,6 +450,7 @@ namespace WeChatWASM
             this.setData("loadingBarWidth", config.ProjectConf.loadingBarWidth.ToString());
             this.setData("needCheckUpdate", config.ProjectConf.needCheckUpdate);
             this.setData("disableHighPerformanceFallback", config.ProjectConf.disableHighPerformanceFallback);
+            this.setData("autoAdaptScreen", config.CompileOptions.autoAdaptScreen);
             this.setData("showMonitorSuggestModal", config.CompileOptions.showMonitorSuggestModal);
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
@@ -518,6 +520,7 @@ namespace WeChatWASM
             config.ProjectConf.loadingBarWidth = int.Parse(this.getDataInput("loadingBarWidth"));
             config.ProjectConf.needCheckUpdate = this.getDataCheckbox("needCheckUpdate");
             config.ProjectConf.disableHighPerformanceFallback = this.getDataCheckbox("disableHighPerformanceFallback");
+            config.CompileOptions.autoAdaptScreen = this.getDataCheckbox("autoAdaptScreen");
             config.CompileOptions.showMonitorSuggestModal = this.getDataCheckbox("showMonitorSuggestModal");
             config.CompileOptions.enableProfileStats = this.getDataCheckbox("enableProfileStats");
             config.CompileOptions.enableRenderAnalysis = this.getDataCheckbox("enableRenderAnalysis");

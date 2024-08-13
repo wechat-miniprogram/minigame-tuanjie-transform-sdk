@@ -31,9 +31,10 @@ const interfaceTypeMap = {
     object: 'object',
 };
 export const uid = () => realUid(20, true);
-export function formatIdentifier(identifier, eventType) {
-    if (clearIdTicker[identifier]) {
+export function formatIdentifier(identifier, eventType, changed) {
+    if (changed && clearIdTicker[identifier]) {
         clearTimeout(clearIdTicker[identifier]);
+        delete clearIdTicker[identifier];
     }
     let id = identifierCache.indexOf(identifier);
     if (id <= -1) {
@@ -49,7 +50,7 @@ export function formatIdentifier(identifier, eventType) {
         identifierCache.push(identifier);
         id = identifierCache.length - 1;
     }
-    if (eventType === 'touchend' || eventType === 'touchcancel') {
+    if (changed && (eventType === 'touchend' || eventType === 'touchcancel')) {
         clearIdTicker[identifier] = setTimeout(() => {
             identifierCache[id] = null;
             delete clearIdTicker[identifier];
@@ -57,12 +58,12 @@ export function formatIdentifier(identifier, eventType) {
     }
     return id;
 }
-export function formatTouchEvent(v, type) {
+export function formatTouchEvent(v, type, changed) {
     return {
         clientX: v.clientX * window.devicePixelRatio,
         clientY: (window.innerHeight - v.clientY) * window.devicePixelRatio,
         force: v.force,
-        identifier: formatIdentifier(v.identifier, type),
+        identifier: formatIdentifier(v.identifier, type, changed),
         pageX: v.pageX * window.devicePixelRatio,
         pageY: (window.innerHeight - v.pageY) * window.devicePixelRatio,
     };
