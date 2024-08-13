@@ -2,7 +2,7 @@
 {
     public class WXPluginVersion
     {
-        public static string pluginVersion = "202408130838"; // 这一行不要改他，导出的时候会自动替换
+        public static string pluginVersion = "202408130846"; // 这一行不要改他，导出的时候会自动替换
     }
 
     public class WXPluginConf

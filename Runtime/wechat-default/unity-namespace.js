@@ -161,7 +161,7 @@ function bindGloblException() {
         console.info('game starting', bootinfo);
     }
     const appBaseInfo = wx.getAppBaseInfo();
-    const deviceInfo = wx.getDeviceInfoSync();
+    const deviceInfo = wx.getDeviceInfo();
     printSystemInfo(appBaseInfo, deviceInfo);
 }
 bindGloblException();
