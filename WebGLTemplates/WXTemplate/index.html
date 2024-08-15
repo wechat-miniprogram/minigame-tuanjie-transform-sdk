@@ -209,9 +209,6 @@
         WXUnlinkSync() {},
         WXUnlink() {},
         WXReportUserBehaviorBranchAnalytics() {},
-        WXCallFunction() {},
-        WXCallFunctionInit() {},
-        WXCloudID() {},
         WXWriteFile() {},
         WXWriteStringFile() {},
         WXAppendFile() {},
@@ -355,7 +352,8 @@
         WX_UDPSocketSendString() {},
         WX_UDPSocketSendBuffer() {},
         WX_UDPSocketSetTTL() {},
-        WX_UDPSocketWrite() {},
+        WX_UDPSocketWriteString() {},
+        WX_UDPSocketWriteBuffer() {},
         WX_UDPSocketBind() {},
         WX_RegisterUDPSocketOnMessageCallback() {},
         WX_OnBLECharacteristicValueChange() {},
@@ -368,6 +366,14 @@
         WX_RegisterStartGyroscopeCallback() {},
         WX_RegisterStopGyroscopeCallback() {},
         WX_RegisterOnGyroscopeChangeCallback() {},
+        WX_CloudCloud() {},
+        WX_CloudInit() {},
+        WX_CloudInitByInstance() {},
+        WX_CloudCallFunction() {},
+        WX_CloudCallFunctionByInstance() {},
+        WX_CloudCloudID() {},
+        WX_CloudCallContainer() {},
+        WX_CloudCallContainerByInstance() {},
 
         WX_AddCard(conf, callbackId){},
         WX_AuthPrivateMessage(conf, callbackId){},
@@ -400,6 +406,7 @@
         WX_GetChannelsLiveNoticeInfo(conf, callbackId){},
         WX_GetClipboardData(conf, callbackId){},
         WX_GetConnectedBluetoothDevices(conf, callbackId){},
+        WX_GetDeviceBenchmarkInfo(conf, callbackId){},
         WX_GetExtConfig(conf, callbackId){},
         WX_GetFuzzyLocation(conf, callbackId){},
         WX_GetGameClubData(conf, callbackId){},
@@ -449,6 +456,7 @@
         WX_ReportScene(conf, callbackId){},
         WX_RequestMidasFriendPayment(conf, callbackId){},
         WX_RequestMidasPayment(conf, callbackId){},
+        WX_RequestMidasPaymentGameItem(conf, callbackId){},
         WX_RequestSubscribeMessage(conf, callbackId){},
         WX_RequestSubscribeSystemMessage(conf, callbackId){},
         WX_RequirePrivacyAuthorize(conf, callbackId){},
@@ -500,7 +508,6 @@
         WX_GetUserGameLiveDetails(conf, callbackId){},
         WX_OpenChannelsLiveCollection(conf, callbackId){},
         WX_OpenPage(conf, callbackId){},
-        WX_RequestMidasPaymentGameItem(conf, callbackId){},
         WX_RequestSubscribeLiveActivity(conf, callbackId){},
         WX_OpenBusinessView(conf, callbackId){},
 
@@ -508,7 +515,6 @@
         WX_OperateGameRecorderVideo() {},
         WX_RemoveStorageSync() {},
         WX_ReportEvent() {},
-        WX_ReportMonitor() {},
         WX_ReportPerformance() {},
         WX_ReportUserBehaviorBranchAnalytics() {},
         WX_RequestPointerLock() {},
@@ -566,6 +572,8 @@
         WX_OffKeyboardInput() {},
         WX_OnMemoryWarning() {},
         WX_OffMemoryWarning() {},
+        WX_OnMenuButtonBoundingClientRectWeightChange() {},
+        WX_OffMenuButtonBoundingClientRectWeightChange() {},
         WX_OnMessage() {},
         WX_OnMouseDown() {},
         WX_OffMouseDown() {},
@@ -660,7 +668,7 @@
         WX_GetWindowInfo(){
             return JSON.stringify({});
         },
-        WX_CreateImageData(){
+        WX_CreateImageData(width, height){
             return JSON.stringify({});
         },
         WX_CreatePath2D(){

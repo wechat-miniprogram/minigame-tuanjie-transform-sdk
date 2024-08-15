@@ -310,19 +310,6 @@ mergeInto(LibraryManager.library, {
     WXReportUserBehaviorBranchAnalytics: function (branchId, branchDim, eventType) {
         window.WXWASMSDK.WXReportUserBehaviorBranchAnalytics(_WXPointer_stringify_adaptor(branchId), _WXPointer_stringify_adaptor(branchDim), eventType);
     },
-    WXCallFunction: function (name, data, conf, s, f, c) {
-        window.WXWASMSDK.WXCallFunction(_WXPointer_stringify_adaptor(name), _WXPointer_stringify_adaptor(data), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
-    },
-    WXCallFunctionInit: function (conf) {
-        window.WXWASMSDK.WXCallFunctionInit(_WXPointer_stringify_adaptor(conf));
-    },
-    WXCloudID: function (cloudID) {
-        var returnStr = window.WXWASMSDK.WXCloudID(_WXPointer_stringify_adaptor(cloudID));
-        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
-        var buffer = _malloc(bufferSize);
-        stringToUTF8(returnStr, buffer, bufferSize);
-        return buffer;
-    },
     WXCreateInnerAudioContext: function (src, loop, startTime, autoplay, volume, playbackRate, needDownload) {
         var returnStr = window.WXWASMSDK.WXCreateInnerAudioContext(_WXPointer_stringify_adaptor(src), loop, startTime, autoplay, volume, playbackRate, needDownload);
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
@@ -999,5 +986,33 @@ mergeInto(LibraryManager.library, {
     },
     WX_SetDevicePixelRatio: function(ratio) {
         window.devicePixelRatio = ratio;
-    }
+    },
+    WX_CloudCloud: function (option) {
+        window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
+    },
+    WX_CloudInit: function (option) {
+        window.WXWASMSDK.WX_CloudInit(_WXPointer_stringify_adaptor(conf));
+    },
+    WX_CloudInitByInstance: function (env) {
+        window.WXWASMSDK.WX_CloudInitByInstance(_WXPointer_stringify_adaptor(env));
+    },
+    WX_CloudCallFunction: function(conf, callbackId) {
+        window.WXWASMSDK.WX_CloudCallFunction(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudCallFunctionByInstance: function(env, conf, callbackId) {
+        window.WXWASMSDK.WX_CloudCallFunctionByInstance(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudCloudID: function (cloudID) {
+        var returnStr = window.WXWASMSDK.WX_CloudCloudID(_WXPointer_stringify_adaptor(cloudID));
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
+    },
+    WX_CloudCallContainer: function(conf, callbackId) {
+        window.WXWASMSDK.WX_CloudCallContainer(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudCallContainerByInstance: function(env, conf, callbackId) {
+        window.WXWASMSDK.WX_CloudCallContainerByInstance(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    },
 });

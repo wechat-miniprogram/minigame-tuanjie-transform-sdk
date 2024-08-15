@@ -44,4 +44,9 @@ export const ResTypeOther = {
         offset: 'number',
         setBroadcast: 'bool',
     },
+    CallFunctionResult: {
+        result: 'string',
+        requestID: 'string',
+        errMsg: 'string',
+    },
 };
