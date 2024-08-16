@@ -991,10 +991,10 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
     },
     WX_CloudInit: function (option) {
-        window.WXWASMSDK.WX_CloudInit(_WXPointer_stringify_adaptor(conf));
+        window.WXWASMSDK.WX_CloudInit(_WXPointer_stringify_adaptor(option));
     },
-    WX_CloudCallFunction: function(env, conf, callbackId) {
-        window.WXWASMSDK.WX_CloudCallFunction(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    WX_CloudCallFunction: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudCallFunction(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
     },
     WX_CloudCloudID: function (cloudID) {
         var returnStr = window.WXWASMSDK.WX_CloudCloudID(_WXPointer_stringify_adaptor(cloudID));
@@ -1003,7 +1003,7 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
-    WX_CloudCallContainer: function(env, conf, callbackId) {
-        window.WXWASMSDK.WX_CloudCallContainer(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    WX_CloudCallContainer: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudCallContainer(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
     },
 });
