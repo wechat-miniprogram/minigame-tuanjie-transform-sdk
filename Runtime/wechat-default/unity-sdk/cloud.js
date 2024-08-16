@@ -1,5 +1,4 @@
 import { formatJsonStr, formatResponse } from './utils';
-import moduleHelper from './module-helper';
 const CloudIDObject = {};
 function fixCallFunctionData(data) {
     Object.keys(data).forEach((key) => {
@@ -9,10 +8,6 @@ function fixCallFunctionData(data) {
     });
 }
 const CloudList = {};
-
-
-
-
 export default {
     WX_CloudCloud(option) {
         const config = formatJsonStr(option);
@@ -35,52 +30,34 @@ export default {
         if (config.data) {
             fixCallFunctionData(config.data);
         }
+        let targetCloud;
         if (env === '_default_') {
-            wx.cloud.callFunction({
-                ...config,
-                success(res) {
-                    formatResponse('CallFunctionResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'success', res: JSON.stringify(res),
-                    }));
-                },
-                fail(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'fail', res: JSON.stringify(res),
-                    }));
-                },
-                complete(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'complete', res: JSON.stringify(res),
-                    }));
-                },
-            });
+            targetCloud = wx.cloud;
         }
         else {
-            CloudList[env].callFunction({
-                ...config,
-                success(res) {
-                    formatResponse('CallFunctionResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'success', res: JSON.stringify(res),
-                    }));
-                },
-                fail(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'fail', res: JSON.stringify(res),
-                    }));
-                },
-                complete(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
-                        callbackId, type: 'complete', res: JSON.stringify(res),
-                    }));
-                },
-            });
+            targetCloud = CloudList[env];
         }
+        targetCloud.callFunction({
+            ...config,
+            success(res) {
+                formatResponse('CallFunctionResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
     },
     WX_CloudCloudID(cloudId) {
         const res = wx.cloud.CloudID(cloudId);
@@ -90,51 +67,33 @@ export default {
     },
     WX_CloudCallContainer(env, conf, callbackId) {
         const config = formatJsonStr(conf);
+        let targetCloud;
         if (env === '_default_') {
-            wx.cloud.callContainer({
-                ...config,
-                success(res) {
-                    formatResponse('CallContainerResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'success', res: JSON.stringify(res),
-                    }));
-                },
-                fail(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'fail', res: JSON.stringify(res),
-                    }));
-                },
-                complete(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'complete', res: JSON.stringify(res),
-                    }));
-                },
-            });
+            targetCloud = wx.cloud;
         }
         else {
-            CloudList[env].callContainer({
-                ...config,
-                success(res) {
-                    formatResponse('CallContainerResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'success', res: JSON.stringify(res),
-                    }));
-                },
-                fail(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'fail', res: JSON.stringify(res),
-                    }));
-                },
-                complete(res) {
-                    formatResponse('GeneralCallbackResult', res);
-                    moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
-                        callbackId, type: 'complete', res: JSON.stringify(res),
-                    }));
-                },
-            });
+            targetCloud = CloudList[env];
         }
+        targetCloud.callContainer({
+            ...config,
+            success(res) {
+                formatResponse('CallContainerResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
     },
 };

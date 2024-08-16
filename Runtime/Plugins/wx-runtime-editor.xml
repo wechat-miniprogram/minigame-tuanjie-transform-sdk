@@ -4,25 +4,6 @@
         <name>wx-runtime-editor</name>
     </assembly>
     <members>
-        <member name="T:WeChatWASM.Cloud">
-            <summary>
-            云函数，调用前必须先Init初始化
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.Cloud.Init(WeChatWASM.ICloudConfig)">
-            <summary>
-            初始化，详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/init/client.init.html
-            </summary>
-            <param name="param"></param>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.Cloud.CallFunction(WeChatWASM.CallFunctionParam)" -->
-        <member name="M:WeChatWASM.Cloud.CloudID(System.String)">
-            <summary>
-            声明字符串为 CloudID（开放数据 ID），该接口传入一个字符串，返回一个 CloudID 特殊字符串，将该对象传至云函数可以获取其对应的开放数据。详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/open/Cloud.CloudID.html
-            </summary>
-            <param name="cloudID">通过开放能力在小程序端 / web 端获取得到的 CloudID</param>
-            <returns>返回字符串，原样传回云函数调用就好</returns>
-        </member>
         <member name="T:WeChatWASM.WXBannerAd">
             <summary>
             Banner 广告,详见 https://developers.weixin.qq.com/minigame/dev/guide/open-ability/ad/banner-ad.html
@@ -292,6 +273,25 @@
             <summary>
             面板缩放比例，默认大小 40x40，低于 375 宽度的屏幕会等比缩小
             </summary>
+        </member>
+        <member name="T:WeChatWASM.WXCloud">
+            <summary>
+            云函数，调用前必须先Init初始化
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXCloud.Init(WeChatWASM.ICloudConfig)">
+            <summary>
+            初始化，详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/init/client.init.html
+            </summary>
+            <param name="param"></param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.WXCloud.CallFunction(WeChatWASM.CallFunctionParam)" -->
+        <member name="M:WeChatWASM.WXCloud.CloudID(System.String)">
+            <summary>
+            声明字符串为 CloudID（开放数据 ID），该接口传入一个字符串，返回一个 CloudID 特殊字符串，将该对象传至云函数可以获取其对应的开放数据。详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/open/Cloud.CloudID.html
+            </summary>
+            <param name="cloudID">通过开放能力在小程序端 / web 端获取得到的 CloudID</param>
+            <returns>返回字符串，原样传回云函数调用就好</returns>
         </member>
         <member name="T:WeChatWASM.WXCustomAd">
             <summary>
