@@ -37,7 +37,7 @@ namespace WeChatWASM
         /// <summary>
         /// Gets 云函数
         /// </summary>
-        public static Cloud cloud
+        public static WXCloud cloud
         {
             get
             {
