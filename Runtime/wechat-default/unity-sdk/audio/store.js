@@ -18,7 +18,8 @@ export const WEBAudio = {
     audioWebSupport: 0,
     bufferSourceNodeLength: 0,
     audioBufferLength: 0,
-    isMute: false, 
+    isMute: false,
+    FAKEMOD_SAMPLERATE: 44100, 
 };
 
 export const audios = {};

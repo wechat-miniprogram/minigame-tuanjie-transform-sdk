@@ -598,6 +598,11 @@
             CustomNodePath
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.autoAdaptScreen">
+            <summary>
+            是否自适应屏幕尺寸变化
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.showMonitorSuggestModal">
             <summary>
             是否显示最佳实践检测弹框
@@ -621,6 +626,11 @@
         <member name="F:WeChatWASM.CompileOptions.enableIOSPerformancePlus">
             <summary>
             是否使用iOS高性能Plus
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CompileOptions.brotliMT">
+            <summary>
+            是否使用brotli多线程压缩
             </summary>
         </member>
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">
