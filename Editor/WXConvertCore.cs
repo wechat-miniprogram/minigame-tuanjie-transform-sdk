@@ -1310,7 +1310,7 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            var host = Dns.GetHostEntry(Dns.GetHostName());
+            var host = Dns.GetHostEntry("");
             foreach (var ip in host.AddressList)
             {
                 if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
