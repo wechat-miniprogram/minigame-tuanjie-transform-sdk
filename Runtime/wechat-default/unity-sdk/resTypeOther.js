@@ -49,4 +49,11 @@ export const ResTypeOther = {
         requestID: 'string',
         errMsg: 'string',
     },
+    CallContainerResult: {
+        data: 'string',
+        statusCode: 'number',
+        header: 'string',
+        callID: 'string',
+        errMsg: 'string',
+    },
 };
