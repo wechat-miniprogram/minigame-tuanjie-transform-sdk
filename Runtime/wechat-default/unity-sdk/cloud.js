@@ -1,3 +1,4 @@
+import moduleHelper from './module-helper';
 import { formatJsonStr, formatResponse } from './utils';
 const CloudIDObject = {};
 function fixCallFunctionData(data) {
@@ -41,19 +42,19 @@ export default {
             ...config,
             success(res) {
                 formatResponse('CallFunctionResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
                     callbackId, type: 'success', res: JSON.stringify(res),
                 }));
             },
             fail(res) {
                 formatResponse('GeneralCallbackResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
                     callbackId, type: 'fail', res: JSON.stringify(res),
                 }));
             },
             complete(res) {
                 formatResponse('GeneralCallbackResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallFunctionCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             },
@@ -78,19 +79,19 @@ export default {
             ...config,
             success(res) {
                 formatResponse('CallContainerResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
                     callbackId, type: 'success', res: JSON.stringify(res),
                 }));
             },
             fail(res) {
                 formatResponse('GeneralCallbackResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
                     callbackId, type: 'fail', res: JSON.stringify(res),
                 }));
             },
             complete(res) {
                 formatResponse('GeneralCallbackResult', res);
-                GameGlobal.Module.SendMessage('WXCloud', '_CloudCallContainerCallback', JSON.stringify({
+                moduleHelper.send('_CloudCallContainerCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             },
