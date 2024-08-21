@@ -61,9 +61,9 @@ export default {
     },
     WX_CloudCloudID(cloudId) {
         const res = wx.cloud.CloudID(cloudId);
-        const key = 'CloudID-'.concat(cloudId);
-        CloudIDObject[key] = res;
-        return key;
+        const r = JSON.stringify(res);
+        CloudIDObject[r] = res;
+        return r;
     },
     WX_CloudCallContainer(env, conf, callbackId) {
         const config = formatJsonStr(conf);
