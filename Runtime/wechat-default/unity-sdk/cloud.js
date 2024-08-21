@@ -2,6 +2,7 @@ import moduleHelper from './module-helper';
 import { formatJsonStr, formatResponse } from './utils';
 const CloudIDObject = {};
 function fixCallFunctionData(data) {
+    data = JSON.parse(data);
     Object.keys(data).forEach((key) => {
         if (typeof data[key] === 'string' && CloudIDObject[data[key]]) {
             data[key] = CloudIDObject[data[key]];

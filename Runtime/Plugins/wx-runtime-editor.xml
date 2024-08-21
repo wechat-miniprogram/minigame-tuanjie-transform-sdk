@@ -3071,11 +3071,6 @@
             调用云函数 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/functions/Cloud.callFunction.html
             </summary>
         </member>
-        <member name="F:WeChatWASM.CallFunctionParam.data">
-            <summary>
-            这里请将数据json序列化为字符串再赋值到data
-            </summary>
-        </member>
         <member name="F:WeChatWASM.AccountInfo.miniProgram">
             <summary>
             小程序账号信息
