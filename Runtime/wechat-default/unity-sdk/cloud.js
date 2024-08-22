@@ -61,8 +61,15 @@ export default {
             },
         });
     },
-    WX_CloudCloudID(cloudId) {
-        const res = wx.cloud.CloudID(cloudId);
+    WX_CloudCloudID(env, cloudId) {
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        const res = targetCloud.CloudID(cloudId);
         const id = uid();
         CloudIDObject[id] = res;
         return id;
