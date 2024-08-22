@@ -28,7 +28,6 @@ export default {
     },
     WX_CloudCallFunction(env, conf, callbackId) {
         const config = formatJsonStr(conf);
-        config.data = JSON.parse(config.data);
         if (config.data) {
             fixCallFunctionData(config.data);
         }
