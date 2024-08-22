@@ -45,14 +45,14 @@ export const ResTypeOther = {
         setBroadcast: 'bool',
     },
     CallFunctionResult: {
-        result: 'string',
+        result: 'object',
         requestID: 'string',
         errMsg: 'string',
     },
     CallContainerResult: {
-        data: 'string',
+        data: 'object',
         statusCode: 'number',
-        header: 'string',
+        header: 'object',
         callID: 'string',
         errMsg: 'string',
     },
