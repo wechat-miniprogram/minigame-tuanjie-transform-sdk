@@ -1,5 +1,5 @@
 import moduleHelper from './module-helper';
-import { formatJsonStr, formatResponse } from './utils';
+import { uid, formatJsonStr, formatResponse } from './utils';
 const CloudIDObject = {};
 function fixCallFunctionData(data) {
     Object.keys(data).forEach((key) => {
@@ -23,7 +23,7 @@ export default {
             wx.cloud.init();
         }
         else {
-            wx.cloud.init(config);
+            CloudList[config.env].init(config);
         }
     },
     WX_CloudCallFunction(env, conf, callbackId) {
@@ -63,9 +63,9 @@ export default {
     },
     WX_CloudCloudID(cloudId) {
         const res = wx.cloud.CloudID(cloudId);
-        const r = JSON.stringify(res);
-        CloudIDObject[r] = res;
-        return r;
+        const id = uid();
+        CloudIDObject[id] = res;
+        return id;
     },
     WX_CloudCallContainer(env, conf, callbackId) {
         const config = formatJsonStr(conf);
