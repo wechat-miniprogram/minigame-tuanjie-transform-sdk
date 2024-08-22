@@ -42,7 +42,6 @@ export default {
         targetCloud.callFunction({
             ...config,
             success(res) {
-                
                 formatResponse('CallFunctionResult', res);
                 moduleHelper.send('_CloudCallFunctionCallback', JSON.stringify({
                     callbackId, type: 'success', res: JSON.stringify(res),

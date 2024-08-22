@@ -103,7 +103,7 @@ export function formatResponse(type, data, id) {
         else if (conf[key] === 'number' && typeof data[key] === 'string') {
             data[key] = Number(data[key]);
         }
-        else if (conf[key] === 'string' && typeof data[key] === 'number') {
+        else if (conf[key] === 'string' && (typeof data[key] === 'number' || typeof data[key] === 'object')) {
             data[key] = `${data[key]}`;
         }
         else if (conf[key] === 'bool' && (typeof data[key] === 'number' || typeof data[key] === 'string')) {
