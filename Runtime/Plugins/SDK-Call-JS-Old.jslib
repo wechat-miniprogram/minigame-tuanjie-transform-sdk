@@ -988,7 +988,11 @@ mergeInto(LibraryManager.library, {
         window.devicePixelRatio = ratio;
     },
     WX_CloudCloud: function (option) {
-        window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
+        var returnStr = window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
     },
     WX_CloudInit: function (option) {
         window.WXWASMSDK.WX_CloudInit(_WXPointer_stringify_adaptor(option));
