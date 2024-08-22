@@ -1000,8 +1000,8 @@ mergeInto(LibraryManager.library, {
     WX_CloudCallFunction: function(env, option, callbackId) {
         window.WXWASMSDK.WX_CloudCallFunction(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
     },
-    WX_CloudCloudID: function (cloudID) {
-        var returnStr = window.WXWASMSDK.WX_CloudCloudID(_WXPointer_stringify_adaptor(cloudID));
+    WX_CloudCloudID: function (env, cloudID) {
+        var returnStr = window.WXWASMSDK.WX_CloudCloudID(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(cloudID));
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
