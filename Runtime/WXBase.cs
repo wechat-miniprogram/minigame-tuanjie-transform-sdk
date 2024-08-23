@@ -1088,6 +1088,16 @@ namespace WeChatWASM
         {
             WXSDKManagerHandler.Instance.SetDevicePixelRatio(ratio);
         }
+
+        public static void CallJSFunction(string sdkName, string functionName, params object[] args)
+        {
+            WXSDKManagerHandler.CallJSFunction(sdkName, functionName, args);
+        }
+
+        public static string CallJSFunctionWithReturn(string sdkName, string functionName, params object[] args)
+        {
+            return WXSDKManagerHandler.CallJSFunctionWithReturn(sdkName, functionName, args);
+        }
     }
 }
 #endif

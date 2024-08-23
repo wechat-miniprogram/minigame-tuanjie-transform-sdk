@@ -987,6 +987,23 @@ mergeInto(LibraryManager.library, {
     WX_SetDevicePixelRatio: function(ratio) {
         window.devicePixelRatio = ratio;
     },
+    WX_CallJSFunction: function (sdkName, functionName, args) {
+        var sdk = _WXPointer_stringify_adaptor(sdkName);
+        var func = _WXPointer_stringify_adaptor(functionName);
+        var formattedArgs = JSON.parse(_WXPointer_stringify_adaptor(args));
+        GameGlobal[sdk][func](...formattedArgs);
+    },
+    WX_CallJSFunctionWithReturn: function (sdkName, functionName, args) {
+        var sdk = _WXPointer_stringify_adaptor(sdkName);
+        var func = _WXPointer_stringify_adaptor(functionName);
+        var formattedArgs = JSON.parse(_WXPointer_stringify_adaptor(args));
+        var res = GameGlobal[sdk][func](...formattedArgs);
+        var resStr = JSON.stringify(res);
+        var bufferSize = lengthBytesUTF8(resStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8((resStr || ''), buffer, bufferSize);
+        return buffer;
+    },
     WX_CloudCloud: function (option) {
         var returnStr = window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
@@ -1040,5 +1057,5 @@ mergeInto(LibraryManager.library, {
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
-    }
+    },
 });
