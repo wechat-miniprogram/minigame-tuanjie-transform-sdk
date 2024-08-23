@@ -1022,4 +1022,23 @@ mergeInto(LibraryManager.library, {
     WX_CloudDeleteFile: function(env, option, callbackId) {
         window.WXWASMSDK.WX_CloudDeleteFile(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
     },
+    WX_CloudCDNString: function(env, target, isJSON) {
+        if (isJSON) {
+            target = JSON.parse(_WXPointer_stringify_adaptor(target));
+        } else {
+            target = _WXPointer_stringify_adaptor(target);
+        }
+        var returnStr = window.WXWASMSDK.WX_CloudCDN(_WXPointer_stringify_adaptor(env), target);
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
+    },
+    WX_CloudCDNBuffer: function(env, targetPtr, targetLength) {
+        var returnStr = window.WXWASMSDK.WX_CloudCDN(_WXPointer_stringify_adaptor(env), HEAPU8.buffer.slice(targetPtr, targetPtr + targetLength));
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
+    }
 });

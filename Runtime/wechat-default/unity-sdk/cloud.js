@@ -1,10 +1,19 @@
 import moduleHelper from './module-helper';
 import { uid, formatJsonStr, formatResponse } from './utils';
 const CloudIDObject = {};
+const CDNObject = {};
 function fixCallFunctionData(data) {
     Object.keys(data).forEach((key) => {
-        if (typeof data[key] === 'string' && CloudIDObject[data[key]]) {
-            data[key] = CloudIDObject[data[key]];
+        if (typeof data[key] === 'object') {
+            fixCallFunctionData(data[key]);
+        }
+        else if (typeof data[key] === 'string') {
+            if (CloudIDObject[data[key]]) {
+                data[key] = CloudIDObject[data[key]];
+            }
+            if (CDNObject[data[key]]) {
+                data[key] = CDNObject[data[key]];
+            }
         }
     });
 }
@@ -60,7 +69,7 @@ export default {
             },
         });
     },
-    WX_CloudCloudID(env, cloudId) {
+    WX_CloudCloudID(env, cloudID) {
         let targetCloud;
         if (env === '_default_') {
             targetCloud = wx.cloud;
@@ -68,9 +77,22 @@ export default {
         else {
             targetCloud = CloudList[env];
         }
-        const res = targetCloud.CloudID(cloudId);
-        const id = uid();
+        const res = targetCloud.CloudID(cloudID);
+        const id = `CloudID-${uid()}`;
         CloudIDObject[id] = res;
+        return id;
+    },
+    WX_CloudCDN(env, target) {
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        const res = targetCloud.CDN(target);
+        const id = `CDN-${uid()}`;
+        CDNObject[id] = res;
         return id;
     },
     WX_CloudCallContainer(env, conf, callbackId) {
