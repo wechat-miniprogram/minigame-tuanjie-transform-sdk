@@ -1010,4 +1010,16 @@ mergeInto(LibraryManager.library, {
     WX_CloudCallContainer: function(env, option, callbackId) {
         window.WXWASMSDK.WX_CloudCallContainer(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
     },
+    WX_CloudUploadFile: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudUploadFile(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudDownloadFile: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudDownloadFile(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudGetTempFileURL: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudGetTempFileURL(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
+    },
+    WX_CloudDeleteFile: function(env, option, callbackId) {
+        window.WXWASMSDK.WX_CloudDeleteFile(_WXPointer_stringify_adaptor(env), _WXPointer_stringify_adaptor(option), _WXPointer_stringify_adaptor(callbackId));
+    },
 });

@@ -104,4 +104,128 @@ export default {
             },
         });
     },
+    WX_CloudUploadFile(env, conf, callbackId) {
+        const config = formatJsonStr(conf);
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        targetCloud.uploadFile({
+            ...config,
+            success(res) {
+                formatResponse('UploadFileResult', res);
+                moduleHelper.send('_CloudUploadFileCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudUploadFileCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudUploadFileCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
+    WX_CloudDownloadFile(env, conf, callbackId) {
+        const config = formatJsonStr(conf);
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        targetCloud.downloadFile({
+            ...config,
+            success(res) {
+                formatResponse('DownloadFileResult', res);
+                moduleHelper.send('_CloudDownloadFileCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudDownloadFileCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudDownloadFileCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
+    WX_CloudGetTempFileURL(env, conf, callbackId) {
+        const config = formatJsonStr(conf);
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        targetCloud.getTempFileURL({
+            ...config,
+            success(res) {
+                formatResponse('GetTempFileURLResult', res);
+                moduleHelper.send('_CloudGetTempFileURLCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudGetTempFileURLCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudGetTempFileURLCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
+    WX_CloudDeleteFile(env, conf, callbackId) {
+        const config = formatJsonStr(conf);
+        let targetCloud;
+        if (env === '_default_') {
+            targetCloud = wx.cloud;
+        }
+        else {
+            targetCloud = CloudList[env];
+        }
+        targetCloud.deleteFile({
+            ...config,
+            success(res) {
+                formatResponse('DeleteFileResult', res);
+                moduleHelper.send('_CloudDeleteFileCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudDeleteFileCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('_CloudDeleteFileCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
 };
