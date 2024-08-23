@@ -171,6 +171,9 @@ export function formatResponse(type, data, id) {
             }
         }
     });
+    if ((type === 'SystemInfo' || type === 'WindowInfo') && data.pixelRatio) {
+        data.pixelRatio = window.devicePixelRatio;
+    }
     return data;
 }
 export function formatJsonStr(str, type) {
