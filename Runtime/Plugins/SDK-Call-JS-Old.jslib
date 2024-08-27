@@ -1005,11 +1005,7 @@ mergeInto(LibraryManager.library, {
         return buffer;
     },
     WX_CloudCloud: function (option) {
-        var returnStr = window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
-        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
-        var buffer = _malloc(bufferSize);
-        stringToUTF8(returnStr, buffer, bufferSize);
-        return buffer;
+        window.WXWASMSDK.WX_CloudCloud(_WXPointer_stringify_adaptor(option));
     },
     WX_CloudInit: function (option) {
         window.WXWASMSDK.WX_CloudInit(_WXPointer_stringify_adaptor(option));

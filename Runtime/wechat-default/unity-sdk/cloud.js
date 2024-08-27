@@ -24,7 +24,6 @@ export default {
         
         const cloud = new wx.cloud.Cloud(config);
         CloudList[config.resourceEnv] = cloud;
-        return config.resourceEnv;
     },
     WX_CloudInit(option) {
         const config = formatJsonStr(option);
