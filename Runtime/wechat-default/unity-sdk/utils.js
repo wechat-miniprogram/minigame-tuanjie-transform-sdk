@@ -106,6 +106,9 @@ export function formatResponse(type, data, id) {
         else if (conf[key] === 'string' && typeof data[key] === 'number') {
             data[key] = `${data[key]}`;
         }
+        else if (conf[key] === 'string' && typeof data[key] === 'object') {
+            data[key] = JSON.stringify(data[key]);
+        }
         else if (conf[key] === 'bool' && (typeof data[key] === 'number' || typeof data[key] === 'string')) {
             data[key] = !!data[key];
         }
