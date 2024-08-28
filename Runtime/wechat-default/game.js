@@ -27,8 +27,9 @@ const managerConfig = {
         '$PRELOAD_LIST',
     ],
     contextConfig: {
-        contextType: $WEBGL_VERSION, // 1=>webgl1  2=>webgl2 3=>auto
+        contextType: $WEBGL_VERSION, // 1: webgl1  2: webgl2
     },
+    PROFILER_UPLOAD_URL: '',
 };
 GameGlobal.managerConfig = managerConfig;
 // 版本检查

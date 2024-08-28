@@ -109,6 +109,13 @@ namespace WeChatWASM
                 Debug.LogError("因构建模板检查失败终止导出。");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
+            if (CheckInvalidPerfIntegration())
+            {
+                Debug.LogError("性能分析工具只能用于Development Build, 终止导出! ");
+                return WXExportError.BUILD_WEBGL_FAILED;
+            }
+
+
             CheckBuildTarget();
             Init();
             // JSLib
@@ -316,6 +323,16 @@ namespace WeChatWASM
                 return false;
             }
             return true;
+        }
+
+
+        // Assert when release + Perf-feature
+        private static bool CheckInvalidPerfIntegration()
+        {
+            const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
+            string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            
+            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
         }
 
         private static void ConvertDotnetCode()
@@ -1310,7 +1327,7 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            var host = Dns.GetHostEntry("");
+            var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
             {
                 if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
@@ -1402,6 +1419,9 @@ namespace WeChatWASM
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
                 boolConfigInfo,
+                config.CompileOptions.DevelopBuild ? "true" : "false", 
+                config.CompileOptions.enablePerfAnalysis ? "true" : "false", 
+                config.ProjectConf.MemorySize.ToString(), 
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
