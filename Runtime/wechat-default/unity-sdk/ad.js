@@ -34,7 +34,7 @@ export default {
         return key;
     },
     WXCreateFixedBottomMiddleBannerAd(adUnitId, adIntervals, height) {
-        const info = wx.getSystemInfoSync();
+        const info = wx.getWindowInfo();
         const ad = wx.createBannerAd({
             adUnitId,
             adIntervals,

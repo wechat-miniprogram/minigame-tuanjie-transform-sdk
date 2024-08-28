@@ -1310,16 +1310,24 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            var host = Dns.GetHostEntry("");
-            foreach (var ip in host.AddressList)
+            try
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                var host = Dns.GetHostEntry("");
+                foreach (var ip in host.AddressList)
                 {
-                    sb.Append($"player-connection-ip={ip.ToString()}");
-                    break;
+                    if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        sb.Append($"player-connection-ip={ip.ToString()}");
+                        break;
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
+            }
 
+            
             return sb.ToString();
         }
 
