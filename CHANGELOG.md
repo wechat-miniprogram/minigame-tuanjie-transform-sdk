@@ -6,6 +6,39 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-8-28 【预发布】
+PackageManager(git URL): https://github.com/wechat-miniprogram/minigame-tuanjie-transform-sdk.git#pre-v0.1.19
+### Feature
+* 普通: UDPSocket.write适配
+* 普通: 部分JS API接口更新
+* 普通: 云开发/云托管支持
+### Fixed
+* 普通: 修复.net8 OnApplicationFocus/Pause适配
+* 普通: 修复插件自动调节dpr后，获取不到实际dpr
+
+## 2024-8-13 【重要更新】
+### Feature
+* 普通: 横竖屏切换，PC窗口大小自动适配
+* 普通: PC分辨率模糊，自动调节dpr属性
+### Fixed
+* 严重：修复多点触控产生的异常
+* 普通：适配2021，去_JS_Focus_Window
+* 普通：修复多线程压缩的扩展名判定
+
+## 2024-7-09 【普通更新】
+### Feature
+* 普通：兼容2022新增的音频API
+* 普通：更快的转换打包速度
+* 普通：Unity侧添加设置分辨率接口
+### Fixed
+* 普通：临时兼容wk 17.5暂停音频无法恢复的bug
+* 普通：Touch id在特定情况丢失
+* 普通：使用微信压缩纹理工具sprite atlas版本被修改
+
+## 2024-5-17 【普通更新】
+Fixed
+* 普通：修复WXAssetBundle与预下载冲突问题
+
 ## 2024-5-15 【普通更新】
 ### Feature
 * 普通：支持JS构建模板，请查阅[模板文档](https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/Design/BuildTemplate.html)

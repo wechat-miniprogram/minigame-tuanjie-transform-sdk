@@ -803,6 +803,7 @@ namespace WeChatWASM
                 // 计算首资源包大小
                 var tempDataInfo = new FileInfo(tempDataPath);
                 var tempFileSize = tempDataInfo.Length.ToString();
+                Debug.Log("wasmcode size: " + brcodeSize + " data size: " + tempFileSize);
                 // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余19M
                 if (brcodeSize + int.Parse(tempFileSize) > (20 - 1) * 1024 * 1024)
                 {
@@ -1310,16 +1311,24 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            var host = Dns.GetHostEntry("");
-            foreach (var ip in host.AddressList)
+            try
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                var host = Dns.GetHostEntry("");
+                foreach (var ip in host.AddressList)
                 {
-                    sb.Append($"player-connection-ip={ip.ToString()}");
-                    break;
+                    if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        sb.Append($"player-connection-ip={ip.ToString()}");
+                        break;
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
+            }
 
+            
             return sb.ToString();
         }
 

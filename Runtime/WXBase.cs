@@ -37,7 +37,7 @@ namespace WeChatWASM
         /// <summary>
         /// Gets 云函数
         /// </summary>
-        public static Cloud cloud
+        public static WXCloud cloud
         {
             get
             {
@@ -264,31 +264,31 @@ namespace WeChatWASM
         /// <param name="param">param各字段说明详见这里，https://developers.weixin.qq.com/minigame/dev/api/ad/wx.createBannerAd.html </param>
         /// <returns>对banner广告做操作的对象，详见 https://developers.weixin.qq.com/minigame/dev/api/ad/BannerAd.html </returns>
         /// <example>
-        /// // 底部banner广告示例
-        ///        var sysInfo = WX.GetSystemInfoSync();
-        ///         var banner = WX.CreateBannerAd(new WXCreateBannerAdParam()
+        ///     // 底部banner广告示例
+        ///     var windowInfo = WX.GetWindowInfo();
+        ///     var banner = WX.CreateBannerAd(new WXCreateBannerAdParam()
+        ///     {
+        ///         adUnitId = "adunit-2e20328227ca771b",
+        ///         adIntervals = 30,
+        ///         style = new Style()
         ///         {
-        ///             adUnitId = "adunit-2e20328227ca771b",
-        ///            adIntervals = 30,
-        ///             style = new Style()
-        ///             {
-        ///                 left = 0,
-        ///                 top = sysInfo.windowHeight - 100,
-        ///                 width = sysInfo.windowWidth,
-        ///                 height = 100
-        ///             }
-        ///        });
-        ///         banner.OnError((WXADErrorResponse res)=>
-        ///         {
-        ///             Debug.Log("bannerad error response");
-        ///         });
-        ///         banner.OnLoad(()=> {
-        ///             banner.Show();
-        ///         });
+        ///             left = 0,
+        ///             top = windowInfo.windowHeight - 100,
+        ///             width = windowInfo.windowWidth,
+        ///             height = 100
+        ///         }
+        ///     });
+        ///     banner.OnError((WXADErrorResponse res)=>
+        ///     {
+        ///         Debug.Log("bannerad error response");
+        ///     });
+        ///     banner.OnLoad(()=> {
+        ///         banner.Show();
+        ///     });
         ///     banner.OnResize((WXADResizeResponse res) =>
         ///     {
-        ///         //拉取的广告可能跟设置的不一样，需要动态调整位置
-        ///         banner.style.top = sysInfo.windowHeight - res.height;
+        ///         // 拉取的广告可能跟设置的不一样，需要动态调整位置
+        ///         banner.style.top = windowInfo.windowHeight - res.height;
         ///     });
         /// </example>
         public static WXBannerAd CreateBannerAd(WXCreateBannerAdParam param)
@@ -1087,6 +1087,16 @@ namespace WeChatWASM
         public static void SetDevicePixelRatio(double ratio)
         {
             WXSDKManagerHandler.Instance.SetDevicePixelRatio(ratio);
+        }
+
+        public static void CallJSFunction(string sdkName, string functionName, params object[] args)
+        {
+            WXSDKManagerHandler.CallJSFunction(sdkName, functionName, args);
+        }
+
+        public static string CallJSFunctionWithReturn(string sdkName, string functionName, params object[] args)
+        {
+            return WXSDKManagerHandler.CallJSFunctionWithReturn(sdkName, functionName, args);
         }
     }
 }
