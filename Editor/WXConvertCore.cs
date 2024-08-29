@@ -808,7 +808,7 @@ namespace WeChatWASM
                 if (brcodeSize + int.Parse(tempFileSize) > (20 - 1) * 1024 * 1024)
                 {
                     config.ProjectConf.assetLoadType = 0;
-                    Debug.LogError("资源文件过大，不适宜用放小游戏包内加载，请上传资源文件到CDN");
+                    Debug.LogError("资源文件过大，不适宜用放小游戏包内加载，请上传资源文件到CDN" + " wasmcode size: " + brcodeSize + " data size: " + tempFileSize);
                 }
                 else
                 {
