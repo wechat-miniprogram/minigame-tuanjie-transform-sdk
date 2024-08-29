@@ -803,7 +803,7 @@ namespace WeChatWASM
                 // 计算首资源包大小
                 var tempDataInfo = new FileInfo(tempDataPath);
                 var tempFileSize = tempDataInfo.Length.ToString();
-                Debug.Log("wasmcode size: " + brcodeSize + " data size: " + tempFileSize);
+                Debug.LogError("wasmcode size: " + brcodeSize + " data size: " + tempFileSize);
                 // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余19M
                 if (brcodeSize + int.Parse(tempFileSize) > (20 - 1) * 1024 * 1024)
                 {
