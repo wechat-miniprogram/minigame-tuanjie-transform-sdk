@@ -92,6 +92,9 @@ WX_GetClipboardData:function(conf, callbackId) {
 WX_GetConnectedBluetoothDevices:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetConnectedBluetoothDevices(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
+WX_GetDeviceBenchmarkInfo:function(conf, callbackId) {
+    window.WXWASMSDK.WX_GetDeviceBenchmarkInfo(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+},
 WX_GetExtConfig:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetExtConfig(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
@@ -238,6 +241,9 @@ WX_RequestMidasFriendPayment:function(conf, callbackId) {
 },
 WX_RequestMidasPayment:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestMidasPayment(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+},
+WX_RequestMidasPaymentGameItem:function(conf, callbackId) {
+    window.WXWASMSDK.WX_RequestMidasPaymentGameItem(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
 WX_RequestSubscribeMessage:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestSubscribeMessage(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
@@ -392,9 +398,6 @@ WX_OpenChannelsLiveCollection:function(conf, callbackId) {
 WX_OpenPage:function(conf, callbackId) {
     window.WXWASMSDK.WX_OpenPage(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
-WX_RequestMidasPaymentGameItem:function(conf, callbackId) {
-    window.WXWASMSDK.WX_RequestMidasPaymentGameItem(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
-},
 WX_RequestSubscribeLiveActivity:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestSubscribeLiveActivity(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
@@ -413,9 +416,6 @@ WX_RemoveStorageSync:function(key){
 },
 WX_ReportEvent:function(eventId, data){
     window.WXWASMSDK.WX_ReportEvent(_WXPointer_stringify_adaptor(eventId), _WXPointer_stringify_adaptor(data));
-},
-WX_ReportMonitor:function(name, value){
-    window.WXWASMSDK.WX_ReportMonitor(_WXPointer_stringify_adaptor(name), value);
 },
 WX_ReportPerformance:function(id, value, dimensions){
     window.WXWASMSDK.WX_ReportPerformance(id, value, _WXPointer_stringify_adaptor(dimensions));
@@ -585,6 +585,12 @@ WX_OnMemoryWarning:function() {
 },
 WX_OffMemoryWarning:function() {
     window.WXWASMSDK.WX_OffMemoryWarning();
+},
+WX_OnMenuButtonBoundingClientRectWeightChange:function() {
+    window.WXWASMSDK.WX_OnMenuButtonBoundingClientRectWeightChange();
+},
+WX_OffMenuButtonBoundingClientRectWeightChange:function() {
+    window.WXWASMSDK.WX_OffMenuButtonBoundingClientRectWeightChange();
 },
 WX_OnMessage:function() {
     window.WXWASMSDK.WX_OnMessage();
@@ -849,8 +855,9 @@ WX_GetWindowInfo:function(
     return buffer;
 },
 WX_CreateImageData:function(
+    width,height
 ){
-    var res = window.WXWASMSDK.WX_CreateImageData();
+    var res = window.WXWASMSDK.WX_CreateImageData(width,height);
     var bufferSize = lengthBytesUTF8(res || '') + 1;
     var buffer = _malloc(bufferSize);
     stringToUTF8(res, buffer, bufferSize);

@@ -4,24 +4,11 @@
         <name>wx-runtime</name>
     </assembly>
     <members>
-        <member name="T:WeChatWASM.Cloud">
+        <member name="T:PlayerPrefs">
             <summary>
-            云函数，调用前必须先Init初始化
+            覆盖unity的PlayerPrefs
+            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
             </summary>
-        </member>
-        <member name="M:WeChatWASM.Cloud.Init(WeChatWASM.CallFunctionInitParam)">
-            <summary>
-            初始化，详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/init/client.init.html
-            </summary>
-            <param name="param"></param>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.Cloud.CallFunction(WeChatWASM.CallFunctionParam)" -->
-        <member name="M:WeChatWASM.Cloud.CloudID(System.String)">
-            <summary>
-            声明字符串为 CloudID（开放数据 ID），该接口传入一个字符串，返回一个 CloudID 特殊字符串，将该对象传至云函数可以获取其对应的开放数据。详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/open/Cloud.CloudID.html
-            </summary>
-            <param name="cloudID">通过开放能力在小程序端 / web 端获取得到的 CloudID</param>
-            <returns>返回字符串，原样传回云函数调用就好</returns>
         </member>
         <member name="T:WeChatWASM.WXBannerAd">
             <summary>
@@ -292,6 +279,25 @@
             <summary>
             面板缩放比例，默认大小 40x40，低于 375 宽度的屏幕会等比缩小
             </summary>
+        </member>
+        <member name="T:WeChatWASM.WXCloud">
+            <summary>
+            云函数，调用前必须先Init初始化
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXCloud.Init(WeChatWASM.ICloudConfig)">
+            <summary>
+            初始化，详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/init/client.init.html
+            </summary>
+            <param name="param"></param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.WXCloud.CallFunction(WeChatWASM.CallFunctionParam)" -->
+        <member name="M:WeChatWASM.WXCloud.CloudID(System.String)">
+            <summary>
+            声明字符串为 CloudID（开放数据 ID），该接口传入一个字符串，返回一个 CloudID 特殊字符串，将该对象传至云函数可以获取其对应的开放数据。详见 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/open/Cloud.CloudID.html
+            </summary>
+            <param name="cloudID">通过开放能力在小程序端 / web 端获取得到的 CloudID</param>
+            <returns>返回字符串，原样传回云函数调用就好</returns>
         </member>
         <member name="T:WeChatWASM.WXCustomAd">
             <summary>
@@ -1422,16 +1428,6 @@
             视频是否是在用户完整观看的情况下被关闭的,详见 https://developers.weixin.qq.com/minigame/dev/api/ad/RewardedVideoAd.onClose.html
             </summary>
         </member>
-        <member name="T:WeChatWASM.WXCloudCallFunctionResponse">
-            <summary>
-            云函数回调 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/functions/Cloud.callFunction.html
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCloudCallFunctionResponse.result">
-            <summary>
-            后端返回的经过json序列化后的数据
-            </summary>
-        </member>
         <member name="F:WeChatWASM.ReferrerInfo.extraDataRaw">
             <summary>
             对应JS版里的 extraData，这里序列化成JSON字符串
@@ -1570,31 +1566,6 @@
         <member name="F:WeChatWASM.TouchEvent.timeStamp">
             <summary>
             事件触发时的时间戳
-            </summary>
-        </member>
-        <member name="T:WeChatWASM.CallFunctionParam">
-            <summary>
-            调用云函数 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/functions/Cloud.callFunction.html
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.CallFunctionParam.data">
-            <summary>
-            这里请将数据json序列化为字符串再赋值到data
-            </summary>
-        </member>
-        <member name="T:WeChatWASM.CallFunctionInitParam">
-            <summary>
-            云函数初始化 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/init/client.init.html
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.CallFunctionInitParam.env">
-            <summary>
-            必填，环境ID，指定接下来调用 API 时访问哪个环境的云资源
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.CallFunctionInitParam.traceUser">
-            <summary>
-            是否在将用户访问记录到用户管理中，在控制台中可见
             </summary>
         </member>
         <member name="F:WeChatWASM.InnerAudioContextParam.src">
@@ -3081,6 +3052,36 @@
             接口调用成功的回调函数
             </summary>
         </member>
+        <member name="F:WeChatWASM.ICloudConfig.env">
+            <summary>
+            必填，环境ID，指定接下来调用 API 时访问哪个环境的云资源
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ICloudConfig.traceUser">
+            <summary>
+            是否在将用户访问记录到用户管理中，在控制台中可见
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.CallFunctionResult">
+            <summary>
+            云函数回调 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/functions/Cloud.callFunction.html
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CallFunctionResult.result">
+            <summary>
+            后端返回的经过json序列化后的数据
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.CallFunctionParam">
+            <summary>
+            调用云函数 https://developers.weixin.qq.com/minigame/dev/wxcloud/reference-sdk-api/functions/Cloud.callFunction.html
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CallContainerResult.data">
+            <summary>
+            后端返回的经过json序列化后的数据
+            </summary>
+        </member>
         <member name="F:WeChatWASM.AccountInfo.miniProgram">
             <summary>
             小程序账号信息
@@ -3187,6 +3188,17 @@
             是否已打开调试。可通过右上角菜单或 [wx.setEnableDebug](https://developers.weixin.qq.com/minigame/dev/api/base/debug/wx.setEnableDebug.html) 打开调试。
             </summary>
         </member>
+        <member name="F:WeChatWASM.AppBaseInfo.fontSizeScaleFactor">
+            <summary>
+            微信字体大小缩放比例
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.AppBaseInfo.fontSizeSetting">
+            <summary>
+            需要基础库： `2.23.4`
+            微信字体大小，单位px
+            </summary>
+        </member>
         <member name="F:WeChatWASM.AppBaseInfo.host">
             <summary>
             当前小程序运行的宿主环境
@@ -3220,6 +3232,12 @@
             是否正在充电中
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetBatteryInfoSyncResult.isLowPowerModeEnabled">
+            <summary>
+            需要基础库： `3.4.3`
+            是否处于省电模式，目前仅 iOS 端支持
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetBatteryInfoSyncResult.level">
             <summary>
             设备电量，范围 1 - 100
@@ -3230,11 +3248,7 @@
             应用（微信APP）二进制接口类型（仅 Android 支持）
             </summary>
         </member>
-        <member name="F:WeChatWASM.DeviceInfo.benchmarkLevel">
-            <summary>
-            设备性能等级（仅 Android 支持）。取值为：-2 或 0（该设备无法运行小游戏），-1（性能未知），>=1（设备性能值，该值越高，设备性能越好，目前最高不到50）
-            </summary>
-        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.DeviceInfo.benchmarkLevel" -->
         <member name="F:WeChatWASM.DeviceInfo.brand">
             <summary>
             设备品牌
@@ -3447,7 +3461,7 @@
         </member>
         <member name="F:WeChatWASM.SystemInfo.deviceOrientation">
             <summary>
-            设备方向
+            设备方向（注意：IOS客户端横屏游戏获取deviceOrientation可能不准，建议以屏幕宽高为准）
             可选值：
             - 'portrait': 竖屏;
             - 'landscape': 横屏;
@@ -3651,7 +3665,7 @@
         </member>
         <member name="F:WeChatWASM.SystemSetting.deviceOrientation">
             <summary>
-            设备方向
+            设备方向（注意：IOS客户端横屏游戏获取deviceOrientation可能不准，建议以屏幕宽高为准）
             可选值：
             - 'portrait': 竖屏;
             - 'landscape': 横屏;
@@ -3717,6 +3731,23 @@
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
+        <member name="F:WeChatWASM.DownloadFileOption.enableHttp2">
+            <summary>
+            需要基础库： `2.10.4`
+            是否开启 http2
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.DownloadFileOption.enableProfile">
+            <summary>
+            是否开启 profile，默认开启。开启后可在接口回调的 res.profile 中查看性能调试信息。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.DownloadFileOption.enableQuic">
+            <summary>
+            需要基础库： `2.10.4`
+            是否开启 Quic 协议（gQUIC Q43）
+            </summary>
+        </member>
         <member name="F:WeChatWASM.DownloadFileOption.fail">
             <summary>
             接口调用失败的回调函数
@@ -3742,6 +3773,12 @@
             <summary>
             需要基础库： `2.10.0`
             超时时间，单位为毫秒，默认值为 60000 即一分钟。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.DownloadFileOption.useHighPerformanceMode">
+            <summary>
+            需要基础库： `3.4.1`
+            使用高性能模式，暂仅支持 Android，默认关闭。该模式下有更优的网络性能表现。
             </summary>
         </member>
         <member name="F:WeChatWASM.GeneralCallbackResult.errMsg">
@@ -3895,6 +3932,11 @@
             传输层根据多个请求评估的当前网络的 rtt（仅供参考）
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestProfile.usingHighPerformanceMode">
+            <summary>
+            是否走到了高性能模式。基础库 v3.3.4 起支持。
+            </summary>
+        </member>
         <member name="F:WeChatWASM.DownloadTaskOnHeadersReceivedListenerResult.header">
             <summary>
             开发者服务器返回的 HTTP Response Header
@@ -3943,6 +3985,26 @@
             背景颜色
             </summary>
         </member>
+        <member name="F:WeChatWASM.OptionStyle.height">
+            <summary>
+            高度
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OptionStyle.left">
+            <summary>
+            左上角横坐标
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OptionStyle.top">
+            <summary>
+            左上角纵坐标
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OptionStyle.width">
+            <summary>
+            宽度
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OptionStyle.borderColor">
             <summary>
             边框颜色
@@ -3968,16 +4030,6 @@
             字号
             </summary>
         </member>
-        <member name="F:WeChatWASM.OptionStyle.height">
-            <summary>
-            高度
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OptionStyle.left">
-            <summary>
-            左上角横坐标
-            </summary>
-        </member>
         <member name="F:WeChatWASM.OptionStyle.lineHeight">
             <summary>
             文本的行高
@@ -3990,16 +4042,6 @@
             - 'left': 居左;
             - 'center': 居中;
             - 'right': 居右;
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OptionStyle.top">
-            <summary>
-            左上角纵坐标
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OptionStyle.width">
-            <summary>
-            宽度
             </summary>
         </member>
         <member name="F:WeChatWASM.ImageData.data">
@@ -4159,7 +4201,7 @@
         </member>
         <member name="F:WeChatWASM.AuthPrivateMessageOption.shareTicket">
             <summary>
-            shareTicket。可以从 wx.onShow 中获取。详情 [shareTicket](#)
+            shareTicket。可以从 wx.getEnterOptionsSync 中获取。详情 [shareTicket](#)
             </summary>
         </member>
         <member name="F:WeChatWASM.AuthPrivateMessageOption.complete">
@@ -4748,7 +4790,7 @@
             开始广播本地创建的外围设备。
             **注意**
             - Android 8.0.9 开始，支持直接使用 16/32/128 位 UUID；
-            - Android 8.0.9 以下版本只支持 128 位 UUID，使用 16/32 位的 UUID 时需要进行补位（系统会自动识别是否属于预分配区间），可以参考[蓝牙指南](#)；
+            - Android 8.0.9 以下版本只支持 128 位 UUID，使用 16/32 位的 UUID 时需要进行补位（系统会自动识别是否属于预分配区间），可以参考[蓝牙指南](https://developers.weixin.qq.com/minigame/dev/guide/device/ble.html)；
             - iOS 必须直接使用 16 位的 UUID，不能补位到 128 位，否则系统组包时仍会按照 128 位传输。iOS 暂不支持 32 位 UUID。
             - iOS 同时只能发起一个广播，安卓支持同时发起多个广播。
             - 传 beacon 参数时，不能同时传入 deviceName，serviceUuids，manufacturerData 参数。
@@ -5534,6 +5576,12 @@
             是否正在充电中
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetBatteryInfoSuccessCallbackResult.isLowPowerModeEnabled">
+            <summary>
+            需要基础库： `3.4.3`
+            是否处于省电模式，目前仅 iOS 端支持
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetBatteryInfoSuccessCallbackResult.level">
             <summary>
             设备电量，范围 1 - 100
@@ -5902,6 +5950,23 @@
             蓝牙设备名称，某些设备可能没有
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.GetDeviceBenchmarkInfoSuccessCallbackResult.benchmarkLevel" -->
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.GetDeviceBenchmarkInfoSuccessCallbackResult.modelLevel" -->
         <member name="F:WeChatWASM.GetExtConfigOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
@@ -6018,6 +6083,24 @@
         <member name="F:WeChatWASM.GetGroupEnterInfoOption.success">
             <summary>
             接口调用成功的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetGroupEnterInfoError.errMsg">
+            <summary>
+            错误信息
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 40097 |  | 场景错误 |
+            | 65206 |  | 用户已不在该群内 |
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetGroupEnterInfoError.errCode">
+            <summary>
+            错误码
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 40097 |  | 场景错误 |
+            | 65206 |  | 用户已不在该群内 |
             </summary>
         </member>
         <member name="F:WeChatWASM.GetGroupEnterInfoSuccessCallbackResult.cloudID">
@@ -6252,7 +6335,7 @@
         </member>
         <member name="F:WeChatWASM.GetShareInfoOption.shareTicket">
             <summary>
-            shareTicket
+            shareTicket，详见[获取更多转发信息](#)
             </summary>
         </member>
         <member name="F:WeChatWASM.GetShareInfoOption.complete">
@@ -7105,6 +7188,36 @@
             - 15: TRIM_MEMORY_RUNNING_CRITICAL;
             </summary>
         </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.bottom">
+            <summary>
+            下边界坐标，单位：px
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.height">
+            <summary>
+            高度，单位：px
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.left">
+            <summary>
+            左边界坐标，单位：px
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.right">
+            <summary>
+            右边界坐标，单位：px
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.top">
+            <summary>
+            上边界坐标，单位：px
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.width">
+            <summary>
+            宽度，单位：px
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OnMouseDownListenerResult.button">
             <summary>
             按键类型，0左键，1中键，2右键
@@ -7273,6 +7386,12 @@
         <member name="F:WeChatWASM.OnUnhandledRejectionListenerResult.reason">
             <summary>
             拒绝原因，一般是一个 Error 对象
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnUserCaptureScreenListenerResult.query">
+            <summary>
+            需要基础库： `3.3.0`
+            支持开发者自定义一键打开小程序时的 query
             </summary>
         </member>
         <member name="F:WeChatWASM.OnVoIPChatInterruptedListenerResult.errCode">
@@ -8200,11 +8319,6 @@
             分区 ID
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentOption.extraInfo">
-            <summary>
-            其他参数
-            </summary>
-        </member>
         <member name="F:WeChatWASM.MidasPaymentError.errMsg">
             <summary>
             错误信息
@@ -8212,6 +8326,7 @@
             | - | - | - |
             | -1 |  | 系统失败 |
             | -2 |  | 支付取消 |
+            | -6 |  | 下单参数类型不对 |
             | -15001 |  | 虚拟支付接口错误码，缺少参数 |
             | -15002 |  | 虚拟支付接口错误码，参数不合法 |
             | -15003 |  | 虚拟支付接口错误码，订单重复 |
@@ -8221,6 +8336,9 @@
             | -15007 |  | 虚拟支付接口错误码，订单已支付 |
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
+            | -15011 |  | 请求的数据类型错误 |
+            | -15013 |  | 代币未发布 |
+            | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
             | 3 |  | 虚拟支付接口错误码，Android独有错误：用户使用GooglePlay支付，而手机未安装GooglePlay |
@@ -8230,7 +8348,9 @@
             | 7 |  | 虚拟支付接口错误码，支付取消 |
             | 1000 |  | 参数错误 |
             | 1001 |  | 分区未发布 |
-            | 1003 |  | 米大师Portal错误 |
+            | 1003 |  | 代币/分区未发布或者对应商户号被封禁或者米大师Portal错误,请先确保虚拟支付2.0代币和分区已发布，然后自查商户号封禁情况https://kf.qq.com/faq/190523Mb6VRJ190523RV363E.html，对应的商户号可以在mp-虚拟支付2.0-基础配置-微信支付账号信息中查询 |
+            | 3017/-15012 |  | 道具id非法 |
+            | 701001 |  | ios禁止支付 |
             </summary>
         </member>
         <member name="F:WeChatWASM.MidasPaymentError.errCode">
@@ -8240,6 +8360,7 @@
             | - | - | - |
             | -1 |  | 系统失败 |
             | -2 |  | 支付取消 |
+            | -6 |  | 下单参数类型不对 |
             | -15001 |  | 虚拟支付接口错误码，缺少参数 |
             | -15002 |  | 虚拟支付接口错误码，参数不合法 |
             | -15003 |  | 虚拟支付接口错误码，订单重复 |
@@ -8249,6 +8370,9 @@
             | -15007 |  | 虚拟支付接口错误码，订单已支付 |
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
+            | -15011 |  | 请求的数据类型错误 |
+            | -15013 |  | 代币未发布 |
+            | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
             | 3 |  | 虚拟支付接口错误码，Android独有错误：用户使用GooglePlay支付，而手机未安装GooglePlay |
@@ -8258,7 +8382,9 @@
             | 7 |  | 虚拟支付接口错误码，支付取消 |
             | 1000 |  | 参数错误 |
             | 1001 |  | 分区未发布 |
-            | 1003 |  | 米大师Portal错误 |
+            | 1003 |  | 代币/分区未发布或者对应商户号被封禁或者米大师Portal错误,请先确保虚拟支付2.0代币和分区已发布，然后自查商户号封禁情况https://kf.qq.com/faq/190523Mb6VRJ190523RV363E.html，对应的商户号可以在mp-虚拟支付2.0-基础配置-微信支付账号信息中查询 |
+            | 3017/-15012 |  | 道具id非法 |
+            | 701001 |  | ios禁止支付 |
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestMidasPaymentFailCallbackErr.errCode">
@@ -8271,9 +8397,114 @@
             错误信息
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentFailCallbackErr.errno">
+            <summary>
+            错误码
+            </summary>
+        </member>
         <member name="F:WeChatWASM.RequestMidasPaymentSuccessCallbackResult.errMsg">
             <summary>
             调用成功信息
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.RequestMidasPaymentGameItemOption.paySig" -->
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signData">
+            <summary>
+            <b>支付原串</b>
+            具体支付参数见下面的signData，需要将数据以json格式传递
+            signData例子:
+            '{"mode":"goods","offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","platform":"android","zoneId":"1","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}'
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signature">
+            <summary>
+            <b>用户态签名</b>
+            signature参数签名算法参考[用户态签名](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%80%81%E7%AD%BE%E5%90%8D)
+            可参考[calc_signature](https://docs.qq.com/doc/DVUN0QWJja0J5c2x4)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.buyQuantity">
+            <summary>
+            <b>购买数量</b>
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.currencyType">
+            <summary>
+            <b>币种</b>
+            可选值：
+            - 'CNY': 人民币;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.goodsPrice">
+            <summary>
+            <b>道具单价（分）</b>
+            用来校验价格与后台道具价格是否一致，避免用户在业务商城页看到的价格与实际价格不一致导致投诉
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.mode">
+            <summary>
+            <b>支付的类型</b>
+            不同的支付类型有各自额外要传的附加参数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.offerId">
+            <summary>
+            <b>在米大师侧申请的应用id</b>
+            mp-支付基础配置中的offerid
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.outTradeNo">
+            <summary>
+            <b>业务订单号</b>
+            每个订单号只能使用一次，重复使用会失败（极端情况不保证唯一，不建议业务强依赖唯一性）。
+            要求32个字符内，只能是数字、大小写字母、符号 _-|*@组成，不能以下划线(_)开头。
+            若没有传入，则平台会自动填充一个，并以下划线开头。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.productId">
+            <summary>
+            <b>道具ID</b>
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.attach">
+            <summary>
+            <b>透传数据</b>
+            发货通知时会透传给开发者
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.env">
+            <summary>
+            <b>环境配置</b>
+            可选值：
+            - 0: 米大师正式环境;
+            - 1: 米大师沙箱环境;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.platform">
+            <summary>
+            <b>平台</b>
+            可选值：
+            - 'android': 安卓;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SignData1.zoneId">
+            <summary>
+            <b>分区ID</b>
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestSubscribeMessageOption.tmplIds">
@@ -9021,7 +9252,7 @@
         <member name="F:WeChatWASM.ShowShareImageMenuOption.needShowEntrance">
             <summary>
             需要基础库： `3.2.0`
-            分享的图片消息是否要带小程序入口
+            分享的图片消息是否要带小程序入口 (仅部分小程序类目可用)
             </summary>
         </member>
         <member name="F:WeChatWASM.ShowShareImageMenuOption.style">
@@ -9400,6 +9631,11 @@
             参数列表
             </summary>
         </member>
+        <member name="F:WeChatWASM.UpdatableMessageFrontEndTemplateInfo.templateId">
+            <summary>
+            模板ID
+            </summary>
+        </member>
         <member name="F:WeChatWASM.UpdatableMessageFrontEndParameter.name">
             <summary>
             参数名
@@ -9714,101 +9950,6 @@
         <member name="F:WeChatWASM.OpenPageOption.success">
             <summary>
             接口调用成功的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signData">
-            <summary>
-            支付原串
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.paySig">
-            <summary>
-            支付签名
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signature">
-            <summary>
-            用户态签名
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.extraInfo">
-            <summary>
-            其他参数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
-            <summary>
-            接口调用结束的回调函数（调用成功、失败都会执行）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
-            <summary>
-            接口调用失败的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.success">
-            <summary>
-            接口调用成功的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MidasPaymentGameItemError.errMsg">
-            <summary>
-            错误信息
-            | 错误码 | 错误信息 | 说明 |
-            | - | - | - |
-            | -1 |  | 系统失败 |
-            | -2 |  | 支付取消 |
-            | -15001 |  | 虚拟支付接口错误码，缺少参数 |
-            | -15002 |  | 虚拟支付接口错误码，参数不合法 |
-            | -15003 |  | 虚拟支付接口错误码，订单重复 |
-            | -15004 |  | 虚拟支付接口错误码，后台错误 |
-            | -15005 |  | 虚拟支付接口错误码，appId权限被封禁 |
-            | -15006 |  | 虚拟支付接口错误码，货币类型不支持 |
-            | -15007 |  | 虚拟支付接口错误码，订单已支付 |
-            | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
-            | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
-            | 1 |  | 虚拟支付接口错误码，用户取消支付 |
-            | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
-            | 3 |  | 虚拟支付接口错误码，Android独有错误：用户使用GooglePlay支付，而手机未安装GooglePlay |
-            | 4 |  | 虚拟支付接口错误码，用户操作系统支付状态异常 |
-            | 5 |  | 虚拟支付接口错误码，操作系统错误 |
-            | 6 |  | 虚拟支付接口错误码，其他错误 |
-            | 7 |  | 虚拟支付接口错误码，支付取消 |
-            | 1000 |  | 参数错误 |
-            | 1001 |  | 分区未发布 |
-            | 1003 |  | 米大师Portal错误 |
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MidasPaymentGameItemError.errCode">
-            <summary>
-            错误码
-            | 错误码 | 错误信息 | 说明 |
-            | - | - | - |
-            | -1 |  | 系统失败 |
-            | -2 |  | 支付取消 |
-            | -15001 |  | 虚拟支付接口错误码，缺少参数 |
-            | -15002 |  | 虚拟支付接口错误码，参数不合法 |
-            | -15003 |  | 虚拟支付接口错误码，订单重复 |
-            | -15004 |  | 虚拟支付接口错误码，后台错误 |
-            | -15005 |  | 虚拟支付接口错误码，appId权限被封禁 |
-            | -15006 |  | 虚拟支付接口错误码，货币类型不支持 |
-            | -15007 |  | 虚拟支付接口错误码，订单已支付 |
-            | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
-            | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
-            | -15012 |  | 虚拟支付接口错误码，小游戏用户态签名错误 |
-            | -15014 |  | 虚拟支付接口错误码，小游戏支付签名错误 |
-            | -15015 |  | sessionkey过期 |
-            | -15016 |  | goodsprice道具价格错误 |
-            | 1 |  | 虚拟支付接口错误码，用户取消支付 |
-            | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
-            | 3 |  | 虚拟支付接口错误码，Android独有错误：用户使用GooglePlay支付，而手机未安装GooglePlay |
-            | 4 |  | 虚拟支付接口错误码，用户操作系统支付状态异常 |
-            | 5 |  | 虚拟支付接口错误码，操作系统错误 |
-            | 6 |  | 虚拟支付接口错误码，其他错误 |
-            | 7 |  | 虚拟支付接口错误码，支付取消 |
-            | 1000 |  | 参数错误 |
-            | 1001 |  | 分区未发布 |
-            | 1003 |  | 米大师Portal错误 |
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestSubscribeLiveActivityOption.complete">
@@ -10273,7 +10414,7 @@
             设置 IP_TTL 套接字选项，用于设置一个 IP 数据包传输时允许的最大跳步数
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXUDPSocket.Write">
+        <member name="M:WeChatWASM.WXUDPSocket.Write(WeChatWASM.UDPSocketSendOption)">
             <summary>
             [UDPSocket.write()](https://developers.weixin.qq.com/minigame/dev/api/network/udp/UDPSocket.write.html)
             需要基础库： `2.15.0`
@@ -10617,12 +10758,6 @@
             [VideoDecoder.on(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.on.html)
             需要基础库： `2.11.1`
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
-            </summary>
-        </member>
-        <member name="T:PlayerPrefs">
-            <summary>
-            覆盖unity的PlayerPrefs
-            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
             </summary>
         </member>
     </members>

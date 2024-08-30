@@ -538,7 +538,7 @@ export class AudioChannelInstance {
                     }
                 }, 100);
             };
-            const innerPlay = () => {
+            const innerPlay = (callback) => {
                 if (this.source && this.source.mediaElement) {
                     if (isSupportBufferURL && this.source.readyToPlay) {
                         if (this.source.stopCache) {
@@ -551,6 +551,7 @@ export class AudioChannelInstance {
                                 innerFixPlay();
                             }
                             this.source.mediaElement.play();
+                            callback?.();
                         }
                     }
                     else {
@@ -582,6 +583,7 @@ export class AudioChannelInstance {
                                 }
                                 if (typeof this.source.mediaElement !== 'undefined') {
                                     this.source.mediaElement.play();
+                                    callback?.();
                                 }
                             }
                         };
@@ -627,22 +629,16 @@ export class AudioChannelInstance {
                     return;
                 }
                 if (this.source.playTimeout) {
-                    if (typeof this.source.mediaElement.seek === 'function') {
-                        this.source.mediaElement.seek(offset);
-                    }
-                    else {
-                        this.source.mediaElement.currentTime = offset;
-                    }
+                    this.source.mediaElement.seek(offset);
                     this.source.pauseRequested = false;
                     return;
                 }
-                innerPlay();
-                if (typeof this.source.mediaElement.seek === 'function') {
-                    this.source.mediaElement.seek(offset);
-                }
-                else {
-                    this.source.mediaElement.currentTime = offset;
-                }
+                innerPlay(() => {
+                    
+                    if (this.source && this.source.mediaElement) {
+                        this.source.mediaElement.seek(offset);
+                    }
+                });
             };
             const start = (startTime, offset) => {
                 if (typeof this.source === 'undefined') {
@@ -845,7 +841,7 @@ export default {
         if (!soundClip) {
             return defaultSoundLength;
         }
-        const length = soundClip.getLength() || defaultSoundLength;
+        const length = soundClip.getLength();
         return length;
     },
     _JS_Sound_GetLoadState(bufferInstance) {
@@ -1033,12 +1029,12 @@ export default {
         WEBAudio.lOrientation.yUp = yUp;
         WEBAudio.lOrientation.zUp = zUp;
         if (WEBAudio.audioContext.listener.forwardX) {
-            WEBAudio.audioContext.listener.forwardX.setValueAtTime(-x, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.forwardY.setValueAtTime(-y, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.forwardZ.setValueAtTime(-z, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upX.setValueAtTime(xUp, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upY.setValueAtTime(yUp, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.upZ.setValueAtTime(zUp, WEBAudio.audioContext.currentTime);
+            WEBAudio.audioContext.listener.forwardX = -x;
+            WEBAudio.audioContext.listener.forwardY = -y;
+            WEBAudio.audioContext.listener.forwardZ = -z;
+            WEBAudio.audioContext.listener.upX = xUp;
+            WEBAudio.audioContext.listener.upY = yUp;
+            WEBAudio.audioContext.listener.upZ = zUp;
         }
         else {
             WEBAudio.audioContext.listener.setOrientation(-x, -y, -z, xUp, yUp, zUp);
@@ -1061,9 +1057,9 @@ export default {
         WEBAudio.lPosition.y = y;
         WEBAudio.lPosition.z = z;
         if (WEBAudio.audioContext.listener.positionX) {
-            WEBAudio.audioContext.listener.positionX.setValueAtTime(x, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.positionY.setValueAtTime(y, WEBAudio.audioContext.currentTime);
-            WEBAudio.audioContext.listener.positionZ.setValueAtTime(z, WEBAudio.audioContext.currentTime);
+            WEBAudio.audioContext.listener.positionX = x;
+            WEBAudio.audioContext.listener.positionY = y;
+            WEBAudio.audioContext.listener.positionZ = z;
         }
         else {
             WEBAudio.audioContext.listener.setPosition(x, y, z);

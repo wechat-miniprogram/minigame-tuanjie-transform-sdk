@@ -991,6 +991,7 @@ namespace WeChatWASM
         public static bool MultiThreadBrotliCompress(string sourcePath, string dstPath, int quality = 11, int window = 21, int maxCpuThreads = 0)
         {
             if (maxCpuThreads == 0) maxCpuThreads = Environment.ProcessorCount;
+            Debug.LogError("【rdtest】 maxCpuThreads = "+ maxCpuThreads);
             var sourceBuffer = File.ReadAllBytes(sourcePath);
             byte[] outputBuffer = new byte[0];
             int ret = 0;
@@ -1310,16 +1311,24 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            var host = Dns.GetHostEntry("");
-            foreach (var ip in host.AddressList)
+            try
             {
-                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                var host = Dns.GetHostEntry("");
+                foreach (var ip in host.AddressList)
                 {
-                    sb.Append($"player-connection-ip={ip.ToString()}");
-                    break;
+                    if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        sb.Append($"player-connection-ip={ip.ToString()}");
+                        break;
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
+            }
 
+            
             return sb.ToString();
         }
 

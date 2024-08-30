@@ -5,7 +5,7 @@ import fixCmapTable from './fix-cmap';
 import readMetrics from './read-metrics';
 import splitTTCToBufferOnlySC from './split-sc';
 
-const { platform } = wx.getSystemInfoSync();
+const { platform } = wx.getDeviceInfo();
 
 const tempCacheObj = {};
 let fontDataCache;
