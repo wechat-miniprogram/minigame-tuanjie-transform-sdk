@@ -53,7 +53,7 @@ namespace WeChatWASM
             //loadData();
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
 
-            projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../")
+            projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
