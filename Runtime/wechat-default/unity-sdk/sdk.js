@@ -24,6 +24,7 @@ let OnKeyboardConfirmList;
 let OnKeyboardHeightChangeList;
 let OnKeyboardInputList;
 let OnMemoryWarningList;
+let OnMenuButtonBoundingClientRectWeightChangeList;
 let OnMouseDownList;
 let OnMouseMoveList;
 let OnMouseUpList;
@@ -805,6 +806,30 @@ export default {
             },
         });
     },
+    WX_GetDeviceBenchmarkInfo(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.getDeviceBenchmarkInfo({
+            ...config,
+            success(res) {
+                formatResponse('GetDeviceBenchmarkInfoSuccessCallbackResult', res);
+                moduleHelper.send('GetDeviceBenchmarkInfoCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetDeviceBenchmarkInfoCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetDeviceBenchmarkInfoCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
     WX_GetExtConfig(conf, callbackId) {
         const config = formatJsonStr(conf);
         wx.getExtConfig({
@@ -888,13 +913,13 @@ export default {
                 }));
             },
             fail(res) {
-                formatResponse('GeneralCallbackResult', res);
+                formatResponse('GetGroupEnterInfoError', res);
                 moduleHelper.send('GetGroupEnterInfoCallback', JSON.stringify({
                     callbackId, type: 'fail', res: JSON.stringify(res),
                 }));
             },
             complete(res) {
-                formatResponse('GeneralCallbackResult', res);
+                formatResponse('GetGroupEnterInfoError', res);
                 moduleHelper.send('GetGroupEnterInfoCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
@@ -1982,6 +2007,30 @@ export default {
             complete(res) {
                 formatResponse('MidasPaymentError', res);
                 moduleHelper.send('RequestMidasPaymentCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
+    WX_RequestMidasPaymentGameItem(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.requestMidasPaymentGameItem({
+            ...config,
+            success(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             },
@@ -3211,30 +3260,6 @@ export default {
             },
         });
     },
-    WX_RequestMidasPaymentGameItem(conf, callbackId) {
-        const config = formatJsonStr(conf);
-        wx.requestMidasPaymentGameItem({
-            ...config,
-            success(res) {
-                formatResponse('GeneralCallbackResult', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
-                    callbackId, type: 'success', res: JSON.stringify(res),
-                }));
-            },
-            fail(res) {
-                formatResponse('MidasPaymentGameItemError', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
-                    callbackId, type: 'fail', res: JSON.stringify(res),
-                }));
-            },
-            complete(res) {
-                formatResponse('MidasPaymentGameItemError', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
-                    callbackId, type: 'complete', res: JSON.stringify(res),
-                }));
-            },
-        });
-    },
     WX_RequestSubscribeLiveActivity(conf, callbackId) {
         const config = formatJsonStr(conf);
         wx.requestSubscribeLiveActivity({
@@ -3294,9 +3319,6 @@ export default {
     },
     WX_ReportEvent(eventId, data) {
         wx.reportEvent(eventId, formatJsonStr(data));
-    },
-    WX_ReportMonitor(name, value) {
-        wx.reportMonitor(name, value);
     },
     WX_ReportPerformance(id, value, dimensions) {
         wx.reportPerformance(id, value, dimensions);
@@ -3723,6 +3745,23 @@ export default {
             wx.offMemoryWarning(v);
         });
     },
+    WX_OnMenuButtonBoundingClientRectWeightChange() {
+        if (!OnMenuButtonBoundingClientRectWeightChangeList) {
+            OnMenuButtonBoundingClientRectWeightChangeList = [];
+        }
+        const callback = (res) => {
+            formatResponse('OnMenuButtonBoundingClientRectWeightChangeListenerResult', res);
+            const resStr = stringifyRes(res);
+            moduleHelper.send('_OnMenuButtonBoundingClientRectWeightChangeCallback', resStr);
+        };
+        OnMenuButtonBoundingClientRectWeightChangeList.push(callback);
+        wx.onMenuButtonBoundingClientRectWeightChange(callback);
+    },
+    WX_OffMenuButtonBoundingClientRectWeightChange() {
+        (OnMenuButtonBoundingClientRectWeightChangeList || []).forEach((v) => {
+            wx.offMenuButtonBoundingClientRectWeightChange(v);
+        });
+    },
     WX_OnMessage() {
         const callback = (res) => {
             const resStr = res;
@@ -3879,7 +3918,7 @@ export default {
             OnUserCaptureScreenList = [];
         }
         const callback = (res) => {
-            formatResponse('GeneralCallbackResult', res);
+            formatResponse('OnUserCaptureScreenListenerResult', res);
             const resStr = stringifyRes(res);
             moduleHelper.send('_OnUserCaptureScreenCallback', resStr);
         };
@@ -4168,8 +4207,8 @@ export default {
         formatResponse('WindowInfo', res);
         return JSON.stringify(res);
     },
-    WX_CreateImageData() {
-        const res = wx.createImageData();
+    WX_CreateImageData(width, height) {
+        const res = wx.createImageData(width, height);
         formatResponse('ImageData', res);
         return JSON.stringify(res);
     },

@@ -131,62 +131,50 @@ function bindGloblException() {
         console.error('unhandledRejection:', result.reason);
     });
     // 上报初始信息
-    function printSystemInfo(systemInfo) {
-        GameGlobal.systemInfoCached = systemInfo;
-        const { version, SDKVersion, platform, renderer, system } = systemInfo;
+    function printSystemInfo(appBaseInfo, deviceInfo) {
+        const { version, SDKVersion } = appBaseInfo;
+        const { platform, system } = deviceInfo;
         unityNamespace.version = version;
         unityNamespace.SDKVersion = SDKVersion;
         unityNamespace.platform = platform;
-        unityNamespace.renderer = renderer;
         unityNamespace.system = system;
         unityNamespace.isPc = platform === 'windows' || platform === 'mac';
         unityNamespace.isDevtools = platform === 'devtools';
         unityNamespace.isMobile = !unityNamespace.isPc && !unityNamespace.isDevtools;
-        unityNamespace.isH5Renderer = unityNamespace.isMobile && unityNamespace.renderer === 'h5';
+        unityNamespace.isH5Renderer = GameGlobal.isIOSHighPerformanceMode;
         unityNamespace.isIOS = platform === 'ios';
         unityNamespace.isAndroid = platform === 'android';
         const bootinfo = {
-            renderer: systemInfo.renderer || '',
+            renderer: GameGlobal.isIOSHighPerformanceMode ? 'h5' : '',
             isH5Plus: GameGlobal.isIOSHighPerformanceModePlus || false,
-            abi: systemInfo.abi || '',
-            brand: systemInfo.brand,
-            model: systemInfo.model,
-            platform: systemInfo.platform,
-            system: systemInfo.system,
-            version: systemInfo.version,
-            SDKVersion: systemInfo.SDKVersion,
-            benchmarkLevel: systemInfo.benchmarkLevel,
+            abi: deviceInfo.abi || '',
+            brand: deviceInfo.brand,
+            model: deviceInfo.model,
+            platform: deviceInfo.platform,
+            system: deviceInfo.system,
+            version: appBaseInfo.version,
+            SDKVersion: appBaseInfo.SDKVersion,
+            benchmarkLevel: deviceInfo.benchmarkLevel,
         };
         GameGlobal.realtimeLogManager.info('game starting', bootinfo);
         GameGlobal.logmanager.info('game starting', bootinfo);
         console.info('game starting', bootinfo);
     }
-    const systemInfoSync = wx.getSystemInfoSync();
-    const isEmptySystemInfo = systemInfoSync && Object.keys(systemInfoSync).length === 0;
-    // iOS会出现getSystemInfoSync返回空对象的情况，使用异步方法替代
-    if (isEmptySystemInfo) {
-        wx.getSystemInfo({
-            success(systemInfo) {
-                printSystemInfo(systemInfo);
-            },
-        });
-    }
-    else {
-        printSystemInfo(systemInfoSync);
-    }
+    const appBaseInfo = wx.getAppBaseInfo();
+    const deviceInfo = wx.getDeviceInfo();
+    printSystemInfo(appBaseInfo, deviceInfo);
 }
 bindGloblException();
 // eslint-disable-next-line no-multi-assign
 GameGlobal.onCrash = GameGlobal.unityNamespace.onCrash = function () {
     GameGlobal.manager.showAbort();
-    // 避免已经修改屏幕尺寸，故不使用缓存的systeminfo
-    const sysInfo = wx.getSystemInfoSync();
+    const windowInfo = wx.getWindowInfo();
     wx.createFeedbackButton({
         type: 'text',
         text: '提交反馈',
         style: {
-            left: (sysInfo.screenWidth - 184) / 2,
-            top: sysInfo.screenHeight / 3 + 140,
+            left: (windowInfo.screenWidth - 184) / 2,
+            top: windowInfo.screenHeight / 3 + 140,
             width: 184,
             height: 40,
             lineHeight: 40,

@@ -44,4 +44,46 @@ export const ResTypeOther = {
         offset: 'number',
         setBroadcast: 'bool',
     },
+    CallFunctionResult: {
+        result: 'string',
+        requestID: 'string',
+        errMsg: 'string',
+    },
+    CallContainerResult: {
+        data: 'string',
+        statusCode: 'number',
+        header: 'object',
+        callID: 'string',
+        errMsg: 'string',
+    },
+    UploadFileResult: {
+        fileID: 'string',
+        statusCode: 'number',
+        errMsg: 'string',
+    },
+    DownloadFileResult: {
+        tempFilePath: 'string',
+        statusCode: 'number',
+        errMsg: 'string',
+    },
+    GetTempFileURLResult: {
+        fileList: 'GetTempFileURLResultItem[]',
+        errMsg: 'string',
+    },
+    GetTempFileURLResultItem: {
+        fileID: 'string',
+        tempFileURL: 'string',
+        maxAge: 'number',
+        status: 'number',
+        errMsg: 'string',
+    },
+    DeleteFileResult: {
+        fileList: 'DeleteFileResultItem[]',
+        errMsg: 'string',
+    },
+    DeleteFileResultItem: {
+        fileID: 'string',
+        status: 'number',
+        errMsg: 'string',
+    },
 };

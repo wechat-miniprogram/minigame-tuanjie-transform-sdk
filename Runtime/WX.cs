@@ -108,9 +108,11 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.checkSession(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/login/wx.checkSession.html)
-        /// 检查登录态是否过期。
-        /// 通过 wx.login 接口获得的用户登录态拥有一定的时效性。用户越久未使用小程序，用户登录态越有可能失效。反之如果用户一直在使用小程序，则用户登录态一直保持有效。具体时效逻辑由微信维护，对开发者透明。开发者只需要调用 wx.checkSession 接口检测当前用户登录态是否有效。
-        /// 登录态过期后开发者可以再调用 wx.login 获取新的用户登录态。调用成功说明当前 session_key 未过期，调用失败说明 session_key 已过期。
+        /// 检查登录态 session_key 是否过期。
+        /// session_key 具有唯一性，在使用小程序时，同一用户在同一时刻仅有一个有效的 session_key。
+        /// 通过 wx.login 接口获得的用户登录态拥有一定的时效性。用户越久未使用小程序，用户登录态越有可能过期。反之如果用户一直在使用小程序，则用户登录态一直保持有效。具体时效逻辑由微信维护，对开发者透明。除了过期失效外，触发获取临时登录凭证 code 的操作（[小程序登录](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/login.html) 和 [数据预拉取](https://developers.weixin.qq.com/minigame/dev/guide/base-ability/pre-fetch.html)）可能会生成新的登录态session_key，从而使旧的 session_key 被顶替而失效。
+        /// 开发者可以调用 wx.checkSession 接口检测用户登录态是否过期。**注意，wx.checkSession 的校验对象是最后一次获取 code 操作对应的登录态 session_key**，调用成功说明该 session_key 未过期，调用失败说明 session_key 已过期。如果要校验指定的 session_key 是否有效，可以在开发者服务器后台调用 [checkSessionKey](#)。
+        /// 登录态失效后开发者可以再调用 wx.login 获取新的用户登录态。
         /// **示例代码**
         /// ```js
         /// wx.checkSession({
@@ -150,8 +152,8 @@ namespace WeChatWASM
         /// maxDuration: 30,
         /// camera: 'back',
         /// success(res) {
-        /// console.log(res.tempFiles.tempFilePath)
-        /// console.log(res.tempFiles.size)
+        /// console.log(res.tempFiles[0].tempFilePath)
+        /// console.log(res.tempFiles[0].size)
         /// }
         /// })
         /// ```
@@ -224,7 +226,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.compressImage(Object object)](https://developers.weixin.qq.com/minigame/dev/api/media/image/wx.compressImage.html)
         /// 需要基础库： `3.0.1`
-        /// 压缩图片接口，可选压缩质量
+        /// 压缩图片接口，可选压缩质量。iOS 仅支持压缩 JPG 格式图片。
         /// **示例代码**
         /// ```js
         /// wx.compressImage({
@@ -394,7 +396,7 @@ namespace WeChatWASM
         /// [wx.getBackgroundFetchData(object object)](https://developers.weixin.qq.com/minigame/dev/api/storage/background-fetch/wx.getBackgroundFetchData.html)
         /// 需要基础库： `3.0.1`
         /// 拉取 backgroundFetch 客户端缓存数据。
-        /// 当调用接口时，若当次请求未结束，会先返回本地的旧数据（之前打开小程序时请求的），如果本地没有旧数据，安卓上会返回fail，不会等待请求完成，iOS上会返回success但fetchedData为空，也不会等待请求完成。
+        /// 当调用接口时，若当次请求未结束，会先返回本地的旧数据（之前打开小程序时请求的），如果本地没有旧数据，安卓上会返回fail，不会等待请求完成，iOS上会返回success但fetchedData为空，也不会等待请求完成。建议和 [wx.onBackgroundFetchData](https://developers.weixin.qq.com/minigame/dev/api/storage/background-fetch/wx.onBackgroundFetchData.html) 配合使用
         /// </summary>
         public static void GetBackgroundFetchData(GetBackgroundFetchDataOption callback)
         {
@@ -413,7 +415,7 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.getBatteryInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/device/battery/wx.getBatteryInfo.html)
-        /// 获取设备电量。同步 API [wx.getBatteryInfoSync](https://developers.weixin.qq.com/minigame/dev/api/device/battery/wx.getBatteryInfoSync.html) 在 iOS 上不可用。
+        /// 获取设备电池信息。同步 API [wx.getBatteryInfoSync](https://developers.weixin.qq.com/minigame/dev/api/device/battery/wx.getBatteryInfoSync.html) 在 iOS 上不可用。
         /// </summary>
         public static void GetBatteryInfo(GetBatteryInfoOption callback)
         {
@@ -539,6 +541,25 @@ namespace WeChatWASM
         public static void GetConnectedBluetoothDevices(GetConnectedBluetoothDevicesOption callback)
         {
             WXSDKManagerHandler.Instance.GetConnectedBluetoothDevices(callback);
+        }
+
+        /// <summary>
+        /// [wx.getDeviceBenchmarkInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getDeviceBenchmarkInfo.html)
+        /// 需要基础库： `3.4.5`
+        /// 获取设备性能得分和机型档位数据
+        /// **示例代码**
+        /// ```js
+        /// wx.getDeviceBenchmarkInfo({
+        /// success (res) {
+        /// console.log(res.benchmarkLevel)
+        /// console.log(res.modelLevel)
+        /// }
+        /// })
+        /// ```
+        /// </summary>
+        public static void GetDeviceBenchmarkInfo(GetDeviceBenchmarkInfoOption callback)
+        {
+            WXSDKManagerHandler.Instance.GetDeviceBenchmarkInfo(callback);
         }
 
         /// <summary>
@@ -857,36 +878,6 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.getSystemInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfo.html)
-        /// 获取系统信息。**由于历史原因，wx.getSystemInfo 是异步的调用格式，但是是同步返回，需要异步获取系统信息请使用 [wx.getSystemInfoAsync](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfoAsync.html)。**
-        /// **示例代码**
-        /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/WkUCgXmS7mqO)
-        /// ```js
-        /// wx.getSystemInfo({
-        /// success (res) {
-        /// console.log(res.model)
-        /// console.log(res.pixelRatio)
-        /// console.log(res.windowWidth)
-        /// console.log(res.windowHeight)
-        /// console.log(res.language)
-        /// console.log(res.version)
-        /// console.log(res.platform)
-        /// }
-        /// })
-        /// ```
-        /// ```js
-        /// try {
-        /// const res = wx.getSystemInfoSync()
-        /// console.log(res.model)
-        /// console.log(res.pixelRatio)
-        /// console.log(res.windowWidth)
-        /// console.log(res.windowHeight)
-        /// console.log(res.language)
-        /// console.log(res.version)
-        /// console.log(res.platform)
-        /// } catch (e) {
-        /// // Do something when catch error
-        /// }
-        /// ```
         /// </summary>
         public static void GetSystemInfo(GetSystemInfoOption callback)
         {
@@ -896,22 +887,6 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.getSystemInfoAsync(Object object)](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfoAsync.html)
         /// 需要基础库： `2.25.3`
-        /// 异步获取系统信息。需要一定的微信客户端版本支持，在不支持的客户端上，会使用同步实现来返回。
-        /// **示例代码**
-        /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/WkUCgXmS7mqO)
-        /// ```js
-        /// wx.getSystemInfoAsync({
-        /// success (res) {
-        /// console.log(res.model)
-        /// console.log(res.pixelRatio)
-        /// console.log(res.windowWidth)
-        /// console.log(res.windowHeight)
-        /// console.log(res.language)
-        /// console.log(res.version)
-        /// console.log(res.platform)
-        /// }
-        /// })
-        /// ```
         /// </summary>
         public static void GetSystemInfoAsync(GetSystemInfoAsyncOption callback)
         {
@@ -1339,7 +1314,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.openChannelsUserProfile(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/channels/wx.openChannelsUserProfile.html)
         /// 需要基础库： `2.21.2`
-        /// 打开视频号主页
+        /// 打开视频号主页。若为插件环境，只允许在插件页面中调用。
         /// </summary>
         public static void OpenChannelsUserProfile(OpenChannelsUserProfileOption callback)
         {
@@ -1593,7 +1568,9 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.requestMidasPayment(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPayment.html)
-        /// 发起米大师支付
+        /// 需要基础库： `2.19.2`
+        /// 发起购买游戏币支付请求，可参考[虚拟支付2.0游戏币](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/coins.html)
+        /// 虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
         /// **buyQuantity 限制说明**
         /// 购买游戏币的时候，buyQuantity 不可任意填写。需满足 buyQuantity * 游戏币单价 = 限定的价格等级。如：游戏币单价为 0.1 元，一次购买最少数量是 10。
         /// 有效价格等级如下：
@@ -1632,6 +1609,46 @@ namespace WeChatWASM
         public static void RequestMidasPayment(RequestMidasPaymentOption callback)
         {
             WXSDKManagerHandler.Instance.RequestMidasPayment(callback);
+        }
+
+        /// <summary>
+        /// [wx.requestMidasPaymentGameItem(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPaymentGameItem.html)
+        /// 需要基础库： `2.19.2`
+        /// 发起道具直购支付请求，可参考[虚拟支付2.0道具直购](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/goods.html )，虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
+        /// **示例代码**
+        /// ```js
+        /// wx.requestMidasPaymentGameItem({
+        /// signData: '{"mode":"goods","offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","platform":"android","zoneId":"1","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}',
+        /// paySig: 'd0b8bbccbe34ed11549bcfd6602b08711f4acc0965253a949cd6a2b895152f9d',
+        /// signature: 'd0b8bbccbe34ed11549bcfd6602b08711f4acc0965253a949cd6a2b895152f9d',
+        /// success(res, errCode) {
+        /// console.log('pay', res, errCode);
+        /// },
+        /// fail({
+        /// errMsg,
+        /// errCode
+        /// }) {
+        /// console.error(errMsg, errCode)
+        /// }
+        /// ```
+        /// 支付签名代码实现
+        /// ```python
+        /// import hmac
+        /// import hashlib
+        /// import urllib.parse
+        /// # sign_data 支付原串 注意这里sign_data需要和前端一致，原格式传递（包括空格和回车），建议后台下发，
+        /// # appkey 米大师密钥
+        /// # method 需要签名方法 requestMidasPaymentGameItem
+        /// def gen_pay_sig(sign_data, appkey, method):
+        /// need_encode_body = method + '&' + sign_data
+        /// print(need_encode_body)
+        /// return hmac.new(key=appkey.encode('utf-8'), msg=need_encode_body.encode('utf-8'),
+        ///     digestmod=hashlib.sha256).hexdigest()
+        /// ```
+        /// </summary>
+        public static void RequestMidasPaymentGameItem(RequestMidasPaymentGameItemOption callback)
+        {
+            WXSDKManagerHandler.Instance.RequestMidasPaymentGameItem(callback);
         }
 
         /// <summary>
@@ -1901,7 +1918,7 @@ namespace WeChatWASM
         /// 设置 [InnerAudioContext](https://developers.weixin.qq.com/minigame/dev/api/media/audio/InnerAudioContext.html) 的播放选项。设置之后对当前小程序全局生效。
         /// ****
         /// ## 注意事项
-        /// - 为保证微信整体体验，speakerOn 为 true 时，客户端会忽略 mixWithOthers 参数的内容，强制与其它音频互斥
+        /// - 为保证微信整体体验，speakerOn 为 true 时，客户端会忽略 mixWithOther 参数的内容，强制与其它音频互斥
         /// - 不支持在播放音频的过程中切换为扬声器播放，开发者如需切换可以先暂停当前播放的音频并记录下当前暂停的时间点，然后切换后重新从原来暂停的时间点开始播放音频
         /// - 目前 wx.setInnerAudioOption 接口不兼容 wx.createWebAudioContext 接口，也不兼容 wx.createInnerAudioContext 开启 useWebAudioImplement 的情况，将在后续版本中支持
         /// </summary>
@@ -1947,7 +1964,7 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.setStatusBarStyle(Object object)](https://developers.weixin.qq.com/minigame/dev/api/ui/statusbar/wx.setStatusBarStyle.html)
-        /// 当在配置中设置 showStatusBarStyle 时，屏幕顶部会显示状态栏。此接口可以修改状态栏的样式。
+        /// 当在配置中设置 showStatusBar 时，屏幕顶部会显示状态栏。此接口可以修改状态栏的样式。
         /// </summary>
         public static void SetStatusBarStyle(SetStatusBarStyleOption callback)
         {
@@ -1971,7 +1988,10 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.setVisualEffectOnCapture(Object object)](https://developers.weixin.qq.com/minigame/dev/api/device/screen/wx.setVisualEffectOnCapture.html)
         /// 需要基础库： `3.1.4`
-        /// 设置截屏/录屏时屏幕表现，仅支持在 Android 端调用
+        /// 设置截屏/录屏时屏幕表现
+        /// **Bug & Tip**
+        /// 1. `tip`：iOS 要求基础库版本为 3.3.0 以上，且系统版本为 iOS 16 以上
+        /// 2. `tip`：iOS 目前只支持处理录屏时的表现
         /// </summary>
         public static void SetVisualEffectOnCapture(SetVisualEffectOnCaptureOption callback)
         {
@@ -2064,6 +2084,9 @@ namespace WeChatWASM
         /// [wx.showShareImageMenu(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.showShareImageMenu.html)
         /// 需要基础库： `2.14.3`
         /// 打开分享图片弹窗，可以将图片发送给朋友、收藏或下载
+        /// **Bug & Tip**
+        /// 1. `tip`: `needShowEntrance`分享的图片消息是否要带小程序入口，支持申明类目：商家自营、电商平台、餐饮服务(餐饮服务场所/餐饮服务管理企业、点餐平台、外卖平台)、旅游服务(住宿服务、景区服务、OTA、旅游管理单位)、生活服务(家政服务、丽人服务、宠物(非医院类)、婚庆服务、洗浴保健、休闲娱乐、百货/超市/便利店、开锁服务、营业性演出票务、其他宠物健康服务、洗浴保健平台、共享服务、跑腿、寄存、求职/招聘)
+        /// 2. `tip`: `needShowEntrance`小游戏所有类目都支持
         /// </summary>
         public static void ShowShareImageMenu(ShowShareImageMenuOption callback)
         {
@@ -2464,15 +2487,6 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.OpenPage(callback);
         }
 
-        /// <summary>
-        /// [wx.requestMidasPaymentGameItem(Object object)]
-        /// 发起米大师支付
-        /// </summary>
-        public static void RequestMidasPaymentGameItem(RequestMidasPaymentGameItemOption callback)
-        {
-            WXSDKManagerHandler.Instance.RequestMidasPaymentGameItem(callback);
-        }
-
         public static void RequestSubscribeLiveActivity(RequestSubscribeLiveActivityOption callback)
         {
             WXSDKManagerHandler.Instance.RequestSubscribeLiveActivity(callback);
@@ -2540,22 +2554,6 @@ namespace WeChatWASM
         public static void ReportEvent<T>(string eventId, T data)
         {
             WXSDKManagerHandler.Instance.ReportEvent(eventId, data);
-        }
-
-        /// <summary>
-        /// [wx.reportMonitor(string name, number value)](https://developers.weixin.qq.com/minigame/dev/api/data-analysis/wx.reportMonitor.html)
-        /// 需要基础库： `2.1.2`
-        /// 自定义业务数据监控上报接口。
-        /// **使用说明**
-        /// 使用前，需要在「小程序管理后台-运维中心-性能监控-业务数据监控」中新建监控事件，配置监控描述与告警类型。每一个监控事件对应唯一的监控ID，开发者最多可以创建128个监控事件。
-        /// **示例代码**
-        /// ```js
-        /// wx.reportMonitor('1', 1)
-        /// ```
-        /// </summary>
-        public static void ReportMonitor(string name, double value)
-        {
-            WXSDKManagerHandler.Instance.ReportMonitor(name, value);
         }
 
         /// <summary>
@@ -2651,6 +2649,9 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.shareAppMessage(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.shareAppMessage.html)
         /// 主动拉起转发，进入选择通讯录界面。
+        /// ****
+        /// ## 注意事项
+        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用游戏画面截图。
         /// </summary>
         public static void ShareAppMessage(ShareAppMessageOption option)
         {
@@ -3108,6 +3109,28 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.onMenuButtonBoundingClientRectWeightChange(function listener)](https://developers.weixin.qq.com/minigame/dev/api/ui/menu/wx.onMenuButtonBoundingClientRectWeightChange.html)
+        /// 需要基础库： `3.4.3`
+        /// 监听菜单按钮（右上角胶囊按钮）的布局位置信息变化事件
+        /// **示例代码**
+        /// ```js
+        /// const callback = res => console.log('menuButtonBoundingClientRectWeightChange', res)
+        /// wx.onMenuButtonBoundingClientRectWeightChange(callback)
+        /// // 取消监听
+        /// wx.offMenuButtonBoundingClientRectWeightChange(callback)
+        /// ```
+        /// </summary>
+        public static void OnMenuButtonBoundingClientRectWeightChange(Action<OnMenuButtonBoundingClientRectWeightChangeListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OnMenuButtonBoundingClientRectWeightChange(result);
+        }
+
+        public static void OffMenuButtonBoundingClientRectWeightChange(Action<OnMenuButtonBoundingClientRectWeightChangeListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OffMenuButtonBoundingClientRectWeightChange(result);
+        }
+
+        /// <summary>
         /// [wx.onMessage(function callback)](https://developers.weixin.qq.com/minigame/dev/api/open-api/context/wx.onMessage.html)
         /// 监听主域发送的消息
         /// </summary>
@@ -3270,17 +3293,28 @@ namespace WeChatWASM
         /// ```js
         /// wx.onUserCaptureScreen(function (res) {
         /// console.log('用户截屏了')
-        /// })
+        /// return {
+        /// query: "parameter=test", // 通过截屏图片打开小程序的query参数
+        /// promise: new Promise((resolve) => { // 通过promise延时传递小程序的query参数
+        ///         setTimeout(() => {
+        ///             resolve({
+        ///                 query: "parameter=test2",
+        ///             })
+        ///         }, 1000) // 在1秒内对query进行解析
+        ///     })
+        /// }
+        /// }
+        /// )
         /// ```
         /// </summary>
-        public static void OnUserCaptureScreen(Action<GeneralCallbackResult> res)
+        public static void OnUserCaptureScreen(Action<OnUserCaptureScreenListenerResult> result)
         {
-            WXSDKManagerHandler.Instance.OnUserCaptureScreen(res);
+            WXSDKManagerHandler.Instance.OnUserCaptureScreen(result);
         }
 
-        public static void OffUserCaptureScreen(Action<GeneralCallbackResult> res)
+        public static void OffUserCaptureScreen(Action<OnUserCaptureScreenListenerResult> result)
         {
-            WXSDKManagerHandler.Instance.OffUserCaptureScreen(res);
+            WXSDKManagerHandler.Instance.OffUserCaptureScreen(result);
         }
 
         /// <summary>
@@ -3420,6 +3454,9 @@ namespace WeChatWASM
         /// [wx.onShareTimeline(function listener)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.onShareTimeline.html)
         /// 需要基础库： `2.11.3`
         /// 监听用户点击右上角菜单的「分享到朋友圈」按钮时触发的事件。本接口为 Beta 版本，暂只在 Android 平台支持。
+        /// ****
+        /// ## 注意事项
+        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用当前游戏的icon。
         /// </summary>
         public static void OnShareTimeline(Action<Action<OnShareTimelineListenerResult>> callback)
         {
@@ -3696,36 +3733,6 @@ namespace WeChatWASM
 
         /// <summary>
         /// [Object wx.getSystemInfoSync()](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfoSync.html)
-        /// [wx.getSystemInfo](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfo.html) 的同步版本
-        /// **示例代码**
-        /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/WkUCgXmS7mqO)
-        /// ```js
-        /// wx.getSystemInfo({
-        /// success (res) {
-        /// console.log(res.model)
-        /// console.log(res.pixelRatio)
-        /// console.log(res.windowWidth)
-        /// console.log(res.windowHeight)
-        /// console.log(res.language)
-        /// console.log(res.version)
-        /// console.log(res.platform)
-        /// }
-        /// })
-        /// ```
-        /// ```js
-        /// try {
-        /// const res = wx.getSystemInfoSync()
-        /// console.log(res.model)
-        /// console.log(res.pixelRatio)
-        /// console.log(res.windowWidth)
-        /// console.log(res.windowHeight)
-        /// console.log(res.language)
-        /// console.log(res.version)
-        /// console.log(res.platform)
-        /// } catch (e) {
-        /// // Do something when catch error
-        /// }
-        /// ```
         /// </summary>
         /// <returns></returns>
         public static SystemInfo GetSystemInfoSync()
@@ -3776,14 +3783,19 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [[ImageData](https://developers.weixin.qq.com/minigame/dev/api/render/image/ImageData.html) wx.createImageData()](https://developers.weixin.qq.com/minigame/dev/api/render/image/wx.createImageData.html)
-        /// 需要基础库： `2.24.6`
-        /// 创建一个 ImageData 图片数据对象
+        /// [[ImageData](https://developers.weixin.qq.com/minigame/dev/api/render/image/ImageData.html) wx.createImageData(number width, number height)](https://developers.weixin.qq.com/minigame/dev/api/render/image/wx.createImageData.html)
+        /// 需要基础库： `3.4.10`
+        /// 这里有两种使用方法, 一种是指定ImageData的宽和高, 另外一种是使用ImageData, 通过它本身的宽高尺寸来构建新的对象。
+        /// **示例代码**
+        /// ```js
+        /// const imageData1 =  wx.createImageData(100, 100)
+        /// const imageData2 =  wx.createImageData(imageData1)
+        /// ```
         /// </summary>
         /// <returns></returns>
-        public static ImageData CreateImageData()
+        public static ImageData CreateImageData(double width, double height)
         {
-            return WXSDKManagerHandler.Instance.CreateImageData();
+            return WXSDKManagerHandler.Instance.CreateImageData(width, height);
         }
 
         /// <summary>
@@ -3840,6 +3852,30 @@ namespace WeChatWASM
         /// <summary>
         /// [boolean wx.setMessageToFriendQuery(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.setMessageToFriendQuery.html)
         /// 设置 wx.shareMessageToFriend 接口 query 字段的值
+        /// **提示</title>
+        /// 1. 此处的 query 参数与 wx.onShow 取到的启动查询参数 query 不是同一个概念，仅仅是启动查询参数会增加一个字段为 query。
+        /// 2. query 参数如涉及 "?"和"&" 等特殊符号，需自行进行 encodeURIComponent 和 decodeURIComponent 等操作。
+        /// <title>示例代码</title>
+        /// ```js
+        /// // 发送方
+        /// wx.setMessageToFriendQuery({
+        /// shareMessageToFriendScene: 1,
+        /// query: 'testquery'
+        /// })
+        /// // 预期接收方可以通过以下方式拿到设置
+        /// wx.getEnterOptionsSync().query.shareMessageToFriendScene // 1
+        /// wx.getEnterOptionsSync().query.query // 'testquery'
+        /// <title>示例代码-特殊字符query**
+        /// ```js
+        /// // 发送方
+        /// wx.setMessageToFriendQuery({
+        /// query: encodeURIComponent('foo=1&bar=2') // 如果 query 涉及特殊符号，需要自行 encodeURIComponent
+        /// })
+        /// // 接收方
+        /// // 预期可以通过以下方式拿到设置
+        /// wx.getEnterOptionsSync().query.query // 此处拿到的是 'foo%3D1%26bar%3D2'，需要 decodeURIComponent
+        /// decodeURIComponent(wx.getEnterOptionsSync().query.query) // 'foo=1&bar=2'
+        /// ```
         /// </summary>
         /// <returns></returns>
         public static bool SetMessageToFriendQuery(SetMessageToFriendQueryOption option)

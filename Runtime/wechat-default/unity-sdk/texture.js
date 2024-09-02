@@ -251,16 +251,13 @@ canvasContext.addCreatedListener(() => {
     if (GameGlobal.USED_TEXTURE_COMPRESSION) {
         mod.getSupportedExtensions();
         if (GameGlobal.TextureCompressedFormat === '' || GameGlobal.TextureCompressedFormat === 'pvr') {
-            wx.getSystemInfo({
-                success(res) {
-                    if (res.platform === 'ios') {
-                        wx.showModal({
-                            title: '提示',
-                            content: '当前操作系统版本过低，建议您升级至最新版本。',
-                        });
-                    }
-                },
-            });
+            const { platform } = wx.getDeviceInfo();
+            if (platform === 'ios') {
+                wx.showModal({
+                    title: '提示',
+                    content: '当前操作系统版本过低，建议您升级至最新版本。',
+                });
+            }
         }
     }
     wx.onNetworkStatusChange((res) => {

@@ -28,6 +28,8 @@ export const ResType = {
     AppBaseInfo: {
         SDKVersion: 'string',
         enableDebug: 'bool',
+        fontSizeScaleFactor: 'number',
+        fontSizeSetting: 'number',
         host: 'AppBaseInfoHost',
         language: 'string',
         version: 'string',
@@ -38,6 +40,7 @@ export const ResType = {
     },
     GetBatteryInfoSyncResult: {
         isCharging: 'bool',
+        isLowPowerModeEnabled: 'bool',
         level: 'number',
     },
     DeviceInfo: {
@@ -186,6 +189,7 @@ export const ResType = {
         socketReused: 'bool',
         throughputKbps: 'number',
         transportRttEstimate: 'number',
+        usingHighPerformanceMode: 'bool',
     },
     DownloadTaskOnHeadersReceivedListenerResult: {
         header: 'object',
@@ -203,17 +207,17 @@ export const ResType = {
     },
     OptionStyle: {
         backgroundColor: 'string',
+        height: 'number',
+        left: 'number',
+        top: 'number',
+        width: 'number',
         borderColor: 'string',
         borderRadius: 'number',
         borderWidth: 'number',
         color: 'string',
         fontSize: 'number',
-        height: 'number',
-        left: 'number',
         lineHeight: 'number',
         textAlign: 'string',
-        top: 'number',
-        width: 'number',
     },
     ImageData: {
         height: 'number',
@@ -446,6 +450,7 @@ export const ResType = {
     },
     GetBatteryInfoSuccessCallbackResult: {
         isCharging: 'bool',
+        isLowPowerModeEnabled: 'bool',
         level: 'number',
         errMsg: 'string',
     },
@@ -518,6 +523,11 @@ export const ResType = {
         deviceId: 'string',
         name: 'string',
     },
+    GetDeviceBenchmarkInfoSuccessCallbackResult: {
+        benchmarkLevel: 'number',
+        modelLevel: 'number',
+        errMsg: 'string',
+    },
     GetExtConfigSuccessCallbackResult: {
         extConfig: 'object',
         errMsg: 'string',
@@ -537,6 +547,10 @@ export const ResType = {
         iv: 'string',
         signature: 'string',
         errMsg: 'string',
+    },
+    GetGroupEnterInfoError: {
+        errMsg: 'string',
+        errCode: 'number',
     },
     GetGroupEnterInfoSuccessCallbackResult: {
         cloudID: 'string',
@@ -726,6 +740,14 @@ export const ResType = {
     OnMemoryWarningListenerResult: {
         level: 'number',
     },
+    OnMenuButtonBoundingClientRectWeightChangeListenerResult: {
+        bottom: 'number',
+        height: 'number',
+        left: 'number',
+        right: 'number',
+        top: 'number',
+        width: 'number',
+    },
     OnMouseDownListenerResult: {
         button: 'number',
         timeStamp: 'long',
@@ -773,6 +795,9 @@ export const ResType = {
     OnUnhandledRejectionListenerResult: {
         promise: 'string',
         reason: 'string',
+    },
+    OnUserCaptureScreenListenerResult: {
+        query: 'string',
     },
     OnVoIPChatInterruptedListenerResult: {
         errCode: 'number',
@@ -873,9 +898,23 @@ export const ResType = {
     RequestMidasPaymentFailCallbackErr: {
         errCode: 'number',
         errMsg: 'string',
+        errno: 'number',
     },
     RequestMidasPaymentSuccessCallbackResult: {
         errMsg: 'string',
+    },
+    SignData1: {
+        buyQuantity: 'number',
+        currencyType: 'string',
+        goodsPrice: 'number',
+        mode: 'string',
+        offerId: 'string',
+        outTradeNo: 'string',
+        productId: 'string',
+        attach: 'string',
+        env: 'number',
+        platform: 'string',
+        zoneId: 'string',
     },
     RequestSubscribeMessageFailCallbackResult: {
         errCode: 'number',
@@ -931,6 +970,7 @@ export const ResType = {
     },
     UpdatableMessageFrontEndTemplateInfo: {
         parameterList: 'UpdatableMessageFrontEndParameter[]',
+        templateId: 'string',
     },
     UpdatableMessageFrontEndParameter: {
         name: 'string',
@@ -962,10 +1002,6 @@ export const ResType = {
         cloudID: 'string',
         feedIdList: 'string[]',
         errMsg: 'string',
-    },
-    MidasPaymentGameItemError: {
-        errMsg: 'string',
-        errCode: 'number',
     },
     RequestSubscribeLiveActivitySuccessCallbackResult: {
         code: 'string',

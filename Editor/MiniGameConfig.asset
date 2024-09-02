@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: MiniGameConfig
   m_EditorClassIdentifier: 
   ProjectConf:
-    projectName: 
-    Appid: 
+    projectName: sdkadminup
+    Appid: wx7a727ff7d940bb3f
     CDN: 
-    assetLoadType: 0
+    assetLoadType: 1
     compressDataPackage: 0
     VideoUrl: 
-    DST: 
+    DST: /Users/hongtianyun/Documents/GitProjects/unity-wasm/SDKAdminUP/wxbuild
     StreamCDN: 
     bundleHashLength: 32
     bundlePathIdentifier: StreamingAssets;
@@ -46,7 +46,7 @@ MonoBehaviour:
     UseMiniGameChat: 0
     PreloadWXFont: 0
   CompileOptions:
-    DevelopBuild: 0
+    DevelopBuild: 1
     AutoProfile: 0
     ScriptOnly: 0
     Il2CppOptimizeSize: 1
@@ -57,7 +57,8 @@ MonoBehaviour:
     ProfilingMemory: 0
     CleanBuild: 0
     CustomNodePath: 
-    showMonitorSuggestModal: 1
+    autoAdaptScreen: 0
+    showMonitorSuggestModal: 0
     enableProfileStats: 0
     enableRenderAnalysis: 0
     iOSAutoGCInterval: 10000

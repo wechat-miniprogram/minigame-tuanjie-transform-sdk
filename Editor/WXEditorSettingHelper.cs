@@ -107,7 +107,7 @@ namespace WeChatWASM
                 {
                     if (!formInputData[targetDst].Trim().Equals(string.Empty))
                     {
-                        EditorUtility.RevealInFinder(formInputData[targetDst]);
+                        EditorUtility.RevealInFinder(GetAbsolutePath(formInputData[targetDst]));
                     }
                     GUIUtility.ExitGUI();
                 }
@@ -488,7 +488,7 @@ namespace WeChatWASM
             config.ProjectConf.compressDataPackage = this.getDataCheckbox("compressDataPackage");
             config.ProjectConf.VideoUrl = this.getDataInput("videoUrl");
             config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
-            config.ProjectConf.DST = this.getDataInput("dst");
+            config.ProjectConf.DST = GetAbsolutePath(this.getDataInput("dst"));
             config.ProjectConf.bundleHashLength = int.Parse(this.getDataInput("bundleHashLength"));
             config.ProjectConf.bundlePathIdentifier = this.getDataInput("bundlePathIdentifier");
             config.ProjectConf.bundleExcludeExtensions = this.getDataInput("bundleExcludeExtensions");
@@ -670,7 +670,37 @@ namespace WeChatWASM
             GUILayout.EndHorizontal();
         }
 
+        public static bool IsAbsolutePath(string path)
+        {
+            // 检查是否为空或空白
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            // 在 Windows 上，检查驱动器字母或网络路径
+            if (Path.IsPathRooted(path))
+            {
+                return true;
+            }
+
+            // 在 Unix/Linux 和 macOS 上，检查是否以 '/' 开头
+            if (path.StartsWith("/"))
+            {
+                return true;
+            }
+
+            return false; // 否则为相对路径
+        }
+
+        public static string GetAbsolutePath(string path)
+        {
+            if (IsAbsolutePath(path))
+            {
+                return path;
+            }
+
+            return Path.Combine(Application.dataPath, path);
+        }
     }
-
-
 }

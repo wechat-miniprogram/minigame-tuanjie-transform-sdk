@@ -76,8 +76,7 @@ const isWK = false;
                 _window.canvas.addEventListener = _window.addEventListener;
                 _window.canvas.removeEventListener = _window.removeEventListener;
             }
-            const _wx$getSystemInfoSync = wx.getSystemInfoSync();
-            const { platform } = _wx$getSystemInfoSync;
+            const { platform } = wx.getDeviceInfo();
             // 开发者工具无法重定义 window
             if (platform === 'devtools') {
                 for (const key in _window) {
@@ -223,13 +222,10 @@ const isWK = false;
         function _interopRequireDefault(obj) {
             return obj && obj.__esModule ? obj : { default: obj };
         }
-        const _wx$getSystemInfoSync = wx.getSystemInfoSync();
-        const { screenWidth } = _wx$getSystemInfoSync;
-        const { screenHeight } = _wx$getSystemInfoSync;
-        const { devicePixelRatio } = _wx$getSystemInfoSync;
+        const { screenWidth, screenHeight, pixelRatio } = wx.getWindowInfo();
         const innerWidth = exports.innerWidth = screenWidth;
         const innerHeight = exports.innerHeight = screenHeight;
-        exports.devicePixelRatio = devicePixelRatio;
+        exports.devicePixelRatio = pixelRatio;
         const screen = exports.screen = {
             availWidth: innerWidth,
             availHeight: innerHeight,
@@ -1216,8 +1212,7 @@ const isWK = false;
         });
         const _util = __webpack_require__(9);
         // TODO 需要 wx.getSystemInfo 获取更详细信息
-        const _wx$getSystemInfoSync = wx.getSystemInfoSync();
-        const { platform } = _wx$getSystemInfoSync;
+        const { platform } = wx.getDeviceInfo();
         const navigator = {
             platform,
             language: 'zh-cn',
