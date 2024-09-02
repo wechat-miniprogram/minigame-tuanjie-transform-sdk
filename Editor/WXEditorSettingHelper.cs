@@ -18,6 +18,8 @@ namespace WeChatWASM
 
     public class WXSettingsHelper
     {
+        public static string projectRootPath;
+
         public WXSettingsHelper()
         {
             Type weixinMiniGamePackageHelpersType = Type.GetType("UnityEditor.WeixinPackageHelpers,UnityEditor");
@@ -50,6 +52,8 @@ namespace WeChatWASM
 
             //loadData();
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
+
+            projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../")
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
@@ -699,8 +703,8 @@ namespace WeChatWASM
             {
                 return path;
             }
-
-            return Path.Combine(Application.dataPath, path);
+            
+            return Path.Combine(projectRootPath, path);
         }
     }
 }
