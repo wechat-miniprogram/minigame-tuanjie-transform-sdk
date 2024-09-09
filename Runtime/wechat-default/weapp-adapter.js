@@ -243,9 +243,18 @@ const isWK = false;
             value: true,
         });
         let performance = void 0;
+        let ori_performance = wx.getPerformance();
         const initTime = Date.now();
+        const ori_initTime = ori_performance.now();
         const clientPerfAdapter = Object.assign({}, {
             now: function now() {
+                if (GameGlobal.unityNamespace.isDevelopmentBuild
+                    && GameGlobal.unityNamespace.isProfilingBuild
+                    && !GameGlobal.unityNamespace.isDevtools
+                    && !GameGlobal.isIOSHighPerformanceMode) {
+                    // 由于wx.getPerformance()获取到的是微秒级，因此这里需要/1000.0，进行单位的统一
+                    return (ori_performance.now() - ori_initTime) * 0.001;
+                }
                 return (Date.now() - initTime);
             },
         });

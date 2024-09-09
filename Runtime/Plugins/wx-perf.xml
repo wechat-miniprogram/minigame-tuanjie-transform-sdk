@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>wx-perf</name>
+    </assembly>
+    <members>
+        <member name="M:WXSDKPerf.WXPerfEngine_Implementation.Annotation(System.String)">
+            <summary>
+            This method is used to add an annotation to the performance data.
+            The annotation string is uploaded to the server along with the current frame ID.
+            </summary>
+            <param name="InAnnotationString">The annotation string to be added. It should not be null or empty.</param>
+            <remarks>
+            If the provided annotation string is null or empty, an error message will be logged.
+            </remarks>
+        </member>
+    </members>
+</doc>

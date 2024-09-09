@@ -1,3 +1,6 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-restricted-properties */
+/* eslint-disable no-plusplus */
 import canvasContext from './canvas-context';
 const downloadedTextures = {};
 const downloadingTextures = {};

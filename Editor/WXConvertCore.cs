@@ -109,8 +109,16 @@ namespace WeChatWASM
                 Debug.LogError("因构建模板检查失败终止导出。");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
+            if (CheckInvalidPerfIntegration())
+            {
+                Debug.LogError("性能分析工具只能用于Development Build, 终止导出! ");
+                return WXExportError.BUILD_WEBGL_FAILED;
+            }
+
+
             CheckBuildTarget();
             Init();
+            ProcessWxPerfBinaries(); 
             // JSLib
             SettingWXTextureMinJSLib();
             UpdateGraphicAPI();
@@ -206,6 +214,42 @@ namespace WeChatWASM
                 }
             }
             return WXExportError.SUCCEED;
+        }
+
+        private static void ProcessWxPerfBinaries()
+        {
+            string[] wxPerfPlugins;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                wxPerfPlugins = new string[]
+                {
+                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}WxPerfJsBridge.jslib",
+                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}wx_perf_2022.a",
+                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}wx_perf_2021.a",
+                };
+            }
+            else
+            {
+                string jsLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+
+                // 下方顺序不可变动
+                wxPerfPlugins = new string[]
+                {
+                     $"{jsLibRootDir}WxPerfJsBridge.jslib",
+                     $"{jsLibRootDir}wx_perf_2022.a",
+                     $"{jsLibRootDir}wx_perf_2021.a",
+                };
+            }
+
+            WXAssetPostprocessor.EnableWXPostProcess = config.CompileOptions.enablePerfAnalysis; 
+            for (int i = 0; i < wxPerfPlugins.Length; i++)
+            {
+                var importer = AssetImporter.GetAtPath(wxPerfPlugins[i]) as PluginImporter;
+                importer.SaveAndReimport();
+                AssetDatabase.WriteImportSettingsIfDirty(wxPerfPlugins[i]);
+                AssetDatabase.Refresh();
+            }
         }
 
         private static void CheckBuildTarget()
@@ -316,6 +360,16 @@ namespace WeChatWASM
                 return false;
             }
             return true;
+        }
+
+
+        // Assert when release + Perf-feature
+        private static bool CheckInvalidPerfIntegration()
+        {
+            const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
+            string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            
+            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
         }
 
         private static void ConvertDotnetCode()
@@ -1410,6 +1464,9 @@ namespace WeChatWASM
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
                 boolConfigInfo,
+                config.CompileOptions.DevelopBuild ? "true" : "false", 
+                config.CompileOptions.enablePerfAnalysis ? "true" : "false", 
+                config.ProjectConf.MemorySize.ToString(), 
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

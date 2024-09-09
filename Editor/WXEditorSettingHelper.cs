@@ -59,6 +59,8 @@ namespace WeChatWASM
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
+        private static bool m_EnablePerfTool = false; 
+
         private static string _dstCache;
 
         public void OnFocus()
@@ -178,7 +180,7 @@ namespace WeChatWASM
                 EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
 
 
-                this.formCheckbox("developBuild", "Development Build");
+                this.formCheckbox("developBuild", "Development Build", "", false, null, OnDevelopmentBuildToggleChanged);
                 this.formCheckbox("autoProfile", "Auto connect Profiler");
                 this.formCheckbox("scriptOnly", "Scripts Only Build");
                 this.formCheckbox("il2CppOptimizeSize", "Il2Cpp Optimize Size(?)", "对应于Il2CppCodeGeneration选项，勾选时使用OptimizeSize(默认推荐)，生成代码小15%左右，取消勾选则使用OptimizeSpeed。游戏中大量泛型集合的高频访问建议OptimizeSpeed，在使用HybridCLR等第三方组件时只能用OptimizeSpeed。(Dotnet Runtime模式下该选项无效)", !UseIL2CPP);
@@ -200,8 +202,14 @@ namespace WeChatWASM
                 this.formCheckbox("enableProfileStats", "显示性能面板");
                 this.formCheckbox("enableRenderAnalysis", "显示渲染日志(dev only)");
                 this.formCheckbox("brotliMT", "brotli多线程压缩(?)", "开启多线程压缩可以提高出包速度，但会降低压缩率。如若不使用wasm代码分包请勿用多线程出包上线");
+                if (m_EnablePerfTool)
+                {
+                    this.formCheckbox("enablePerfAnalysis", "集成性能分析工具", "将性能分析工具集成入Development Build包中", false, null, OnPerfAnalysisFeatureToggleChanged);
+                }
+                
                 EditorGUILayout.EndVertical();
             }
+
 
 #if UNITY_INSTANTGAME
             foldInstantGame = EditorGUILayout.Foldout(foldInstantGame, "Instant Game - AutoStreaming");
@@ -461,6 +469,7 @@ namespace WeChatWASM
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", config.CompileOptions.brotliMT);
+            this.setData("enablePerfAnalysis", config.CompileOptions.enablePerfAnalysis);            
             this.setData("autoUploadFirstBundle", true);
 
             // font options
@@ -532,6 +541,7 @@ namespace WeChatWASM
             config.CompileOptions.enableProfileStats = this.getDataCheckbox("enableProfileStats");
             config.CompileOptions.enableRenderAnalysis = this.getDataCheckbox("enableRenderAnalysis");
             config.CompileOptions.brotliMT = this.getDataCheckbox("brotliMT");
+            config.CompileOptions.enablePerfAnalysis = this.getDataCheckbox("enablePerfAnalysis");
 
             // font options
             config.FontOptions.CJK_Unified_Ideographs = this.getDataCheckbox("CJK_Unified_Ideographs");
@@ -553,6 +563,8 @@ namespace WeChatWASM
             config.FontOptions.Geometric_Shapes = this.getDataCheckbox("Geometric_Shapes");
             config.FontOptions.Mathematical_Operators = this.getDataCheckbox("Mathematical_Operators");
             config.FontOptions.CustomUnicode = this.getDataInput("CustomUnicode");
+
+            ApplyPerfAnalysisSetting(); 
         }
 
         private string getDataInput(string target)
@@ -640,7 +652,7 @@ namespace WeChatWASM
             GUILayout.EndHorizontal();
         }
 
-        private void formCheckbox(string target, string label, string help = null, bool disable = false, Action<bool> setting = null)
+        private void formCheckbox(string target, string label, string help = null, bool disable = false, Action<bool> setting = null, Action<bool> onValueChanged = null)
         {
             if (!formCheckboxData.ContainsKey(target))
             {
@@ -657,7 +669,15 @@ namespace WeChatWASM
                 GUILayout.Label(new GUIContent(label, help), GUILayout.Width(140));
             }
             EditorGUI.BeginDisabledGroup(disable);
-            formCheckboxData[target] = EditorGUILayout.Toggle(disable ? false : formCheckboxData[target]);
+
+            // Toggle the checkbox value based on the disable condition
+            bool newValue = EditorGUILayout.Toggle(disable ? false : formCheckboxData[target]);
+            // Update the checkbox data if the value has changed and invoke the onValueChanged action
+            if (newValue != formCheckboxData[target])
+            {
+                formCheckboxData[target] = newValue;
+                onValueChanged?.Invoke(newValue);
+            }
 
             if (setting != null)
             {
@@ -675,6 +695,46 @@ namespace WeChatWASM
             if (setting == null)
                 EditorGUILayout.LabelField(string.Empty);
             GUILayout.EndHorizontal();
+        }
+
+        private void OnDevelopmentBuildToggleChanged(bool InNewValue)
+        {
+            // 针对non-dev build，取消性能分析工具的集成
+            if (!InNewValue)
+            {
+                this.setData("enablePerfAnalysis", false); 
+            }
+        }
+
+        private void OnPerfAnalysisFeatureToggleChanged(bool InNewValue)
+        {
+            // 针对non-dev build，取消性能分析工具的集成
+            if (!formCheckboxData["developBuild"] && InNewValue)
+            {
+                this.setData("enablePerfAnalysis", false); 
+            }
+        }
+
+        private void ApplyPerfAnalysisSetting()
+        {
+            const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
+            string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            if (this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild")) 
+            {
+                if (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) == -1)
+                {
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, MACRO_ENABLE_WX_PERF_FEATURE + $";{defineSymbols}");
+                }
+            }
+            else
+            {
+                // 删除掉已有的ENABLE_WX_PERF_FEATURE
+                if (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1)
+                {
+                    defineSymbols = defineSymbols.Replace(MACRO_ENABLE_WX_PERF_FEATURE, "").Replace(";;", ";").Trim(';');
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, defineSymbols);
+                }
+            }
         }
 
         public static bool IsAbsolutePath(string path)

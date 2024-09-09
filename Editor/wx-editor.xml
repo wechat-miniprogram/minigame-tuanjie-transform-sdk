@@ -618,6 +618,11 @@
             是否显示渲染分析日志（develop build才生效）
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enablePerfAnalysis">
+            <summary>
+            是否开启运行时性能分析工具（develop build才生效）
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.iOSAutoGCInterval">
             <summary>
             iOS高性能模式自动GC间隔(毫秒)

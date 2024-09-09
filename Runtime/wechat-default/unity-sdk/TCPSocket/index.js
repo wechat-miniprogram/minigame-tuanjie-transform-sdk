@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { formatJsonStr, uid, onEventCallback, offEventCallback, getListObject, convertInfoToPointer, formatResponse, convertDataToPointer } from '../utils';
 const TCPSocketList = {};
 const wxTCPSocketBindWifiList = {};

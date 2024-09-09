@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import moduleHelper from './module-helper';
 import response from './response';
 import { formatJsonStr, uid } from './utils';

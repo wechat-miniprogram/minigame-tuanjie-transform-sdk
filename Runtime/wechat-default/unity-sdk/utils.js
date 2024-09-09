@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import moduleHelper from './module-helper';
 import { ResType } from './resType';
 import { ResTypeOther } from './resTypeOther';

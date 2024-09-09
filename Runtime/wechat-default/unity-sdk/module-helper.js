@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { MODULE_NAME } from './conf';
 export default {
     _send: null,
@@ -8,7 +9,7 @@ export default {
         if (!this._send) {
             this.init();
         }
-        
+        // @ts-ignore
         this._send(MODULE_NAME, method, str);
     },
 };
