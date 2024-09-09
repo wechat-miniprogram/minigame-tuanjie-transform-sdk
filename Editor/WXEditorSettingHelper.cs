@@ -54,10 +54,12 @@ namespace WeChatWASM
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
+
+            _dstCache = "";
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
-        private static _dstCache = "";
+        private static _dstCache;
 
         public void OnFocus()
         {
@@ -492,7 +494,8 @@ namespace WeChatWASM
             config.ProjectConf.compressDataPackage = this.getDataCheckbox("compressDataPackage");
             config.ProjectConf.VideoUrl = this.getDataInput("videoUrl");
             config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
-            config.ProjectConf.DST = GetAbsolutePath(this.getDataInput("dst"));
+            _dstCache = this.getDataInput("dst");
+            config.ProjectConf.DST = GetAbsolutePath(_dstCache);
             config.ProjectConf.bundleHashLength = int.Parse(this.getDataInput("bundleHashLength"));
             config.ProjectConf.bundlePathIdentifier = this.getDataInput("bundlePathIdentifier");
             config.ProjectConf.bundleExcludeExtensions = this.getDataInput("bundleExcludeExtensions");
