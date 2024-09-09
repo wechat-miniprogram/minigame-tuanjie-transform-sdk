@@ -57,7 +57,7 @@ namespace WeChatWASM
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
-
+        private static _dstCache = "";
 
         public void OnFocus()
         {
@@ -420,7 +420,7 @@ namespace WeChatWASM
             this.setData("compressDataPackage", config.ProjectConf.compressDataPackage);
             this.setData("videoUrl", config.ProjectConf.VideoUrl);
             this.setData("orientation", (int)config.ProjectConf.Orientation);
-            this.setData("dst", config.ProjectConf.DST);
+            this.setData("dst", _dstCache);
             this.setData("bundleHashLength", config.ProjectConf.bundleHashLength.ToString());
             this.setData("bundlePathIdentifier", config.ProjectConf.bundlePathIdentifier);
             this.setData("bundleExcludeExtensions", config.ProjectConf.bundleExcludeExtensions);
@@ -683,13 +683,13 @@ namespace WeChatWASM
             }
 
             // 在 Windows 上，检查驱动器字母或网络路径
-            if (Path.IsPathRooted(path))
+            if (Application.platform == RuntimePlatform.WindowsEditor && Path.IsPathRooted(path))
             {
                 return true;
             }
 
             // 在 Unix/Linux 和 macOS 上，检查是否以 '/' 开头
-            if (path.StartsWith("/"))
+            if (Application.platform == RuntimePlatform.OSXEditor && path.StartsWith("/"))
             {
                 return true;
             }
