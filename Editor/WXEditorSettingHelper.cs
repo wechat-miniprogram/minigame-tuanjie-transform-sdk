@@ -18,8 +18,6 @@ namespace WeChatWASM
 
     public class WXSettingsHelper
     {
-        public static string projectRootPath;
-
         public WXSettingsHelper()
         {
             Type weixinMiniGamePackageHelpersType = Type.GetType("UnityEditor.WeixinPackageHelpers,UnityEditor");
@@ -52,16 +50,10 @@ namespace WeChatWASM
 
             //loadData();
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
-
-            projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
-
-            _dstCache = config.ProjectConf.DST;
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
         private static bool m_EnablePerfTool = false; 
-
-        private static string _dstCache;
 
         public void OnFocus()
         {
@@ -115,7 +107,7 @@ namespace WeChatWASM
                 {
                     if (!formInputData[targetDst].Trim().Equals(string.Empty))
                     {
-                        EditorUtility.RevealInFinder(GetAbsolutePath(formInputData[targetDst]));
+                        EditorUtility.RevealInFinder(formInputData[targetDst]);
                     }
                     GUIUtility.ExitGUI();
                 }
@@ -430,7 +422,7 @@ namespace WeChatWASM
             this.setData("compressDataPackage", config.ProjectConf.compressDataPackage);
             this.setData("videoUrl", config.ProjectConf.VideoUrl);
             this.setData("orientation", (int)config.ProjectConf.Orientation);
-            this.setData("dst", _dstCache);
+            this.setData("dst", config.ProjectConf.DST);
             this.setData("bundleHashLength", config.ProjectConf.bundleHashLength.ToString());
             this.setData("bundlePathIdentifier", config.ProjectConf.bundlePathIdentifier);
             this.setData("bundleExcludeExtensions", config.ProjectConf.bundleExcludeExtensions);
@@ -503,8 +495,7 @@ namespace WeChatWASM
             config.ProjectConf.compressDataPackage = this.getDataCheckbox("compressDataPackage");
             config.ProjectConf.VideoUrl = this.getDataInput("videoUrl");
             config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
-            _dstCache = this.getDataInput("dst");
-            config.ProjectConf.DST = GetAbsolutePath(_dstCache);
+            config.ProjectConf.DST = this.getDataInput("dst");
             config.ProjectConf.bundleHashLength = int.Parse(this.getDataInput("bundleHashLength"));
             config.ProjectConf.bundlePathIdentifier = this.getDataInput("bundlePathIdentifier");
             config.ProjectConf.bundleExcludeExtensions = this.getDataInput("bundleExcludeExtensions");
@@ -736,38 +727,7 @@ namespace WeChatWASM
                 }
             }
         }
-
-        public static bool IsAbsolutePath(string path)
-        {
-            // 检查是否为空或空白
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return false;
-            }
-
-            // 在 Windows 上，检查驱动器字母或网络路径
-            if (Application.platform == RuntimePlatform.WindowsEditor && Path.IsPathRooted(path))
-            {
-                return true;
-            }
-
-            // 在 Unix/Linux 和 macOS 上，检查是否以 '/' 开头
-            if (Application.platform == RuntimePlatform.OSXEditor && path.StartsWith("/"))
-            {
-                return true;
-            }
-
-            return false; // 否则为相对路径
-        }
-
-        public static string GetAbsolutePath(string path)
-        {
-            if (IsAbsolutePath(path))
-            {
-                return path;
-            }
-            
-            return Path.Combine(projectRootPath, path);
-        }
     }
+
+
 }
