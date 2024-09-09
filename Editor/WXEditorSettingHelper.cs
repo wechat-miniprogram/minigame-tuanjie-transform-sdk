@@ -59,7 +59,7 @@ namespace WeChatWASM
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
-        private static _dstCache;
+        private static string _dstCache;
 
         public void OnFocus()
         {
