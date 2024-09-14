@@ -17,7 +17,7 @@ export default {
         if (!obj || typeof wxGameRecorderList === 'undefined' || typeof wxGameRecorderList[eventType] === 'undefined') {
             return;
         }
-        
+        // eslint-disable-next-line no-restricted-syntax
         for (const key in Object.keys(wxGameRecorderList[eventType])) {
             const callback = wxGameRecorderList[eventType][key];
             if (callback) {

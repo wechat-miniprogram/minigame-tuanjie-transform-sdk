@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 import moduleHelper from './module-helper';
 export default {
     handleText(s, f, c) {

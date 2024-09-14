@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import moduleHelper from './module-helper';
 import { uid, formatJsonStr, formatResponse } from './utils';
 const CloudIDObject = {};
@@ -21,7 +22,7 @@ const CloudList = {};
 export default {
     WX_CloudCloud(option) {
         const config = formatJsonStr(option);
-        
+        // @ts-ignore
         const cloud = new wx.cloud.Cloud(config);
         CloudList[config.resourceEnv] = cloud;
     },

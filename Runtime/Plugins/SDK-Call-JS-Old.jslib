@@ -542,9 +542,13 @@ mergeInto(LibraryManager.library, {
                     GameGlobal.avgExFrameTime = exTotalTime / 60;
                     frameCount = 0;
                     exTotalTime = 0;
+                  } else if (typeof GameGlobal.avgExFrameTime === "undefined") {
+                    GameGlobal.avgExFrameTime = exTotalTime / frameCount; 
                   }
                 };
             }();
+            //Set initial value to 0 for preventing GameGlobal.avgExFrameTime from being undefined in Unity 2019
+            GameGlobal.avgExFrameTime = 0;
         } 
         return GameGlobal.avgExFrameTime
     },

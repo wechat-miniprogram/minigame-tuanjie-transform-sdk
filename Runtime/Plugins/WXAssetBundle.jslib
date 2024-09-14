@@ -269,6 +269,10 @@ var WXAssetBundleLibrary = {
         var err_msg = !!e ? e.toString() : 'unknown';
       }
       var expected_size = WXFS.disk.get(path);
+      if(expected_size === 0){
+        WXFS.disk.set(path, res.byteLength);
+        expected_size = res.byteLength;
+      }
       if(!res || res.byteLength != expected_size){
         var wxab_error = {
           stage: WXFS.WXABErrorSteps['kLoadBundleFromFile'],
@@ -308,12 +312,16 @@ var WXAssetBundleLibrary = {
     return buffer;
   },
 
-  UnCleanbyPath: function (ptr) {
+  UnCleanbyPath: function (ptr, fromFile) {
     var url = UTF8ToString(ptr);
     var path = WXFS.url2path(url);
+    if(fromFile && !GameGlobal.manager.fs.accessSync(path)){
+      return false;
+    }
     if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
     }
+    return true;
   },
 
   UnloadbyPath: function (ptr) {

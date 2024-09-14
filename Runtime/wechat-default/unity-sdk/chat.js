@@ -10,7 +10,7 @@ function createMiniGameChat(options, callback) {
     try {
         if (typeof requirePlugin !== 'undefined') {
             if (!MiniGameChat) {
-                
+                // @ts-ignore
                 MiniGameChat = requirePlugin('MiniGameChat', {
                     enableRequireHostModule: true,
                     customEnv: {
@@ -124,7 +124,7 @@ export default {
         if (!miniGameChat || typeof onList === 'undefined' || typeof onList[eventType] === 'undefined') {
             return;
         }
-        
+        // eslint-disable-next-line no-restricted-syntax
         for (const key in Object.keys(onList[eventType])) {
             const callback = onList[eventType][key];
             if (callback) {
