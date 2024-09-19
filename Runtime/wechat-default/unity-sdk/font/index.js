@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 
 import moduleHelper from '../module-helper';
 import { formatJsonStr } from '../utils';
@@ -5,7 +6,7 @@ import fixCmapTable from './fix-cmap';
 import readMetrics from './read-metrics';
 import splitTTCToBufferOnlySC from './split-sc';
 
-const { platform } = wx.getSystemInfoSync();
+const { platform } = wx.getDeviceInfo();
 
 const tempCacheObj = {};
 let fontDataCache;
@@ -94,7 +95,7 @@ function handleGetFontData(config, forceLoad = false) {
     if (!config && !canGetWxCommonFont) {
         return Promise.reject('invalid usage');
     }
-    
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (!getFontPromise || forceLoad) {
         getFontPromise = new Promise((resolve, reject) => {
             if (!canGetWxCommonFont && !!config) {

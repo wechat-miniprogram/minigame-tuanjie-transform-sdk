@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { formatTouchEvent, convertOnTouchStartListenerResultToPointer } from '../utils';
 let wxOnTouchCancelCallback;
 let wxOnTouchEndCallback;
