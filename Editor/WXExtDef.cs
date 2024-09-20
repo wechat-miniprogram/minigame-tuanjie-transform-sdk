@@ -19,7 +19,6 @@ namespace WeChatWASM
 
         private static void Init()
         {
-            WXExtEnvDef.pluginVersion = WXPluginVersion.pluginVersion;
 #if UNITY_2018_1_OR_NEWER
             WXExtEnvDef.SETDEF("UNITY_2018_1_OR_NEWER", true);
 #else
