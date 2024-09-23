@@ -51,11 +51,13 @@ namespace WeChatWASM
             }
 
             //loadData();
+            Debug.Log("111111111");
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
-
+            Debug.Log("22222222");
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
-
+            Debug.Log("33333333");
             _dstCache = "";
+            Debug.Log("444444");
         }
 
         private static WXEditorScriptObject config;
