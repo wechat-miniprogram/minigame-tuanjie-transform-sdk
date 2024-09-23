@@ -139,6 +139,7 @@ namespace WeChatWASM
 #if UNITY_2018
                 return true;
 #else
+                Debug.Log("UnityUtil.IsAssets1111");
                 var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(WXExtEnvDef).Assembly);
                 if (packageInfo == null)
                 {

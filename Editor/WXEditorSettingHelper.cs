@@ -109,7 +109,7 @@ namespace WeChatWASM
                     formInputData[targetDst] = "";
                 }
                 EditorGUILayout.LabelField(string.Empty, GUILayout.Width(10));
-                GUILayout.Label(new GUIContent("导出路径(?)", "支持输入相对路径，如：wxbuild"), GUILayout.Width(140));
+                GUILayout.Label(new GUIContent("导出路径(?)", "支持输入相对于项目根目录的相对路径，如：wxbuild"), GUILayout.Width(140));
                 formInputData[targetDst] = GUILayout.TextField(formInputData[targetDst], GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth - 270));
                 if (GUILayout.Button(new GUIContent("打开"), GUILayout.Width(40)))
                 {
