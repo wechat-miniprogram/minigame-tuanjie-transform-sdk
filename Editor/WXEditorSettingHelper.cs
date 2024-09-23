@@ -389,7 +389,7 @@ namespace WeChatWASM
             // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "index.js");
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             config = UnityUtil.GetEditorConf();
-            _dstCache = config.ProjectConf.dst;
+            _dstCache = config.ProjectConf.DST;
 
             // Instant Game
             if (WXConvertCore.IsInstantGameAutoStreaming())
