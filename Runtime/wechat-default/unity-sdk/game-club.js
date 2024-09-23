@@ -25,6 +25,10 @@ export default {
         config.type = typeEnum[config.type];
         // @ts-ignore
         config.icon = iconEnum[config.icon];
+        
+        if (!config.text) {
+            config.text = '';
+        }
         const id = uid();
         gameClubButtonList[id] = wx.createGameClubButton(config);
         return id;
