@@ -50,13 +50,12 @@ namespace WeChatWASM
 
             }
 
-            config = UnityUtil.GetEditorConf();
-            
+            //loadData();
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
 
-            _dstCache = config.ProjectConf.DST;
+            _dstCache = "";
         }
 
         private static WXEditorScriptObject config;
@@ -390,6 +389,7 @@ namespace WeChatWASM
             // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "index.js");
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             config = UnityUtil.GetEditorConf();
+            _dstCache = config.ProjectConf.dst;
 
             // Instant Game
             if (WXConvertCore.IsInstantGameAutoStreaming())
