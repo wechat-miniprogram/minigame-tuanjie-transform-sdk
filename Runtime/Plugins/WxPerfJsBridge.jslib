@@ -84,31 +84,15 @@ mergeInto(LibraryManager.library, {
     }, 
 
     JSExportFromIDBFS: function(idbfsPath, targetPath, snapshotFileName, frameIdx) {
-        const idbfaPathStr = UTF8ToString(idbfsPath);
+        const idbfsPathStr = UTF8ToString(idbfsPath);
         const targetPathStr = UTF8ToString(targetPath);
         const fileName = UTF8ToString(snapshotFileName); 
-        
-        var snapShotData = FS.readFile(idbfaPathStr, {encoding: 'binary'}); 
-        var dataArray = new Uint8Array(snapShotData);
-        console.log(idbfaPathStr + " --- " + targetPathStr)
-        const fs = wx.getFileSystemManager(); 
-        fs.writeFile({
-                    filePath: targetPathStr,
-                    data: dataArray.buffer, 
-                    encoding: 'binary', 
-                    success(res) 
-                    {
-                        console.log("Write To Snapshot Success! --- "+ fileName)
-                        GameGlobal.manager.profiler.uploadSnapshotFile({
-                            'fileName': fileName, 
-                            'uploadSnapshotPath': targetPathStr, 'frameIdx': frameIdx})
-                    }, 
-                    fail(res)
-                    {
-                        console.error(res)
-                    }
-                })
-
-
+        GameGlobal.manager.profiler.uploadSnapshotFile({
+            'fileName': fileName, 
+            'uploadSnapshotPath': targetPathStr, 
+            'frameIdx': frameIdx, 
+            'idbfsPathStr': idbfsPathStr, 
+            'targetPathStr': targetPathStr
+        })
     }
 });
