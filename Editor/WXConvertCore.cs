@@ -241,41 +241,8 @@ namespace WeChatWASM
                      $"{jsLibRootDir}wx_perf_2021.a",
                 };
             }
-            
-            {
-                // WxPerfJsBridge.jslib
-                var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
-#else
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
-#endif
-            }
 
-            {
-                // wx_perf_2022.a
-                bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer(); 
-
-                var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
-#else
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
-#endif
-            }
-
-            {
-                // wx_perf_2021.a
-                bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202103To202203(); 
-
-                var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
-#else
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
-#endif
-            }
-
+            WXAssetPostprocessor.EnableWXPostProcess = config.CompileOptions.enablePerfAnalysis; 
             for (int i = 0; i < wxPerfPlugins.Length; i++)
             {
                 var importer = AssetImporter.GetAtPath(wxPerfPlugins[i]) as PluginImporter;
@@ -283,27 +250,6 @@ namespace WeChatWASM
                 AssetDatabase.WriteImportSettingsIfDirty(wxPerfPlugins[i]);
                 AssetDatabase.Refresh();
             }
-        }
-
-        private static bool IsCompatibleWithUnity202203OrNewer()
-        {
-#if UNITY_2022_3_OR_NEWER
-            return true;
-#endif
-            return false;
-        }
-
-        static bool IsCompatibleWithUnity202103To202203()
-        {
-#if UNITY_2022_3_OR_NEWER
-            return false;
-#endif
-
-#if !UNITY_2021_3_OR_NEWER
-            return false;
-#endif
-
-            return true;
         }
 
         private static void CheckBuildTarget()

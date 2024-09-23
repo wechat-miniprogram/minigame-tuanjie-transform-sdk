@@ -30,7 +30,7 @@ mergeInto(LibraryManager.library, {
             GameGlobal.memprofiler = emscriptenMemoryProfiler
             GameGlobal.memprofiler.onDump = function () {
             var fs = wx.getFileSystemManager();
-            var allocation_used = GameGlobal.memprofiler.allocationsAtLoc; 
+            var allocation_used=GameGlobal.memprofiler.allocationsAtLoc; 
             if (typeof allocation_used === "undefined") allocation_used=GameGlobal.memprofiler.allocationSiteStatistics;
             var calls = [];
             for (var i in allocation_used) {

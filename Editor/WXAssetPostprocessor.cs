@@ -2,7 +2,6 @@ using UnityEditor;
 using System;
 using System.Reflection;
 using System.IO;
-/*
 public class WXAssetPostprocessor : AssetPostprocessor
 {
     private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
@@ -178,4 +177,3 @@ public class WXAssetPostprocessor : AssetPostprocessor
         return enabledStrIdx + 9;
     }
 }
-*/
