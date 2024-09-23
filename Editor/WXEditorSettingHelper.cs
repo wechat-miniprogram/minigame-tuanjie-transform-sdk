@@ -50,15 +50,16 @@ namespace WeChatWASM
 
             }
 
-            //loadData();
+            config = UnityUtil.GetEditorConf();
+            
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
 
-            _dstCache = string.IsNullOrEmpty(config.ProjectConf.DST) ? "" : config.ProjectConf.DST;
+            _dstCache = config.ProjectConf.DST;
         }
 
-        //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
+        private static WXEditorScriptObject config;
         private static bool m_EnablePerfTool = false; 
 
         private static string _dstCache;
@@ -298,8 +299,8 @@ namespace WeChatWASM
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent("更多配置项"), GUILayout.Width(100), GUILayout.Height(25)))
             {
-                var config = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/WX-WASM-SDK-V2/Editor/MiniGameConfig.asset");
-                Selection.activeObject = config;
+                var minigameConfig = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/WX-WASM-SDK-V2/Editor/MiniGameConfig.asset");
+                Selection.activeObject = minigameConfig;
                 GUIUtility.ExitGUI();
             }
             if (GUILayout.Button(new GUIContent("WebGL转小游戏(不常用)"), GUILayout.Width(150), GUILayout.Height(25)))
@@ -388,7 +389,7 @@ namespace WeChatWASM
         {
             // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "index.js");
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
-            var config = UnityUtil.GetEditorConf();
+            config = UnityUtil.GetEditorConf();
 
             // Instant Game
             if (WXConvertCore.IsInstantGameAutoStreaming())
