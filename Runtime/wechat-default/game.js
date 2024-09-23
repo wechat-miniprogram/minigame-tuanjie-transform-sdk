@@ -34,7 +34,6 @@ const managerConfig = {
 GameGlobal.managerConfig = managerConfig;
 // 版本检查
 checkVersion().then((enable) => {
-    console.log(`[Unity快适配] Unity版本：${unityNamespace.convertPluginVersion}, 转换插件版本：${unityNamespace.convertPluginVersion}`);
     if (enable) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         let UnityManager;

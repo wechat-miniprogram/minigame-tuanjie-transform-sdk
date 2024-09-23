@@ -1476,7 +1476,7 @@ namespace WeChatWASM
                 excludeFileExtensionsStr,
                 config.CompileOptions.Webgl2 ? "2" : "1",
                 Application.unityVersion,
-                WXPluginVersion.pluginVersion,
+                WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
                 config.ProjectConf.maxStorage.ToString(),
                 config.ProjectConf.defaultReleaseSize.ToString(),
