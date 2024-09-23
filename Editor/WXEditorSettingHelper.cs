@@ -55,7 +55,7 @@ namespace WeChatWASM
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
 
-            _dstCache = config.ProjectConf.DST;
+            _dstCache = config.ProjectConf.DST || "";
         }
 
         //private static WXEditorScriptObject config = UnityUtil.GetEditorConf();
