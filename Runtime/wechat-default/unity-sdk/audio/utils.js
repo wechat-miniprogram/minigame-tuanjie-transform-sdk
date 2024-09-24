@@ -45,7 +45,7 @@ export const destroyInnerAudio = (id, useCache) => {
         Object.keys(state).forEach((key) => {
             try {
                 
-                
+                // @ts-ignore
                 audios[id][key] = state[key];
             }
             catch (e) { }

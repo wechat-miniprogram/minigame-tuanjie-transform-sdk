@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-for-of */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { isH5Renderer, isSupportVideoPlayer, isPc, isDevtools } from '../../check-version';
 let FrameworkData = null;
 const isWebVideo = isH5Renderer || isPc || isDevtools;
@@ -26,9 +28,9 @@ function jsVideoEnded() {
     if (isDebug) {
         console.log('jsVideoEnded');
     }
-    
+    // @ts-ignore
     if (this.onendedCallback) {
-        
+        // @ts-ignore
         dynCall_vi(this.onendedCallback, this.onendedRef);
     }
 }
@@ -41,9 +43,9 @@ function _JS_Video_Create(url) {
         console.log('_JS_Video_Create', source);
     }
     if (isWebVideo) {
-        
+        // @ts-ignore
         const video = GameGlobal.manager.createWKVideo(source, FrameworkData.GLctx);
-        
+        // eslint-disable-next-line no-plusplus
         videoInstances[++videoInstanceIdCounter] = video;
     }
     else {
@@ -52,12 +54,12 @@ function _JS_Video_Create(url) {
             videoDecoder = cacheVideoDecoder.pop();
         }
         else {
-            
+            // @ts-ignore 8.0.38客户端+3.0.0基础库，才能正常使用type参数
             videoDecoder = wx.createVideoDecoder({
                 type: 'wemedia',
             });
         }
-        
+        // eslint-disable-next-line no-plusplus
         const videoInstance = {
             videoDecoder,
             videoWidth: 0,
@@ -68,7 +70,7 @@ function _JS_Video_Create(url) {
             seeking: false,
             duration: 1,
         };
-        
+        // eslint-disable-next-line no-plusplus
         videoInstances[++videoInstanceIdCounter] = videoInstance;
         videoDecoder.on('start', (res) => {
             if (isDebug) {
@@ -111,10 +113,10 @@ function _JS_Video_Create(url) {
                 videoInstance.onended?.();
             }
         });
-        
+        // @ts-ignore
         videoDecoder.on('frame', (res) => {
             
-            
+            // @ts-ignore
             videoInstance.currentTime = res.pts / 1000;
             videoInstance.frameData = new Uint8ClampedArray(res.data);
         });
@@ -125,7 +127,7 @@ function _JS_Video_Create(url) {
             videoDecoder.stop();
         };
         videoInstance.seek = (time) => {
-            
+            // @ts-ignore
             videoDecoder.avSync.seek({ stamp: time });
         };
         videoInstance.play();

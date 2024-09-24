@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 
 import moduleHelper from '../module-helper';
 import { formatJsonStr } from '../utils';
@@ -5,7 +6,7 @@ import fixCmapTable from './fix-cmap';
 import readMetrics from './read-metrics';
 import splitTTCToBufferOnlySC from './split-sc';
 
-const { platform } = wx.getSystemInfoSync();
+const { platform } = wx.getDeviceInfo();
 
 const tempCacheObj = {};
 let fontDataCache;
@@ -88,81 +89,94 @@ const fontOptions = {
     },
     CustomUnicodeRange: $CustomUnicodeRange,
 };
-
-function handleGetFontData(config, forceLoad = false) {
+function handleGetFontData(config, forceFallback) {
+    
     const canGetWxCommonFont = !!GameGlobal.manager?.font?.getCommonFont;
+    
     if (!config && !canGetWxCommonFont) {
         return Promise.reject('invalid usage');
     }
-    
-    if (!getFontPromise || forceLoad) {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    if (!getFontPromise || forceFallback) {
         getFontPromise = new Promise((resolve, reject) => {
-            if (!canGetWxCommonFont && !!config) {
+            
+            if ((!canGetWxCommonFont || forceFallback) && !!config) {
                 const xhr = new GameGlobal.unityNamespace.UnityLoader.UnityCache.XMLHttpRequest();
-                xhr.open('GET', config.fallbackUrl, true);
-                xhr.responseType = 'arraybuffer';
+                xhr.open('GET', config.fallbackUrl, true); 
+                xhr.responseType = 'arraybuffer'; 
                 xhr.onload = () => {
+                    
                     if ((xhr.status === 200 || xhr.status === 0) && xhr.response) {
-                        const notoFontData = xhr.response;
-                        fontDataCache = notoFontData;
-                        isReadFromCache = xhr.isReadFromCache;
-                        resolve();
+                        const notoFontData = xhr.response; 
+                        fontDataCache = notoFontData; 
+                        isReadFromCache = xhr.isReadFromCache; 
+                        resolve(); 
                     }
                 };
-                xhr.onerror = reject;
-                xhr.send();
+                xhr.onerror = reject; 
+                xhr.send(); 
                 return;
             }
-            let unicodeRange = [];
+            let unicodeRange = []; 
             
             Object.keys(fontOptions).forEach((key) => {
                 if (fontOptions[key].include) {
-                    unicodeRange.push(fontOptions[key].unicodeRange);
+                    unicodeRange.push(fontOptions[key].unicodeRange); 
                 }
             });
             
-            unicodeRange = unicodeRange.concat(fontOptions.CustomUnicodeRange);
+            unicodeRange = unicodeRange.concat(fontOptions.CustomUnicodeRange); 
+            
             GameGlobal.manager.font.getCommonFont({
                 success(fontData) {
                     
                     if (isIOS) {
                         fixCmapTable(fontData);
                     }
+                    
                     if (isAndroid) {
                         const tempData = splitTTCToBufferOnlySC(fontData);
                         if (tempData) {
-                            fontData = tempData;
+                            fontData = tempData; 
                         }
                     }
-                    fontDataCache = fontData;
-                    resolve();
+                    fontDataCache = fontData; 
+                    resolve(); 
                 },
-                fail: reject,
-            }, unicodeRange);
+                fail: reject, 
+            }, unicodeRange); 
         });
     }
-    return getFontPromise;
+    return getFontPromise; 
 }
-function WXGetFontRawData(conf, callbackId) {
-    const config = formatJsonStr(conf);
-    const loadFromRemote = !GameGlobal.manager?.font?.getCommonFont;
-    GameGlobal.manager.TimeLogger.timeStart('WXGetFontRawData');
-    handleGetFontData(config).then(() => {
+function WXGetFontRawData(conf, callbackId, forceFallback = false) {
+    const config = formatJsonStr(conf); 
+    const loadFromRemote = !GameGlobal.manager?.font?.getCommonFont; 
+    GameGlobal.manager.TimeLogger.timeStart('WXGetFontRawData'); 
+    
+    handleGetFontData(config, forceFallback).then(() => {
         if (fontDataCache) {
-            GameGlobal.manager.font.reportGetFontCost(GameGlobal.manager.TimeLogger.timeEnd('WXGetFontRawData'), { loadFromRemote, isReadFromCache, preloadWXFont: GameGlobal.unityNamespace.preloadWXFont });
-            const { ascent, descent, lineGap, unitsPerEm } = readMetrics(fontDataCache) || {};
-            tempCacheObj[callbackId] = fontDataCache;
-            moduleHelper.send('GetFontRawDataCallback', JSON.stringify({ callbackId, type: 'success', res: JSON.stringify({ byteLength: fontDataCache.byteLength, ascent, descent, lineGap, unitsPerEm }) }));
-            GameGlobal.manager.Logger.pluginLog(`[font] load font from ${loadFromRemote ? `network, url=${config.fallbackUrl}` : 'local'}`);
             
-            fontDataCache = null;
+            GameGlobal.manager.font.reportGetFontCost(GameGlobal.manager.TimeLogger.timeEnd('WXGetFontRawData'), { loadFromRemote: forceFallback || loadFromRemote, isReadFromCache, preloadWXFont: GameGlobal.unityNamespace.preloadWXFont });
+            const { ascent, descent, lineGap, unitsPerEm } = readMetrics(fontDataCache) || {}; 
+            tempCacheObj[callbackId] = fontDataCache; 
+            moduleHelper.send('GetFontRawDataCallback', JSON.stringify({ callbackId, type: 'success', res: JSON.stringify({ byteLength: fontDataCache.byteLength, ascent, descent, lineGap, unitsPerEm }) }));
+            GameGlobal.manager.Logger.pluginLog(`[font] load font from ${forceFallback || loadFromRemote ? `network, url=${config.fallbackUrl}` : 'local'}`);
+            
+            fontDataCache = null; 
         }
         else {
             GameGlobal.manager.Logger.pluginError('[font] load font error: empty content');
         }
     })
         .catch((err) => {
-        GameGlobal.manager.Logger.pluginError('[font] load font error: ', err);
+        if (err.errmsg === 'no support font' && forceFallback === false) {
+            
+            WXGetFontRawData(conf, callbackId, true);
+        }
+        else {
+            GameGlobal.manager.Logger.pluginError('[font] load font error: ', err); 
+        }
     });
 }
 function WXShareFontBuffer(buffer, offset, callbackId) {

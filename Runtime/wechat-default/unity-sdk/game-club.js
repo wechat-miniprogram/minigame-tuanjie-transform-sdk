@@ -15,16 +15,20 @@ const getObject = getListObject(gameClubButtonList, 'gameClubButton');
 export default {
     WXCreateGameClubButton(conf) {
         const config = formatJsonStr(conf);
-        
+        // @ts-ignore
         config.style = JSON.parse(config.styleRaw);
         if (config.style.fontSize === 0) {
-            
+            // @ts-ignore
             config.style.fontSize = undefined;
         }
-        
+        // @ts-ignore
         config.type = typeEnum[config.type];
-        
+        // @ts-ignore
         config.icon = iconEnum[config.icon];
+        
+        if (!config.text) {
+            config.text = '';
+        }
         const id = uid();
         gameClubButtonList[id] = wx.createGameClubButton(config);
         return id;

@@ -7,7 +7,7 @@ export default {
             resolveFn = resolve;
             moduleHelper.send('_OnNeedPrivacyAuthorizationCallback', '{}');
         };
-        
+        // @ts-ignore
         wx.onNeedPrivacyAuthorization(callback);
     },
     WX_PrivacyAuthorizeResolve(conf) {

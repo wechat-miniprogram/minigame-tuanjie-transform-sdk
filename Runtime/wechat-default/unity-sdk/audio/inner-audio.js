@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import moduleHelper from '../module-helper';
 import { isSupportPlayBackRate } from '../../check-version';
 import { audios, localAudioMap, downloadingAudioMap, innerAudioVolume, WEBAudio } from './store';
@@ -320,8 +321,8 @@ export default {
         if (key === 'onCanplay') {
             audios[id][key](() => {
                 
-                
-                
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { duration, buffered, referrerPolicy, volume } = audios[id];
                 setTimeout(() => {
                     moduleHelper.send('OnAudioCallback', JSON.stringify({
