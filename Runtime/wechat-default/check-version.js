@@ -1,6 +1,7 @@
 /* eslint-disable no-multi-assign */
 /* eslint-disable @typescript-eslint/naming-convention */
-const { version, SDKVersion, platform, system } = wx.getSystemInfoSync();
+const { version, SDKVersion } = wx.getAppBaseInfo();
+const { platform, system } = wx.getDeviceInfo();
 const accountInfo = wx.getAccountInfoSync();
 const envVersion = accountInfo?.miniProgram?.envVersion;
 function compareVersion(v1, v2) {
@@ -61,6 +62,8 @@ const isPcBrotliInvalid = isPc && !compareVersion(SDKVersion, $LOAD_DATA_FROM_SU
 const isMobileBrotliInvalid = isMobile && !compareVersion(SDKVersion, '2.21.1');
 // @ts-ignore
 const isBrotliInvalid = $COMPRESS_DATA_PACKAGE && (isPcBrotliInvalid || isMobileBrotliInvalid);
+// iOS系统版本>=17.5时，小游戏退后台会导致异常
+export const isIOS175 = compareVersion(systemVersion, '17.5') || isH5Renderer;
 // 是否能以iOS高性能模式运行
 // 请勿修改GameGlobal.canUseH5Renderer赋值！！！
 GameGlobal.canUseH5Renderer = isH5Renderer && isH5LibVersionValid;

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const PreLoadKeys = '$PreLoadKeys'; 
 const storage = {
     _cacheData: {},

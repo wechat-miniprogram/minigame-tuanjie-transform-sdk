@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import response from './response';
 import moduleHelper from './module-helper';
 import { cacheArrayBuffer, formatJsonStr, formatResponse } from './utils';
@@ -81,7 +82,7 @@ export default {
     WXWriteFileSync(filePath, data, encoding) {
         try {
             const fs = wx.getFileSystemManager();
-            
+            // @ts-ignore
             fs.writeFileSync(filePath, data, encoding);
             fileInfoHandler.addFileInfo(filePath, data);
         }
@@ -283,9 +284,9 @@ export default {
             ...config,
             success(res) {
                 if (!Array.isArray(res.stats)) {
-                    
+                    // @ts-ignore C#中特殊处理
                     res.one_stat = res.stats;
-                    
+                    // @ts-ignore C#中特殊处理
                     res.stats = null;
                 }
                 moduleHelper.send('StatCallback', JSON.stringify({
@@ -302,11 +303,11 @@ export default {
                 }));
             },
             complete(res) {
-                
+                // @ts-ignore C#中特殊处理
                 if (!Array.isArray(res.stats)) {
-                    
+                    // @ts-ignore C#中特殊处理
                     res.one_stat = res.stats;
-                    
+                    // @ts-ignore C#中特殊处理
                     res.stats = null;
                 }
                 moduleHelper.send('StatCallback', JSON.stringify({

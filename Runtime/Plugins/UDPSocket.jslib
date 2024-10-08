@@ -46,8 +46,11 @@ var WXUDPSocketLibrary =
     WX_UDPSocketSetTTL:function(id, ttl) {
         window.WXWASMSDK.WX_UDPSocketSetTTL(_WXPointer_stringify_adaptor(id), ttl);
     },
-    WX_UDPSocketWrite:function(id) {
-        window.WXWASMSDK.WX_UDPSocketWrite(_WXPointer_stringify_adaptor(id));
+    WX_UDPSocketWriteString:function(id, data, param) {
+        window.WXWASMSDK.WX_UDPSocketWriteString(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(data), _WXPointer_stringify_adaptor(param));
+    },
+    WX_UDPSocketWriteBuffer:function(id, dataPtr, dataLength, param) {
+        window.WXWASMSDK.WX_UDPSocketWriteBuffer(_WXPointer_stringify_adaptor(id), dataPtr, dataLength, _WXPointer_stringify_adaptor(param));
     },
     WX_UDPSocketBind:function(id, port) {
         var res = window.WXWASMSDK.WX_UDPSocketBind(_WXPointer_stringify_adaptor(id), port);

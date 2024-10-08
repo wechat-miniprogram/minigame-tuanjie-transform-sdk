@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import moduleHelper from './module-helper';
 import { ResType } from './resType';
 import { ResTypeOther } from './resTypeOther';
@@ -106,6 +107,9 @@ export function formatResponse(type, data, id) {
         else if (conf[key] === 'string' && typeof data[key] === 'number') {
             data[key] = `${data[key]}`;
         }
+        else if (conf[key] === 'string' && typeof data[key] === 'object') {
+            data[key] = JSON.stringify(data[key]);
+        }
         else if (conf[key] === 'bool' && (typeof data[key] === 'number' || typeof data[key] === 'string')) {
             data[key] = !!data[key];
         }
@@ -171,6 +175,9 @@ export function formatResponse(type, data, id) {
             }
         }
     });
+    if ((type === 'SystemInfo' || type === 'WindowInfo') && data.pixelRatio) {
+        data.pixelRatio = window.devicePixelRatio;
+    }
     return data;
 }
 export function formatJsonStr(str, type) {

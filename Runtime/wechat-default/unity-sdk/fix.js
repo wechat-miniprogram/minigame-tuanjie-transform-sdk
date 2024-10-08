@@ -1,3 +1,5 @@
+/* eslint-disable prefer-spread */
+/* eslint-disable prefer-rest-params */
 
 export default {
     init() {
@@ -15,13 +17,13 @@ export default {
             }
             return id;
         };
-        
+        // @ts-ignore
         window.setTimeout = function (vCallback, nDelay) {
             const aArgs = Array.prototype.slice.call(arguments, 2);
             const id = getId();
             const t = privateSetTimeout(vCallback instanceof Function
                 ? () => {
-                    
+                    // @ts-ignore
                     vCallback.apply(null, aArgs);
                     delete wm[id];
                 }
@@ -30,7 +32,7 @@ export default {
             return id;
         };
         const privateClearTimeout = window.clearTimeout;
-        
+        // @ts-ignore
         window.clearTimeout = function (id) {
             if (id) {
                 const t = wm[id];
@@ -41,13 +43,13 @@ export default {
             }
         };
         const privateSetInterval = window.setInterval;
-        
+        // @ts-ignore
         window.setInterval = function (vCallback, nDelay) {
             const aArgs = Array.prototype.slice.call(arguments, 2);
             const id = getId();
             const t = privateSetInterval(vCallback instanceof Function
                 ? () => {
-                    
+                    // @ts-ignore
                     vCallback.apply(null, aArgs);
                 }
                 : vCallback, nDelay);
@@ -55,7 +57,7 @@ export default {
             return id;
         };
         const privateClearInterval = window.clearInterval;
-        
+        // @ts-ignore
         window.clearInterval = function (id) {
             if (id) {
                 const t = wm[id];
