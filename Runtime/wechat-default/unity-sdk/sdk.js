@@ -998,6 +998,30 @@ export default {
             },
         });
     },
+    WX_GetPhoneNumber(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.getPhoneNumber({
+            ...config,
+            success(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
     WX_GetPrivacySetting(conf, callbackId) {
         const config = formatJsonStr(conf);
         wx.getPrivacySetting({
@@ -3334,9 +3358,6 @@ export default {
     },
     WX_ExitPointerLock() {
         wx.exitPointerLock();
-    },
-    WX_GetPhoneNumber(option) {
-        wx.getPhoneNumber(formatJsonStr(option));
     },
     WX_OperateGameRecorderVideo(option) {
         wx.operateGameRecorderVideo(formatJsonStr(option));

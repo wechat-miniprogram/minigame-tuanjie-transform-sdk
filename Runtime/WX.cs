@@ -489,6 +489,11 @@ namespace WeChatWASM
         /// [wx.getChannelsLiveInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/channels/wx.getChannelsLiveInfo.html)
         /// 需要基础库： `2.15.0`
         /// 获取视频号直播信息
+        /// **常见错误码说明**
+        /// 100008  视频号需要认证
+        /// 40097 入参异常
+        /// 1416104  视频号获取到的数据为空
+        /// 1416100  非法的视频号id
         /// </summary>
         public static void GetChannelsLiveInfo(GetChannelsLiveInfoOption callback)
         {
@@ -727,6 +732,18 @@ namespace WeChatWASM
         public static void GetNetworkType(GetNetworkTypeOption callback)
         {
             WXSDKManagerHandler.Instance.GetNetworkType(callback);
+        }
+
+        /// <summary>
+        /// [wx.getPhoneNumber(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/user-info/wx.getPhoneNumber.html)
+        /// 手机号快速验证，向用户申请，并在用户同意后，快速填写和验证手机 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getPhoneNumber.html)
+        /// ****
+        /// ## 注意事项
+        /// - 用户点击后才可进行调用
+        /// </summary>
+        public static void GetPhoneNumber(GetPhoneNumberOption callback)
+        {
+            WXSDKManagerHandler.Instance.GetPhoneNumber(callback);
         }
 
         /// <summary>
@@ -2534,18 +2551,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.getPhoneNumber(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/user-info/wx.getPhoneNumber.html)
-        /// 手机号快速验证，向用户申请，并在用户同意后，快速填写和验证手机 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getPhoneNumber.html)
-        /// ****
-        /// ## 注意事项
-        /// - 用户点击后才可进行调用
-        /// </summary>
-        public static void GetPhoneNumber(GetPhoneNumberOption option)
-        {
-            WXSDKManagerHandler.Instance.GetPhoneNumber(option);
-        }
-
-        /// <summary>
         /// [wx.operateGameRecorderVideo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/game-recorder/wx.operateGameRecorderVideo.html)
         /// 需要基础库： `2.26.1`
         /// 分享游戏对局回放。安卓微信8.0.28开始支持，iOS微信8.0.30开始支持。
@@ -2685,7 +2690,7 @@ namespace WeChatWASM
         /// 主动拉起转发，进入选择通讯录界面。
         /// ****
         /// ## 注意事项
-        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用游戏画面截图。
+        /// - 转发图片说明：imageUrl，imageUrlId 都存在时，优先使用 imageUrl。 imageUrl，imageUrlId 都不填时使用游戏画面截图。
         /// </summary>
         public static void ShareAppMessage(ShareAppMessageOption option)
         {
@@ -3490,7 +3495,7 @@ namespace WeChatWASM
         /// 监听用户点击右上角菜单的「分享到朋友圈」按钮时触发的事件。本接口为 Beta 版本，暂只在 Android 平台支持。
         /// ****
         /// ## 注意事项
-        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用当前游戏的icon。
+        /// - 转发图片说明：imageUrl，imageUrlId 都存在时，优先使用 imageUrl。  imageUrl，imageUrlId 都不填时使用当前游戏的icon。
         /// </summary>
         public static void OnShareTimeline(Action<Action<OnShareTimelineListenerResult>> callback)
         {
