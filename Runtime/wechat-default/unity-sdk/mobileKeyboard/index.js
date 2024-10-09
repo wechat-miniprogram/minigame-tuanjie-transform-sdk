@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 let FrameworkData = null;
 const keyboardSetting = {
     value: '',
@@ -13,6 +14,7 @@ const keyboardConfirmlistener = function (res) {
     keyboardSetting.value = res.value;
     _JS_MobileKeyboard_Hide(false);
 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const keyboardCompletelistener = function (res) {
     removeKeyboardListeners();
 };
@@ -87,6 +89,7 @@ function _JS_MobileKeyboard_SetText(text) {
     }
     keyboardSetting.value = FrameworkData.UTF8ToString(text);
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_MobileKeyboard_SetTextSelection(start, length) {
     
 }
@@ -99,7 +102,7 @@ function _JS_MobileKeyboard_Show(text, keyboardType, autocorrection, multiline, 
         mobile_input_hide_delay = null;
     }
     if (hasExistingMobileInput) {
-        if (keyboardSetting.multiple != !!multiline) {
+        if (keyboardSetting.multiple !== !!multiline) {
             _JS_MobileKeyboard_Hide(false);
             return;
         }

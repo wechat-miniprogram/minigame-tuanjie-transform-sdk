@@ -118,7 +118,7 @@ namespace WeChatWASM
 
             CheckBuildTarget();
             Init();
-            ProcessWxPerfBinaries(); 
+            ProcessWxPerfBinaries();
             // JSLib
             SettingWXTextureMinJSLib();
             UpdateGraphicAPI();
@@ -242,7 +242,40 @@ namespace WeChatWASM
                 };
             }
 
-            WXAssetPostprocessor.EnableWXPostProcess = config.CompileOptions.enablePerfAnalysis; 
+            {
+                // WxPerfJsBridge.jslib
+                var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
+#if PLATFORM_WEIXINMINIGAME
+                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
+#else
+                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
+#endif
+            }
+
+            {
+                // wx_perf_2022.a
+                bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer();
+
+                var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
+#if PLATFORM_WEIXINMINIGAME
+                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
+#else
+                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
+#endif
+            }
+
+            {
+                // wx_perf_2021.a
+                bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202103To202203();
+
+                var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
+#if PLATFORM_WEIXINMINIGAME
+                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
+#else
+                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
+#endif
+            }
+
             for (int i = 0; i < wxPerfPlugins.Length; i++)
             {
                 var importer = AssetImporter.GetAtPath(wxPerfPlugins[i]) as PluginImporter;
@@ -250,6 +283,27 @@ namespace WeChatWASM
                 AssetDatabase.WriteImportSettingsIfDirty(wxPerfPlugins[i]);
                 AssetDatabase.Refresh();
             }
+        }
+
+        private static bool IsCompatibleWithUnity202203OrNewer()
+        {
+#if UNITY_2022_3_OR_NEWER
+            return true;
+#endif
+            return false;
+        }
+
+        static bool IsCompatibleWithUnity202103To202203()
+        {
+#if UNITY_2022_3_OR_NEWER
+            return false;
+#endif
+
+#if !UNITY_2021_3_OR_NEWER
+            return false;
+#endif
+
+            return true;
         }
 
         private static void CheckBuildTarget()
@@ -368,8 +422,8 @@ namespace WeChatWASM
         {
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            
-            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
+
+            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1);
         }
 
         private static void ConvertDotnetCode()
@@ -1378,10 +1432,10 @@ namespace WeChatWASM
             }
             catch (Exception e)
             {
-                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message);
             }
 
-            
+
             return sb.ToString();
         }
 
@@ -1464,9 +1518,9 @@ namespace WeChatWASM
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
                 boolConfigInfo,
-                config.CompileOptions.DevelopBuild ? "true" : "false", 
-                config.CompileOptions.enablePerfAnalysis ? "true" : "false", 
-                config.ProjectConf.MemorySize.ToString(), 
+                config.CompileOptions.DevelopBuild ? "true" : "false",
+                config.CompileOptions.enablePerfAnalysis ? "true" : "false",
+                config.ProjectConf.MemorySize.ToString(),
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

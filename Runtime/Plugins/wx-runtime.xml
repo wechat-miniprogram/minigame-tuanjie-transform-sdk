@@ -3130,7 +3130,7 @@
         </member>
         <member name="F:WeChatWASM.AppAuthorizeSetting.bluetoothAuthorized">
             <summary>
-            允许微信使用蓝牙的开关（仅 iOS 有效）
+            允许微信使用蓝牙的开关（安卓基础库 3.5.0 以上有效）
             </summary>
         </member>
         <member name="F:WeChatWASM.AppAuthorizeSetting.cameraAuthorized">
@@ -5835,8 +5835,10 @@
             <summary>
             直播状态
             可选值：
+            - 1: 直播状态不存在（针对未开过直播的主播）;
             - 2: 直播中;
-            - 3: 直播结束;
+            - 3: 直播已结束;
+            - 4: 直播准备中（未开播）;
             </summary>
         </member>
         <member name="F:WeChatWASM.GetChannelsLiveNoticeInfoOption.finderUserName">
@@ -6213,6 +6215,22 @@
             信号强弱，单位 dbm
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetNetworkTypeSuccessCallbackResult.weakNet">
+            <summary>
+            需要基础库： `3.5.3`
+            是否处于弱网环境
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetPhoneNumberOption.isRealtime">
+            <summary>
+            手机号实时验证，向用户申请，并在用户同意后，快速填写和实时验证手机号 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getRealtimePhoneNumber.html)。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetPhoneNumberOption.phoneNumberNoQuotaToast">
+            <summary>
+            当手机号快速验证或手机号实时验证额度用尽时，是否对用户展示“申请获取你的手机号，但该功能使用次数已达当前小程序上限，暂时无法使用”的提示，默认展示。
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetPrivacySettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
@@ -6230,7 +6248,7 @@
         </member>
         <member name="F:WeChatWASM.GetPrivacySettingSuccessCallbackResult.needAuthorization">
             <summary>
-            是否需要用户授权隐私协议（如果开发者没有在[mp后台-设置-服务内容声明-用户隐私保护指引]中声明隐私收集类型则会返回false；如果开发者声明了隐私收集，且用户之前同意过隐私协议则会返回false；如果开发者声明了隐私收集，且用户还没同意过则返回true；如果用户之前同意过、但后来小程序又新增了隐私收集类型也会返回true）
+            是否需要用户授权隐私协议（如果开发者没有在「MP后台-设置-服务内容声明-用户隐私保护指引」中声明隐私收集类型则会返回false；如果开发者声明了隐私收集，且用户之前同意过隐私协议则会返回false；如果开发者声明了隐私收集，且用户还没同意过则返回true；如果用户之前同意过、但后来小程序又新增了隐私收集类型也会返回true）
             </summary>
         </member>
         <member name="F:WeChatWASM.GetPrivacySettingSuccessCallbackResult.privacyContractName">
@@ -6880,6 +6898,26 @@
         <member name="F:WeChatWASM.MakeBluetoothPairOption.timeout">
             <summary>
             超时时间，单位 ms
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NavigateBackMiniProgramOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NavigateBackMiniProgramOption.extraData">
+            <summary>
+            需要返回给上一个小程序的数据，上一个小程序可在 `App.onShow` 中获取到这份数据。 [详情](#)。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NavigateBackMiniProgramOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NavigateBackMiniProgramOption.success">
+            <summary>
+            接口调用成功的回调函数
             </summary>
         </member>
         <member name="F:WeChatWASM.NavigateToMiniProgramOption.appId">
@@ -8337,7 +8375,11 @@
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
             | -15011 |  | 请求的数据类型错误 |
+            | -15012 |  | SIGNATURE错误 |
             | -15013 |  | 代币未发布 |
+            | -15014 |  | paysig错误 |
+            | -15015 |  | sessionkey过期 |
+            | -15016 |  | 道具价格错误 |
             | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
@@ -8371,7 +8413,11 @@
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
             | -15011 |  | 请求的数据类型错误 |
+            | -15012 |  | SIGNATURE错误 |
             | -15013 |  | 代币未发布 |
+            | -15014 |  | paysig错误 |
+            | -15015 |  | sessionkey过期 |
+            | -15016 |  | 道具价格错误 |
             | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
@@ -9258,7 +9304,7 @@
         <member name="F:WeChatWASM.ShowShareImageMenuOption.style">
             <summary>
             需要基础库： `3.2.0`
-            分享样式，可选 v2
+            分享样式，小程序可选 v2
             </summary>
         </member>
         <member name="F:WeChatWASM.ShowShareImageMenuOption.success">

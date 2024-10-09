@@ -176,6 +176,9 @@ WX_Login:function(conf, callbackId) {
 WX_MakeBluetoothPair:function(conf, callbackId) {
     window.WXWASMSDK.WX_MakeBluetoothPair(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
+WX_NavigateBackMiniProgram:function(conf, callbackId) {
+    window.WXWASMSDK.WX_NavigateBackMiniProgram(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+},
 WX_NavigateToMiniProgram:function(conf, callbackId) {
     window.WXWASMSDK.WX_NavigateToMiniProgram(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
@@ -407,6 +410,9 @@ WX_OpenBusinessView:function(conf, callbackId) {
 
 WX_ExitPointerLock:function() {
     window.WXWASMSDK.WX_ExitPointerLock();
+},
+WX_GetPhoneNumber:function(option){
+    window.WXWASMSDK.WX_GetPhoneNumber(_WXPointer_stringify_adaptor(option));
 },
 WX_OperateGameRecorderVideo:function(option){
     window.WXWASMSDK.WX_OperateGameRecorderVideo(_WXPointer_stringify_adaptor(option));
