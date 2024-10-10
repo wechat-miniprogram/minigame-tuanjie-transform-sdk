@@ -1,6 +1,4 @@
 // @ts-nocheck
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 const unityNamespace = {
     canvas: GameGlobal.canvas,
     // cache width
@@ -138,6 +136,7 @@ function bindGloblException() {
     });
     // 上报初始信息
     function printSystemInfo(appBaseInfo, deviceInfo) {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { version, SDKVersion } = appBaseInfo;
         const { platform, system } = deviceInfo;
         unityNamespace.version = version;
