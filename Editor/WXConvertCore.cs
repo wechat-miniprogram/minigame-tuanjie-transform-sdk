@@ -1432,10 +1432,10 @@ namespace WeChatWASM
             }
             catch (Exception e)
             {
-                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message);
             }
 
-            
+
             return sb.ToString();
         }
 

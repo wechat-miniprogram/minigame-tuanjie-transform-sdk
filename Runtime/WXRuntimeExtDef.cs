@@ -7,7 +7,7 @@ namespace WeChatWASM
 {
     public class WXRuntimeExtDef
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void OnWXRuntimeExtDefLoadRuntimeMethod()
         {
             Init();
