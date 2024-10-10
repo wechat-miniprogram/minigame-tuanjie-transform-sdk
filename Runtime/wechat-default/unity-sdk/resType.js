@@ -574,6 +574,10 @@ export const ResType = {
         weakNet: 'bool',
         errMsg: 'string',
     },
+    GetPhoneNumberOption: {
+        isRealtime: 'bool',
+        phoneNumberNoQuotaToast: 'bool',
+    },
     GetPrivacySettingSuccessCallbackResult: {
         needAuthorization: 'bool',
         privacyContractName: 'string',

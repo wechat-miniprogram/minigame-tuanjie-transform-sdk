@@ -116,9 +116,6 @@ WX_GetLocalIPAddress:function(conf, callbackId) {
 WX_GetNetworkType:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetNetworkType(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
-WX_GetPhoneNumber:function(conf, callbackId) {
-    window.WXWASMSDK.WX_GetPhoneNumber(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
-},
 WX_GetPrivacySetting:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetPrivacySetting(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
@@ -413,6 +410,9 @@ WX_OpenBusinessView:function(conf, callbackId) {
 
 WX_ExitPointerLock:function() {
     window.WXWASMSDK.WX_ExitPointerLock();
+},
+WX_GetPhoneNumber:function(option){
+    window.WXWASMSDK.WX_GetPhoneNumber(_WXPointer_stringify_adaptor(option));
 },
 WX_OperateGameRecorderVideo:function(option){
     window.WXWASMSDK.WX_OperateGameRecorderVideo(_WXPointer_stringify_adaptor(option));

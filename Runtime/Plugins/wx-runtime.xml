@@ -6221,16 +6221,6 @@
             是否处于弱网环境
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetPhoneNumberOption.complete">
-            <summary>
-            接口调用结束的回调函数（调用成功、失败都会执行）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.GetPhoneNumberOption.fail">
-            <summary>
-            接口调用失败的回调函数
-            </summary>
-        </member>
         <member name="F:WeChatWASM.GetPhoneNumberOption.isRealtime">
             <summary>
             手机号实时验证，向用户申请，并在用户同意后，快速填写和实时验证手机号 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getRealtimePhoneNumber.html)。
@@ -6239,11 +6229,6 @@
         <member name="F:WeChatWASM.GetPhoneNumberOption.phoneNumberNoQuotaToast">
             <summary>
             当手机号快速验证或手机号实时验证额度用尽时，是否对用户展示“申请获取你的手机号，但该功能使用次数已达当前小程序上限，暂时无法使用”的提示，默认展示。
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.GetPhoneNumberOption.success">
-            <summary>
-            接口调用成功的回调函数
             </summary>
         </member>
         <member name="F:WeChatWASM.GetPrivacySettingOption.complete">
