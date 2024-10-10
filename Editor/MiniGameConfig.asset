@@ -19,7 +19,7 @@ MonoBehaviour:
     assetLoadType: 0
     compressDataPackage: 0
     VideoUrl: 
-    DST: 
+    DST: /Users/hongtianyun/Documents/GitProjects/unity-wasm/SDKAdminUP/
     StreamCDN: 
     bundleHashLength: 32
     bundlePathIdentifier: StreamingAssets;

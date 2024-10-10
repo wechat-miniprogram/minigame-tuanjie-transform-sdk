@@ -1481,30 +1481,6 @@ export default {
             },
         });
     },
-    WX_NavigateBackMiniProgram(conf, callbackId) {
-        const config = formatJsonStr(conf);
-        wx.navigateBackMiniProgram({
-            ...config,
-            success(res) {
-                formatResponse('GeneralCallbackResult', res);
-                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
-                    callbackId, type: 'success', res: JSON.stringify(res),
-                }));
-            },
-            fail(res) {
-                formatResponse('GeneralCallbackResult', res);
-                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
-                    callbackId, type: 'fail', res: JSON.stringify(res),
-                }));
-            },
-            complete(res) {
-                formatResponse('GeneralCallbackResult', res);
-                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
-                    callbackId, type: 'complete', res: JSON.stringify(res),
-                }));
-            },
-        });
-    },
     WX_NavigateToMiniProgram(conf, callbackId) {
         const config = formatJsonStr(conf);
         wx.navigateToMiniProgram({
@@ -3334,9 +3310,6 @@ export default {
     },
     WX_ExitPointerLock() {
         wx.exitPointerLock();
-    },
-    WX_GetPhoneNumber(option) {
-        wx.getPhoneNumber(formatJsonStr(option));
     },
     WX_OperateGameRecorderVideo(option) {
         wx.operateGameRecorderVideo(formatJsonStr(option));

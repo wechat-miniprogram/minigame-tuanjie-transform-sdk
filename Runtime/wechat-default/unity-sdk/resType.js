@@ -571,12 +571,7 @@ export const ResType = {
         hasSystemProxy: 'bool',
         networkType: 'string',
         signalStrength: 'number',
-        weakNet: 'bool',
         errMsg: 'string',
-    },
-    GetPhoneNumberOption: {
-        isRealtime: 'bool',
-        phoneNumberNoQuotaToast: 'bool',
     },
     GetPrivacySettingSuccessCallbackResult: {
         needAuthorization: 'bool',
