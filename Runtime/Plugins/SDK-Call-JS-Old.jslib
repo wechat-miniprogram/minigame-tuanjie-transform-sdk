@@ -30,7 +30,7 @@ mergeInto(LibraryManager.library, {
             GameGlobal.memprofiler = emscriptenMemoryProfiler
             GameGlobal.memprofiler.onDump = function () {
             var fs = wx.getFileSystemManager();
-            var allocation_used=GameGlobal.memprofiler.allocationsAtLoc; 
+            var allocation_used = GameGlobal.memprofiler.allocationsAtLoc; 
             if (typeof allocation_used === "undefined") allocation_used=GameGlobal.memprofiler.allocationSiteStatistics;
             var calls = [];
             for (var i in allocation_used) {
@@ -995,13 +995,13 @@ mergeInto(LibraryManager.library, {
         var sdk = _WXPointer_stringify_adaptor(sdkName);
         var func = _WXPointer_stringify_adaptor(functionName);
         var formattedArgs = JSON.parse(_WXPointer_stringify_adaptor(args));
-        GameGlobal[sdk][func](...formattedArgs);
+        GameGlobal[sdk][func].apply(GameGlobal[sdk], formattedArgs);
     },
     WX_CallJSFunctionWithReturn: function (sdkName, functionName, args) {
         var sdk = _WXPointer_stringify_adaptor(sdkName);
         var func = _WXPointer_stringify_adaptor(functionName);
         var formattedArgs = JSON.parse(_WXPointer_stringify_adaptor(args));
-        var res = GameGlobal[sdk][func](...formattedArgs);
+        var res = GameGlobal[sdk][func].apply(GameGlobal[sdk], formattedArgs);
         var resStr = JSON.stringify(res);
         var bufferSize = lengthBytesUTF8(resStr || '') + 1;
         var buffer = _malloc(bufferSize);
