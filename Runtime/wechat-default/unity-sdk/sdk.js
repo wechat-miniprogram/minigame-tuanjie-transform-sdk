@@ -331,21 +331,22 @@ export default {
             if (returnType !== 'string') {
                 formatResponse(returnType, res);
             }
-            if (functionName === 'On' && eventName) {
+            if (!eventName) {
                 // eslint-disable-next-line no-param-reassign
-                id = id + eventName;
+                eventName = '';
             }
             const resStr = JSON.stringify({
-                callbackId: id,
+                callbackId: id + eventName,
                 res: JSON.stringify(res),
             });
             moduleHelper.send(`_${className}${functionName}Callback`, resStr);
         };
-        if (!ClassOnEventLists[className + functionName][id]) {
-            ClassOnEventLists[className + functionName][id] = [];
+        if (!ClassOnEventLists[className + functionName][id + eventName]) {
+            ClassOnEventLists[className + functionName][id + eventName] = [];
         }
-        ClassOnEventLists[className + functionName][id].push(callback);
-        if (functionName === 'On' && eventName) {
+        ClassOnEventLists[className + functionName][id + eventName].push(callback);
+        // WXVideoDecoder OnEvent 不规范 特殊处理
+        if (className === 'WXVideoDecoder') {
             obj[functionName.replace(/^\w/, a => a.toLowerCase())](eventName, callback);
         }
         else {
@@ -357,22 +358,25 @@ export default {
         if (!obj) {
             return;
         }
-        if (functionName === 'Off' && eventName) {
+        if (!eventName) {
             // eslint-disable-next-line no-param-reassign
-            id = id + eventName;
+            eventName = '';
         }
-        if (!ClassOnEventLists[className + functionName][id]) {
+        // eslint-disable-next-line no-param-reassign
+        functionName = functionName.replace(/Off/, 'On');
+        if (!ClassOnEventLists[className + functionName][id + eventName]) {
             return;
         }
-        ClassOnEventLists[className + functionName][id].forEach((v) => {
-            if (functionName === 'Off' && eventName) {
+        ClassOnEventLists[className + functionName][id + eventName].forEach((v) => {
+            
+            if (className === 'WXVideoDecoder') {
                 obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](eventName, v);
             }
             else {
                 obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](v);
             }
         });
-        delete ClassOnEventLists[className + functionName][id];
+        delete ClassOnEventLists[className + functionName][id + eventName];
     },
     WX_ClassOneWayNoFunction_v(className, functionName, id) {
         WX_ClassOneWayNoFunction(className, functionName, id);

@@ -23,7 +23,6 @@ WX_OneWayNoFunction_vnns: function (functionName, param1, param2, param3) {
 WX_OnEventRegister:function(functionName, resType) {
     window.WXWASMSDK.WX_OnEventRegister(_WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(resType));
 },
-
 WX_OffEventRegister:function(functionName) {
     window.WXWASMSDK.WX_OffEventRegister(_WXPointer_stringify_adaptor(functionName));
 },
@@ -135,9 +134,11 @@ WX_ClassSetProperty: function(className, id, key, value) {
 },
 WX_ClassOnEventFunction: function(className, functionName, returnType, id, eventName) {
     window.WXWASMSDK.WX_ClassOnEventFunction(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(returnType), _WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(eventName));
-},WX_ClassOffEventFunction: function(className, functionName, id, eventType) {
+},
+WX_ClassOffEventFunction: function(className, functionName, id, eventType) {
     window.WXWASMSDK.WX_ClassOffEventFunction(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(eventType));
-},WX_ClassOneWayNoFunction_v: function(className, functionName, id) {
+},
+WX_ClassOneWayNoFunction_v: function(className, functionName, id) {
     window.WXWASMSDK.WX_ClassOneWayNoFunction_v(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(id));
 },
 WX_ClassOneWayNoFunction_vs: function(className, functionName, id, param1) {
