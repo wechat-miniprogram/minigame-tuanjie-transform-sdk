@@ -2660,15 +2660,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.setPreferredFramesPerSecond(number fps)](https://developers.weixin.qq.com/minigame/dev/api/render/frame/wx.setPreferredFramesPerSecond.html)
-        /// 可以修改渲染帧率。默认渲染帧率为 60 帧每秒。修改后，requestAnimationFrame 的回调频率会发生改变。
-        /// </summary>
-        public static void SetPreferredFramesPerSecond(double fps)
-        {
-            WXSDKManagerHandler.Instance.SetPreferredFramesPerSecond(fps);
-        }
-
-        /// <summary>
         /// [wx.setStorageSync(string key, any data)](https://developers.weixin.qq.com/minigame/dev/api/storage/wx.setStorageSync.html)
         /// 将数据存储在本地缓存中指定的 key 中。会覆盖掉原来该 key 对应的内容。除非用户主动删除或因存储空间原因被系统清理，否则数据都一直可用。单个 key 允许存储的最大数据长度为 1MB，所有数据存储上限为 10MB。
         /// **注意**
