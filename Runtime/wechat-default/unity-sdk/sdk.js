@@ -294,12 +294,12 @@ export default {
     },
     WX_ClassFunction(functionName, returnType, option) {
         const obj = wx[functionName.replace(/^\w/, a => a.toLowerCase())](formatJsonStr(option));
-        const key = uid();
+        const id = uid();
         if (!ClassLists[returnType]) {
             ClassLists[returnType] = {};
         }
-        ClassLists[returnType][key] = obj;
-        return key;
+        ClassLists[returnType][id] = obj;
+        return id;
     },
     WX_ClassSetProperty(className, id, key, value) {
         const obj = getClassObject(className, id);
