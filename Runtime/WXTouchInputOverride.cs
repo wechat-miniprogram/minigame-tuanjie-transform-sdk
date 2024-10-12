@@ -269,4 +269,12 @@ public class WXTouchInputOverride : BaseInput
 
 #endif
 }
+#else
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+[RequireComponent(typeof(StandaloneInputModule))]
+public class WXTouchInputOverride : BaseInput
+{
+}
 #endif
