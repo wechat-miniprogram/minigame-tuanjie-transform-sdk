@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace WeChatWASM
 {
+#if UNITY_EDITOR
     public class WXRuntimeExtDef
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -129,5 +130,5 @@ namespace WeChatWASM
             });
         }
     }
-    
+#endif
 }
