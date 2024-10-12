@@ -335,14 +335,14 @@
             <param name="success">成功回调</param>
             <param name="failed">失败回调</param>
         </member>
-        <member name="M:WeChatWASM.WXDownloadTask.WX_DownloadTaskAbort(System.String)">
+        <member name="M:WeChatWASM.WXDownloadTask.Abort">
             <summary>
             [DownloadTask.abort()](https://developers.weixin.qq.com/minigame/dev/api/network/download/DownloadTask.abort.html)
             需要基础库： `1.4.0`
             中断下载任务
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXDownloadTask.WX_DownloadTaskOffHeadersReceived(System.String)">
+        <member name="M:WeChatWASM.WXDownloadTask.OffHeadersReceived">
             <summary>
             [DownloadTask.offHeadersReceived(function listener)](https://developers.weixin.qq.com/minigame/dev/api/network/download/DownloadTask.offHeadersReceived.html)
             需要基础库： `2.1.0`
@@ -355,7 +355,7 @@
             ```
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXDownloadTask.WX_DownloadTaskOffProgressUpdate(System.String)">
+        <member name="M:WeChatWASM.WXDownloadTask.OffProgressUpdate">
             <summary>
             [DownloadTask.offProgressUpdate(function listener)](https://developers.weixin.qq.com/minigame/dev/api/network/download/DownloadTask.offProgressUpdate.html)
             需要基础库： `2.1.0`
@@ -368,14 +368,14 @@
             ```
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXDownloadTask.WX_DownloadTaskOnHeadersReceived(System.String)">
+        <member name="F:WeChatWASM.WXDownloadTask.OnHeadersReceivedActionList">
             <summary>
             [DownloadTask.onHeadersReceived(function listener)](https://developers.weixin.qq.com/minigame/dev/api/network/download/DownloadTask.onHeadersReceived.html)
             需要基础库： `2.1.0`
             监听 HTTP Response Header 事件。会比请求完成事件更早
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXDownloadTask.WX_DownloadTaskOnProgressUpdate(System.String)">
+        <member name="F:WeChatWASM.WXDownloadTask.OnProgressUpdateActionList">
             <summary>
             [DownloadTask.onProgressUpdate(function listener)](https://developers.weixin.qq.com/minigame/dev/api/network/download/DownloadTask.onProgressUpdate.html)
             需要基础库： `1.4.0`
@@ -410,19 +410,19 @@
             按钮上的文本，仅当 type 为 `text` 时有效
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXFeedbackButton.WX_FeedbackButtonDestroy(System.String)">
+        <member name="M:WeChatWASM.WXFeedbackButton.Destroy">
             <summary>
             [FeedbackButton.destroy()](https://developers.weixin.qq.com/minigame/dev/api/open-api/feedback/FeedbackButton.destroy.html)
             销毁意见反馈按钮
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXFeedbackButton.WX_FeedbackButtonHide(System.String)">
+        <member name="M:WeChatWASM.WXFeedbackButton.Hide">
             <summary>
             [FeedbackButton.hide()](https://developers.weixin.qq.com/minigame/dev/api/open-api/feedback/FeedbackButton.hide.html)
             隐藏意见反馈按钮。
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXFeedbackButton.WX_FeedbackButtonOffTap(System.String)">
+        <member name="M:WeChatWASM.WXFeedbackButton.OffTap">
             <summary>
             [FeedbackButton.offTap(function listener)](https://developers.weixin.qq.com/minigame/dev/api/open-api/feedback/FeedbackButton.offTap.html)
             移除意见反馈按钮的点击事件的监听函数
@@ -434,13 +434,13 @@
             ```
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXFeedbackButton.WX_FeedbackButtonOnTap(System.String)">
+        <member name="F:WeChatWASM.WXFeedbackButton.OnTapActionList">
             <summary>
             [FeedbackButton.onTap(function listener)](https://developers.weixin.qq.com/minigame/dev/api/open-api/feedback/FeedbackButton.onTap.html)
             监听意见反馈按钮的点击事件
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXFeedbackButton.WX_FeedbackButtonShow(System.String)">
+        <member name="M:WeChatWASM.WXFeedbackButton.Show">
             <summary>
             [FeedbackButton.show()](https://developers.weixin.qq.com/minigame/dev/api/open-api/feedback/FeedbackButton.show.html)
             显示意见反馈按钮
@@ -1384,25 +1384,25 @@
             运行JS函数
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.WX_LogManagerDebug(System.String,System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Debug(System.String)">
             <summary>
             [LogManager.debug()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.debug.html)
             写 debug 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.WX_LogManagerInfo(System.String,System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Info(System.String)">
             <summary>
             [LogManager.info()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.info.html)
             写 info 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.WX_LogManagerLog(System.String,System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Log(System.String)">
             <summary>
             [LogManager.log()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.log.html)
             写 log 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.WX_LogManagerWarn(System.String,System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Warn(System.String)">
             <summary>
             [LogManager.warn()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.warn.html)
             写 warn 日志
@@ -3130,7 +3130,7 @@
         </member>
         <member name="F:WeChatWASM.AppAuthorizeSetting.bluetoothAuthorized">
             <summary>
-            允许微信使用蓝牙的开关（仅 iOS 有效）
+            允许微信使用蓝牙的开关（安卓基础库 3.5.0 以上有效）
             </summary>
         </member>
         <member name="F:WeChatWASM.AppAuthorizeSetting.cameraAuthorized">
@@ -3726,7 +3726,7 @@
             下载资源的 url
             </summary>
         </member>
-        <member name="F:WeChatWASM.DownloadFileOption.complete">
+        <member name="P:WeChatWASM.DownloadFileOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -3748,7 +3748,7 @@
             是否开启 Quic 协议（gQUIC Q43）
             </summary>
         </member>
-        <member name="F:WeChatWASM.DownloadFileOption.fail">
+        <member name="P:WeChatWASM.DownloadFileOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -3764,7 +3764,7 @@
             HTTP 请求的 Header，Header 中不能设置 Referer
             </summary>
         </member>
-        <member name="F:WeChatWASM.DownloadFileOption.success">
+        <member name="P:WeChatWASM.DownloadFileOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4112,12 +4112,12 @@
             文本的内容
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetTextLineHeightOption.complete">
+        <member name="P:WeChatWASM.GetTextLineHeightOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetTextLineHeightOption.fail">
+        <member name="P:WeChatWASM.GetTextLineHeightOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -4143,7 +4143,7 @@
             - 'bold': 粗体;
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetTextLineHeightOption.success">
+        <member name="P:WeChatWASM.GetTextLineHeightOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4153,17 +4153,17 @@
             需要添加的卡券列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddCardOption.complete">
+        <member name="P:WeChatWASM.AddCardOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddCardOption.fail">
+        <member name="P:WeChatWASM.AddCardOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddCardOption.success">
+        <member name="P:WeChatWASM.AddCardOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4204,17 +4204,17 @@
             shareTicket。可以从 wx.getEnterOptionsSync 中获取。详情 [shareTicket](#)
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthPrivateMessageOption.complete">
+        <member name="P:WeChatWASM.AuthPrivateMessageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthPrivateMessageOption.fail">
+        <member name="P:WeChatWASM.AuthPrivateMessageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthPrivateMessageOption.success">
+        <member name="P:WeChatWASM.AuthPrivateMessageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4244,32 +4244,32 @@
             需要获取权限的 scope，详见 [scope 列表](https://developers.weixin.qq.com/minigame/dev/guide/base-ability/authorize.html#scope-列表)
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthorizeOption.complete">
+        <member name="P:WeChatWASM.AuthorizeOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthorizeOption.fail">
+        <member name="P:WeChatWASM.AuthorizeOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.AuthorizeOption.success">
+        <member name="P:WeChatWASM.AuthorizeOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckIsAddedToMyMiniProgramOption.complete">
+        <member name="P:WeChatWASM.CheckIsAddedToMyMiniProgramOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckIsAddedToMyMiniProgramOption.fail">
+        <member name="P:WeChatWASM.CheckIsAddedToMyMiniProgramOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckIsAddedToMyMiniProgramOption.success">
+        <member name="P:WeChatWASM.CheckIsAddedToMyMiniProgramOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4279,22 +4279,22 @@
             是否被添加至 「我的小程序」
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckSessionOption.complete">
+        <member name="P:WeChatWASM.CheckSessionOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckSessionOption.fail">
+        <member name="P:WeChatWASM.CheckSessionOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckSessionOption.success">
+        <member name="P:WeChatWASM.CheckSessionOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseImageOption.complete">
+        <member name="P:WeChatWASM.ChooseImageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -4304,7 +4304,7 @@
             最多可以选择的图片张数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseImageOption.fail">
+        <member name="P:WeChatWASM.ChooseImageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -4325,7 +4325,7 @@
             - 'camera': 使用相机;
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseImageOption.success">
+        <member name="P:WeChatWASM.ChooseImageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4359,7 +4359,7 @@
             - 'front': 使用前置摄像头;
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMediaOption.complete">
+        <member name="P:WeChatWASM.ChooseMediaOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -4369,7 +4369,7 @@
             最多可以选择的文件个数，基础库2.25.0前，最多可支持9个文件，2.25.0及以后最多可支持20个文件
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMediaOption.fail">
+        <member name="P:WeChatWASM.ChooseMediaOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -4401,7 +4401,7 @@
             - 'camera': 使用相机拍摄;
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMediaOption.success">
+        <member name="P:WeChatWASM.ChooseMediaOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4459,7 +4459,7 @@
             最多可以选择的文件个数，可以 0～100
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMessageFileOption.complete">
+        <member name="P:WeChatWASM.ChooseMessageFileOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -4470,12 +4470,12 @@
             根据文件拓展名过滤，仅 type==file 时有效。每一项都不能是空字符串。默认不过滤。
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMessageFileOption.fail">
+        <member name="P:WeChatWASM.ChooseMessageFileOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ChooseMessageFileOption.success">
+        <member name="P:WeChatWASM.ChooseMessageFileOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4529,17 +4529,17 @@
             蓝牙设备 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBLEConnectionOption.complete">
+        <member name="P:WeChatWASM.CloseBLEConnectionOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBLEConnectionOption.fail">
+        <member name="P:WeChatWASM.CloseBLEConnectionOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBLEConnectionOption.success">
+        <member name="P:WeChatWASM.CloseBLEConnectionOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4586,17 +4586,17 @@
             | 10013 | invalid_data | 连接 deviceId 为空或者是格式不正确 |
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBluetoothAdapterOption.complete">
+        <member name="P:WeChatWASM.CloseBluetoothAdapterOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBluetoothAdapterOption.fail">
+        <member name="P:WeChatWASM.CloseBluetoothAdapterOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CloseBluetoothAdapterOption.success">
+        <member name="P:WeChatWASM.CloseBluetoothAdapterOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4606,7 +4606,7 @@
             图片路径，图片的路径，支持本地路径、代码包路径
             </summary>
         </member>
-        <member name="F:WeChatWASM.CompressImageOption.complete">
+        <member name="P:WeChatWASM.CompressImageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -4623,7 +4623,7 @@
             压缩后图片的宽度，单位为px，若不填写则默认以compressedHeight为准等比缩放。
             </summary>
         </member>
-        <member name="F:WeChatWASM.CompressImageOption.fail">
+        <member name="P:WeChatWASM.CompressImageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -4633,7 +4633,7 @@
             压缩质量，范围0～100，数值越小，质量越低，压缩率越高（仅对jpg有效）。
             </summary>
         </member>
-        <member name="F:WeChatWASM.CompressImageOption.success">
+        <member name="P:WeChatWASM.CompressImageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4648,17 +4648,17 @@
             蓝牙设备 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEConnectionOption.complete">
+        <member name="P:WeChatWASM.CreateBLEConnectionOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEConnectionOption.fail">
+        <member name="P:WeChatWASM.CreateBLEConnectionOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEConnectionOption.success">
+        <member name="P:WeChatWASM.CreateBLEConnectionOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4668,17 +4668,17 @@
             超时时间，单位 ms，不填表示不会超时
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEPeripheralServerOption.complete">
+        <member name="P:WeChatWASM.CreateBLEPeripheralServerOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEPeripheralServerOption.fail">
+        <member name="P:WeChatWASM.CreateBLEPeripheralServerOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CreateBLEPeripheralServerOption.success">
+        <member name="P:WeChatWASM.CreateBLEPeripheralServerOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4815,17 +4815,17 @@
             描述service的Object
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddServiceOption.complete">
+        <member name="P:WeChatWASM.AddServiceOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddServiceOption.fail">
+        <member name="P:WeChatWASM.AddServiceOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.AddServiceOption.success">
+        <member name="P:WeChatWASM.AddServiceOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -4985,17 +4985,17 @@
             service 的 UUID
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveServiceOption.complete">
+        <member name="P:WeChatWASM.RemoveServiceOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveServiceOption.fail">
+        <member name="P:WeChatWASM.RemoveServiceOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveServiceOption.success">
+        <member name="P:WeChatWASM.RemoveServiceOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5005,12 +5005,12 @@
             广播自定义参数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAdvertisingObject.complete">
+        <member name="P:WeChatWASM.StartAdvertisingObject.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAdvertisingObject.fail">
+        <member name="P:WeChatWASM.StartAdvertisingObject.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -5024,7 +5024,7 @@
             - 'high': 功率高;
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAdvertisingObject.success">
+        <member name="P:WeChatWASM.StartAdvertisingObject.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5085,17 +5085,17 @@
             制造商信息
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAdvertisingOption.complete">
+        <member name="P:WeChatWASM.StopAdvertisingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAdvertisingOption.fail">
+        <member name="P:WeChatWASM.StopAdvertisingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAdvertisingOption.success">
+        <member name="P:WeChatWASM.StopAdvertisingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5125,47 +5125,47 @@
             可选，处理回包时使用
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteCharacteristicValueObject.complete">
+        <member name="P:WeChatWASM.WriteCharacteristicValueObject.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteCharacteristicValueObject.fail">
+        <member name="P:WeChatWASM.WriteCharacteristicValueObject.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteCharacteristicValueObject.success">
+        <member name="P:WeChatWASM.WriteCharacteristicValueObject.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitMiniProgramOption.complete">
+        <member name="P:WeChatWASM.ExitMiniProgramOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitMiniProgramOption.fail">
+        <member name="P:WeChatWASM.ExitMiniProgramOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitMiniProgramOption.success">
+        <member name="P:WeChatWASM.ExitMiniProgramOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitVoIPChatOption.complete">
+        <member name="P:WeChatWASM.ExitVoIPChatOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitVoIPChatOption.fail">
+        <member name="P:WeChatWASM.ExitVoIPChatOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ExitVoIPChatOption.success">
+        <member name="P:WeChatWASM.ExitVoIPChatOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5185,7 +5185,7 @@
             图像宽度
             </summary>
         </member>
-        <member name="F:WeChatWASM.FaceDetectOption.complete">
+        <member name="P:WeChatWASM.FaceDetectOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -5210,12 +5210,12 @@
             是否返回当前图像的人脸（106 个点）
             </summary>
         </member>
-        <member name="F:WeChatWASM.FaceDetectOption.fail">
+        <member name="P:WeChatWASM.FaceDetectOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.FaceDetectOption.success">
+        <member name="P:WeChatWASM.FaceDetectOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5295,17 +5295,17 @@
             右眼可信度
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetAvailableAudioSourcesOption.complete">
+        <member name="P:WeChatWASM.GetAvailableAudioSourcesOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetAvailableAudioSourcesOption.fail">
+        <member name="P:WeChatWASM.GetAvailableAudioSourcesOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetAvailableAudioSourcesOption.success">
+        <member name="P:WeChatWASM.GetAvailableAudioSourcesOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5333,17 +5333,17 @@
             蓝牙服务 UUID。需要先调用 [wx.getBLEDeviceServices](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth-ble/wx.getBLEDeviceServices.html) 获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceCharacteristicsOption.complete">
+        <member name="P:WeChatWASM.GetBLEDeviceCharacteristicsOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceCharacteristicsOption.fail">
+        <member name="P:WeChatWASM.GetBLEDeviceCharacteristicsOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceCharacteristicsOption.success">
+        <member name="P:WeChatWASM.GetBLEDeviceCharacteristicsOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5398,17 +5398,17 @@
             蓝牙设备 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceRSSIOption.complete">
+        <member name="P:WeChatWASM.GetBLEDeviceRSSIOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceRSSIOption.fail">
+        <member name="P:WeChatWASM.GetBLEDeviceRSSIOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceRSSIOption.success">
+        <member name="P:WeChatWASM.GetBLEDeviceRSSIOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5423,17 +5423,17 @@
             蓝牙设备 id。需要已经通过 [wx.createBLEConnection](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth-ble/wx.createBLEConnection.html) 建立连接
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceServicesOption.complete">
+        <member name="P:WeChatWASM.GetBLEDeviceServicesOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceServicesOption.fail">
+        <member name="P:WeChatWASM.GetBLEDeviceServicesOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEDeviceServicesOption.success">
+        <member name="P:WeChatWASM.GetBLEDeviceServicesOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5458,17 +5458,17 @@
             蓝牙设备 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEMTUOption.complete">
+        <member name="P:WeChatWASM.GetBLEMTUOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEMTUOption.fail">
+        <member name="P:WeChatWASM.GetBLEMTUOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBLEMTUOption.success">
+        <member name="P:WeChatWASM.GetBLEMTUOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5491,17 +5491,17 @@
             缓存数据类别，取值为 periodic 或 pre
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchDataOption.complete">
+        <member name="P:WeChatWASM.GetBackgroundFetchDataOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchDataOption.fail">
+        <member name="P:WeChatWASM.GetBackgroundFetchDataOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchDataOption.success">
+        <member name="P:WeChatWASM.GetBackgroundFetchDataOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5531,17 +5531,17 @@
             客户端拿到缓存数据的时间戳 ms。(iOS 时间戳存在异常，8.0.27 修复)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchTokenOption.complete">
+        <member name="P:WeChatWASM.GetBackgroundFetchTokenOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchTokenOption.fail">
+        <member name="P:WeChatWASM.GetBackgroundFetchTokenOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBackgroundFetchTokenOption.success">
+        <member name="P:WeChatWASM.GetBackgroundFetchTokenOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5556,17 +5556,17 @@
             自定义的登录态
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBatteryInfoOption.complete">
+        <member name="P:WeChatWASM.GetBatteryInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBatteryInfoOption.fail">
+        <member name="P:WeChatWASM.GetBatteryInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBatteryInfoOption.success">
+        <member name="P:WeChatWASM.GetBatteryInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5587,17 +5587,17 @@
             设备电量，范围 1 - 100
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBeaconsOption.complete">
+        <member name="P:WeChatWASM.GetBeaconsOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBeaconsOption.fail">
+        <member name="P:WeChatWASM.GetBeaconsOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBeaconsOption.success">
+        <member name="P:WeChatWASM.GetBeaconsOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5672,17 +5672,17 @@
             Beacon 设备广播的 UUID
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothAdapterStateOption.complete">
+        <member name="P:WeChatWASM.GetBluetoothAdapterStateOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothAdapterStateOption.fail">
+        <member name="P:WeChatWASM.GetBluetoothAdapterStateOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothAdapterStateOption.success">
+        <member name="P:WeChatWASM.GetBluetoothAdapterStateOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5697,17 +5697,17 @@
             是否正在搜索设备
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothDevicesOption.complete">
+        <member name="P:WeChatWASM.GetBluetoothDevicesOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothDevicesOption.fail">
+        <member name="P:WeChatWASM.GetBluetoothDevicesOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetBluetoothDevicesOption.success">
+        <member name="P:WeChatWASM.GetBluetoothDevicesOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5762,7 +5762,7 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveInfoOption.complete">
+        <member name="P:WeChatWASM.GetChannelsLiveInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -5773,7 +5773,7 @@
             结束时间，筛选指定时间段的直播。若上传了startTime，未上传endTime，则endTime默认取当前时间
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveInfoOption.fail">
+        <member name="P:WeChatWASM.GetChannelsLiveInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -5784,7 +5784,7 @@
             起始时间，筛选指定时间段的直播。若上传了endTime，未上传startTime，则startTime默认为0
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveInfoOption.success">
+        <member name="P:WeChatWASM.GetChannelsLiveInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5835,8 +5835,10 @@
             <summary>
             直播状态
             可选值：
+            - 1: 直播状态不存在（针对未开过直播的主播）;
             - 2: 直播中;
-            - 3: 直播结束;
+            - 3: 直播已结束;
+            - 4: 直播准备中（未开播）;
             </summary>
         </member>
         <member name="F:WeChatWASM.GetChannelsLiveNoticeInfoOption.finderUserName">
@@ -5844,17 +5846,17 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveNoticeInfoOption.complete">
+        <member name="P:WeChatWASM.GetChannelsLiveNoticeInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveNoticeInfoOption.fail">
+        <member name="P:WeChatWASM.GetChannelsLiveNoticeInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChannelsLiveNoticeInfoOption.success">
+        <member name="P:WeChatWASM.GetChannelsLiveNoticeInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5895,17 +5897,17 @@
             预告状态：0可用 1取消 2已用
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetClipboardDataOption.complete">
+        <member name="P:WeChatWASM.GetClipboardDataOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetClipboardDataOption.fail">
+        <member name="P:WeChatWASM.GetClipboardDataOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetClipboardDataOption.success">
+        <member name="P:WeChatWASM.GetClipboardDataOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5920,17 +5922,17 @@
             蓝牙设备主服务的 UUID 列表（支持 16/32/128 位 UUID）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetConnectedBluetoothDevicesOption.complete">
+        <member name="P:WeChatWASM.GetConnectedBluetoothDevicesOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetConnectedBluetoothDevicesOption.fail">
+        <member name="P:WeChatWASM.GetConnectedBluetoothDevicesOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetConnectedBluetoothDevicesOption.success">
+        <member name="P:WeChatWASM.GetConnectedBluetoothDevicesOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5950,34 +5952,34 @@
             蓝牙设备名称，某些设备可能没有
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.complete">
+        <member name="P:WeChatWASM.GetDeviceBenchmarkInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.fail">
+        <member name="P:WeChatWASM.GetDeviceBenchmarkInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetDeviceBenchmarkInfoOption.success">
+        <member name="P:WeChatWASM.GetDeviceBenchmarkInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "F:WeChatWASM.GetDeviceBenchmarkInfoSuccessCallbackResult.benchmarkLevel" -->
         <!-- Badly formed XML comment ignored for member "F:WeChatWASM.GetDeviceBenchmarkInfoSuccessCallbackResult.modelLevel" -->
-        <member name="F:WeChatWASM.GetExtConfigOption.complete">
+        <member name="P:WeChatWASM.GetExtConfigOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetExtConfigOption.fail">
+        <member name="P:WeChatWASM.GetExtConfigOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetExtConfigOption.success">
+        <member name="P:WeChatWASM.GetExtConfigOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -5987,17 +5989,17 @@
             第三方平台自定义的数据
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetFuzzyLocationOption.complete">
+        <member name="P:WeChatWASM.GetFuzzyLocationOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetFuzzyLocationOption.fail">
+        <member name="P:WeChatWASM.GetFuzzyLocationOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetFuzzyLocationOption.success">
+        <member name="P:WeChatWASM.GetFuzzyLocationOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6025,17 +6027,17 @@
             需要获取的数据指标的对象数组
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGameClubDataOption.complete">
+        <member name="P:WeChatWASM.GetGameClubDataOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGameClubDataOption.fail">
+        <member name="P:WeChatWASM.GetGameClubDataOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGameClubDataOption.success">
+        <member name="P:WeChatWASM.GetGameClubDataOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6070,17 +6072,17 @@
             使用 sha1( rawData + sessionkey ) 得到字符串，用于校验用户信息
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGroupEnterInfoOption.complete">
+        <member name="P:WeChatWASM.GetGroupEnterInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGroupEnterInfoOption.fail">
+        <member name="P:WeChatWASM.GetGroupEnterInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetGroupEnterInfoOption.success">
+        <member name="P:WeChatWASM.GetGroupEnterInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6124,17 +6126,17 @@
             加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetInferenceEnvInfoOption.complete">
+        <member name="P:WeChatWASM.GetInferenceEnvInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetInferenceEnvInfoOption.fail">
+        <member name="P:WeChatWASM.GetInferenceEnvInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetInferenceEnvInfoOption.success">
+        <member name="P:WeChatWASM.GetInferenceEnvInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6144,17 +6146,17 @@
             AI推理引擎版本
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetLocalIPAddressOption.complete">
+        <member name="P:WeChatWASM.GetLocalIPAddressOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetLocalIPAddressOption.fail">
+        <member name="P:WeChatWASM.GetLocalIPAddressOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetLocalIPAddressOption.success">
+        <member name="P:WeChatWASM.GetLocalIPAddressOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6174,17 +6176,17 @@
             本机局域网子网掩码，基础库 2.24.0 开始支持
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetNetworkTypeOption.complete">
+        <member name="P:WeChatWASM.GetNetworkTypeOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetNetworkTypeOption.fail">
+        <member name="P:WeChatWASM.GetNetworkTypeOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetNetworkTypeOption.success">
+        <member name="P:WeChatWASM.GetNetworkTypeOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6213,24 +6215,55 @@
             信号强弱，单位 dbm
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetPrivacySettingOption.complete">
+        <member name="F:WeChatWASM.GetNetworkTypeSuccessCallbackResult.weakNet">
+            <summary>
+            需要基础库： `3.5.3`
+            是否处于弱网环境
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetPhoneNumberOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetPrivacySettingOption.fail">
+        <member name="P:WeChatWASM.GetPhoneNumberOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetPrivacySettingOption.success">
+        <member name="F:WeChatWASM.GetPhoneNumberOption.isRealtime">
+            <summary>
+            手机号实时验证，向用户申请，并在用户同意后，快速填写和实时验证手机号 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getRealtimePhoneNumber.html)。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetPhoneNumberOption.phoneNumberNoQuotaToast">
+            <summary>
+            当手机号快速验证或手机号实时验证额度用尽时，是否对用户展示“申请获取你的手机号，但该功能使用次数已达当前小程序上限，暂时无法使用”的提示，默认展示。
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetPhoneNumberOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetPrivacySettingOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetPrivacySettingOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetPrivacySettingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
         <member name="F:WeChatWASM.GetPrivacySettingSuccessCallbackResult.needAuthorization">
             <summary>
-            是否需要用户授权隐私协议（如果开发者没有在[mp后台-设置-服务内容声明-用户隐私保护指引]中声明隐私收集类型则会返回false；如果开发者声明了隐私收集，且用户之前同意过隐私协议则会返回false；如果开发者声明了隐私收集，且用户还没同意过则返回true；如果用户之前同意过、但后来小程序又新增了隐私收集类型也会返回true）
+            是否需要用户授权隐私协议（如果开发者没有在「MP后台-设置-服务内容声明-用户隐私保护指引」中声明隐私收集类型则会返回false；如果开发者声明了隐私收集，且用户之前同意过隐私协议则会返回false；如果开发者声明了隐私收集，且用户还没同意过则返回true；如果用户之前同意过、但后来小程序又新增了隐私收集类型也会返回true）
             </summary>
         </member>
         <member name="F:WeChatWASM.GetPrivacySettingSuccessCallbackResult.privacyContractName">
@@ -6238,17 +6271,17 @@
             隐私授权协议的名称
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenBrightnessOption.complete">
+        <member name="P:WeChatWASM.GetScreenBrightnessOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenBrightnessOption.fail">
+        <member name="P:WeChatWASM.GetScreenBrightnessOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenBrightnessOption.success">
+        <member name="P:WeChatWASM.GetScreenBrightnessOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6258,17 +6291,17 @@
             屏幕亮度值，范围 0 ~ 1，0 最暗，1 最亮
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenRecordingStateOption.complete">
+        <member name="P:WeChatWASM.GetScreenRecordingStateOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenRecordingStateOption.fail">
+        <member name="P:WeChatWASM.GetScreenRecordingStateOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetScreenRecordingStateOption.success">
+        <member name="P:WeChatWASM.GetScreenRecordingStateOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6281,17 +6314,17 @@
             - 'off': 关闭;
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSettingOption.complete">
+        <member name="P:WeChatWASM.GetSettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSettingOption.fail">
+        <member name="P:WeChatWASM.GetSettingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSettingOption.success">
+        <member name="P:WeChatWASM.GetSettingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6338,17 +6371,17 @@
             shareTicket，详见[获取更多转发信息](#)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetShareInfoOption.complete">
+        <member name="P:WeChatWASM.GetShareInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetShareInfoOption.fail">
+        <member name="P:WeChatWASM.GetShareInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetShareInfoOption.success">
+        <member name="P:WeChatWASM.GetShareInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6359,17 +6392,17 @@
             超时时间，单位 ms
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetStorageInfoOption.complete">
+        <member name="P:WeChatWASM.GetStorageInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetStorageInfoOption.fail">
+        <member name="P:WeChatWASM.GetStorageInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetStorageInfoOption.success">
+        <member name="P:WeChatWASM.GetStorageInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6389,42 +6422,42 @@
             限制的空间大小，单位 KB
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoOption.complete">
+        <member name="P:WeChatWASM.GetSystemInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoOption.fail">
+        <member name="P:WeChatWASM.GetSystemInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoOption.success">
+        <member name="P:WeChatWASM.GetSystemInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoAsyncOption.complete">
+        <member name="P:WeChatWASM.GetSystemInfoAsyncOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoAsyncOption.fail">
+        <member name="P:WeChatWASM.GetSystemInfoAsyncOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetSystemInfoAsyncOption.success">
+        <member name="P:WeChatWASM.GetSystemInfoAsyncOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInfoOption.complete">
+        <member name="P:WeChatWASM.GetUserInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInfoOption.fail">
+        <member name="P:WeChatWASM.GetUserInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6438,7 +6471,7 @@
             - 'zh_TW': 繁体中文;
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInfoOption.success">
+        <member name="P:WeChatWASM.GetUserInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6528,17 +6561,17 @@
             要获取的 key 列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInteractiveStorageOption.complete">
+        <member name="P:WeChatWASM.GetUserInteractiveStorageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInteractiveStorageOption.fail">
+        <member name="P:WeChatWASM.GetUserInteractiveStorageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserInteractiveStorageOption.success">
+        <member name="P:WeChatWASM.GetUserInteractiveStorageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6570,17 +6603,17 @@
             加密算法的初始向量，详见 [用户数据的签名验证和加解密](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#加密数据解密算法)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetWeRunDataOption.complete">
+        <member name="P:WeChatWASM.GetWeRunDataOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetWeRunDataOption.fail">
+        <member name="P:WeChatWASM.GetWeRunDataOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetWeRunDataOption.success">
+        <member name="P:WeChatWASM.GetWeRunDataOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6601,27 +6634,27 @@
             加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideKeyboardOption.complete">
+        <member name="P:WeChatWASM.HideKeyboardOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideKeyboardOption.fail">
+        <member name="P:WeChatWASM.HideKeyboardOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideKeyboardOption.success">
+        <member name="P:WeChatWASM.HideKeyboardOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideLoadingOption.complete">
+        <member name="P:WeChatWASM.HideLoadingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideLoadingOption.fail">
+        <member name="P:WeChatWASM.HideLoadingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6632,17 +6665,17 @@
             目前 toast 和 loading 相关接口可以相互混用，此参数可用于取消混用特性
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideLoadingOption.success">
+        <member name="P:WeChatWASM.HideLoadingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideShareMenuOption.complete">
+        <member name="P:WeChatWASM.HideShareMenuOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideShareMenuOption.fail">
+        <member name="P:WeChatWASM.HideShareMenuOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6653,17 +6686,17 @@
             本接口为 Beta 版本，暂只在 Android 平台支持。需要隐藏的转发按钮名称列表，默认['shareAppMessage', 'shareTimeline']。按钮名称合法值包含 "shareAppMessage"、"shareTimeline" 两种
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideShareMenuOption.success">
+        <member name="P:WeChatWASM.HideShareMenuOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideToastOption.complete">
+        <member name="P:WeChatWASM.HideToastOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideToastOption.fail">
+        <member name="P:WeChatWASM.HideToastOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6674,22 +6707,22 @@
             目前 toast 和 loading 相关接口可以相互混用，此参数可用于取消混用特性
             </summary>
         </member>
-        <member name="F:WeChatWASM.HideToastOption.success">
+        <member name="P:WeChatWASM.HideToastOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.InitFaceDetectOption.complete">
+        <member name="P:WeChatWASM.InitFaceDetectOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.InitFaceDetectOption.fail">
+        <member name="P:WeChatWASM.InitFaceDetectOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.InitFaceDetectOption.success">
+        <member name="P:WeChatWASM.InitFaceDetectOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6699,17 +6732,17 @@
             蓝牙设备 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.IsBluetoothDevicePairedOption.complete">
+        <member name="P:WeChatWASM.IsBluetoothDevicePairedOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.IsBluetoothDevicePairedOption.fail">
+        <member name="P:WeChatWASM.IsBluetoothDevicePairedOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.IsBluetoothDevicePairedOption.success">
+        <member name="P:WeChatWASM.IsBluetoothDevicePairedOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6734,12 +6767,12 @@
             验证所需的时间戳
             </summary>
         </member>
-        <member name="F:WeChatWASM.JoinVoIPChatOption.complete">
+        <member name="P:WeChatWASM.JoinVoIPChatOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.JoinVoIPChatOption.fail">
+        <member name="P:WeChatWASM.JoinVoIPChatOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6763,7 +6796,7 @@
             - 'video': 视频房间，结合 [voip-room](#) 组件可显示成员画面;
             </summary>
         </member>
-        <member name="F:WeChatWASM.JoinVoIPChatOption.success">
+        <member name="P:WeChatWASM.JoinVoIPChatOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6815,17 +6848,17 @@
             在此通话中的成员 openId 名单
             </summary>
         </member>
-        <member name="F:WeChatWASM.LoginOption.complete">
+        <member name="P:WeChatWASM.LoginOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.LoginOption.fail">
+        <member name="P:WeChatWASM.LoginOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.LoginOption.success">
+        <member name="P:WeChatWASM.LoginOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6862,17 +6895,17 @@
             pin 码，Base64 格式。
             </summary>
         </member>
-        <member name="F:WeChatWASM.MakeBluetoothPairOption.complete">
+        <member name="P:WeChatWASM.MakeBluetoothPairOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.MakeBluetoothPairOption.fail">
+        <member name="P:WeChatWASM.MakeBluetoothPairOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.MakeBluetoothPairOption.success">
+        <member name="P:WeChatWASM.MakeBluetoothPairOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6882,12 +6915,32 @@
             超时时间，单位 ms
             </summary>
         </member>
+        <member name="P:WeChatWASM.NavigateBackMiniProgramOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NavigateBackMiniProgramOption.extraData">
+            <summary>
+            需要返回给上一个小程序的数据，上一个小程序可在 `App.onShow` 中获取到这份数据。 [详情](#)。
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.NavigateBackMiniProgramOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.NavigateBackMiniProgramOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.NavigateToMiniProgramOption.appId">
             <summary>
             要打开的小程序 appId
             </summary>
         </member>
-        <member name="F:WeChatWASM.NavigateToMiniProgramOption.complete">
+        <member name="P:WeChatWASM.NavigateToMiniProgramOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -6906,7 +6959,7 @@
             需要传递给目标小程序的数据，目标小程序可在 `App.onLaunch`，`App.onShow` 中获取到这份数据。如果跳转的是小游戏，可以在 [wx.onShow](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.onShow.html)、[wx.getLaunchOptionsSync](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.getLaunchOptionsSync.html) 中可以获取到这份数据数据。
             </summary>
         </member>
-        <member name="F:WeChatWASM.NavigateToMiniProgramOption.fail">
+        <member name="P:WeChatWASM.NavigateToMiniProgramOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -6928,7 +6981,7 @@
             小程序链接，当传递该参数后，可以不传 appId 和 path。链接可以通过【小程序菜单】->【复制链接】获取。
             </summary>
         </member>
-        <member name="F:WeChatWASM.NavigateToMiniProgramOption.success">
+        <member name="P:WeChatWASM.NavigateToMiniProgramOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -6953,17 +7006,17 @@
             是否启用 notify
             </summary>
         </member>
-        <member name="F:WeChatWASM.NotifyBLECharacteristicValueChangeOption.complete">
+        <member name="P:WeChatWASM.NotifyBLECharacteristicValueChangeOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.NotifyBLECharacteristicValueChangeOption.fail">
+        <member name="P:WeChatWASM.NotifyBLECharacteristicValueChangeOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.NotifyBLECharacteristicValueChangeOption.success">
+        <member name="P:WeChatWASM.NotifyBLECharacteristicValueChangeOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7494,27 +7547,27 @@
             变化后的窗口宽度，单位 px
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenAppAuthorizeSettingOption.complete">
+        <member name="P:WeChatWASM.OpenAppAuthorizeSettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenAppAuthorizeSettingOption.fail">
+        <member name="P:WeChatWASM.OpenAppAuthorizeSettingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenAppAuthorizeSettingOption.success">
+        <member name="P:WeChatWASM.OpenAppAuthorizeSettingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBluetoothAdapterOption.complete">
+        <member name="P:WeChatWASM.OpenBluetoothAdapterOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBluetoothAdapterOption.fail">
+        <member name="P:WeChatWASM.OpenBluetoothAdapterOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7528,7 +7581,7 @@
             - 'peripheral': 从机（外围设备）模式;
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBluetoothAdapterOption.success">
+        <member name="P:WeChatWASM.OpenBluetoothAdapterOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7538,17 +7591,17 @@
             需要打开的卡券列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCardOption.complete">
+        <member name="P:WeChatWASM.OpenCardOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCardOption.fail">
+        <member name="P:WeChatWASM.OpenCardOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCardOption.success">
+        <member name="P:WeChatWASM.OpenCardOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7569,17 +7622,17 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsActivityOption.complete">
+        <member name="P:WeChatWASM.OpenChannelsActivityOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsActivityOption.fail">
+        <member name="P:WeChatWASM.OpenChannelsActivityOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsActivityOption.success">
+        <member name="P:WeChatWASM.OpenChannelsActivityOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7594,17 +7647,17 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsEventOption.complete">
+        <member name="P:WeChatWASM.OpenChannelsEventOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsEventOption.fail">
+        <member name="P:WeChatWASM.OpenChannelsEventOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsEventOption.success">
+        <member name="P:WeChatWASM.OpenChannelsEventOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7614,12 +7667,12 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveOption.complete">
+        <member name="P:WeChatWASM.OpenChannelsLiveOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveOption.fail">
+        <member name="P:WeChatWASM.OpenChannelsLiveOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7634,7 +7687,7 @@
             直播 nonceId，通过 getChannelsLiveInfo 接口获取（基础库 v2.19.2 之前的版本需要填写）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveOption.success">
+        <member name="P:WeChatWASM.OpenChannelsLiveOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7644,17 +7697,17 @@
             视频号 id
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsUserProfileOption.complete">
+        <member name="P:WeChatWASM.OpenChannelsUserProfileOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsUserProfileOption.fail">
+        <member name="P:WeChatWASM.OpenChannelsUserProfileOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsUserProfileOption.success">
+        <member name="P:WeChatWASM.OpenChannelsUserProfileOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7669,12 +7722,12 @@
             客服信息
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceChatOption.complete">
+        <member name="P:WeChatWASM.OpenCustomerServiceChatOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceChatOption.fail">
+        <member name="P:WeChatWASM.OpenCustomerServiceChatOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7699,7 +7752,7 @@
             是否发送小程序气泡消息
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceChatOption.success">
+        <member name="P:WeChatWASM.OpenCustomerServiceChatOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7709,12 +7762,12 @@
             客服链接
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceConversationOption.complete">
+        <member name="P:WeChatWASM.OpenCustomerServiceConversationOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceConversationOption.fail">
+        <member name="P:WeChatWASM.OpenCustomerServiceConversationOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7744,7 +7797,7 @@
             是否显示会话内消息卡片，设置此参数为 true，用户进入客服会话会在右下角显示"可能要发送的小程序"提示，用户点击后可以快速发送小程序消息
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenCustomerServiceConversationOption.success">
+        <member name="P:WeChatWASM.OpenCustomerServiceConversationOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7759,32 +7812,32 @@
             在客服会话内点击小程序消息卡片进入小程序时，所带的小程序打开参数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPrivacyContractOption.complete">
+        <member name="P:WeChatWASM.OpenPrivacyContractOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPrivacyContractOption.fail">
+        <member name="P:WeChatWASM.OpenPrivacyContractOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPrivacyContractOption.success">
+        <member name="P:WeChatWASM.OpenPrivacyContractOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSettingOption.complete">
+        <member name="P:WeChatWASM.OpenSettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSettingOption.fail">
+        <member name="P:WeChatWASM.OpenSettingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSettingOption.success">
+        <member name="P:WeChatWASM.OpenSettingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7808,17 +7861,17 @@
             用户订阅消息设置，接口参数`withSubscriptions`值为`true`时才会返回。
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSystemBluetoothSettingOption.complete">
+        <member name="P:WeChatWASM.OpenSystemBluetoothSettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSystemBluetoothSettingOption.fail">
+        <member name="P:WeChatWASM.OpenSystemBluetoothSettingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenSystemBluetoothSettingOption.success">
+        <member name="P:WeChatWASM.OpenSystemBluetoothSettingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7873,7 +7926,7 @@
             需要预览的图片链接列表。[2.2.3](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) 起支持云文件ID。
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewImageOption.complete">
+        <member name="P:WeChatWASM.PreviewImageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -7883,7 +7936,7 @@
             当前显示图片的链接
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewImageOption.fail">
+        <member name="P:WeChatWASM.PreviewImageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7900,7 +7953,7 @@
             是否显示长按菜单。
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewImageOption.success">
+        <member name="P:WeChatWASM.PreviewImageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7910,7 +7963,7 @@
             需要预览的资源列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewMediaOption.complete">
+        <member name="P:WeChatWASM.PreviewMediaOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -7920,7 +7973,7 @@
             当前显示的资源序号
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewMediaOption.fail">
+        <member name="P:WeChatWASM.PreviewMediaOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -7937,7 +7990,7 @@
             是否显示长按菜单。
             </summary>
         </member>
-        <member name="F:WeChatWASM.PreviewMediaOption.success">
+        <member name="P:WeChatWASM.PreviewMediaOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7975,17 +8028,17 @@
             蓝牙特征对应服务的 UUID
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReadBLECharacteristicValueOption.complete">
+        <member name="P:WeChatWASM.ReadBLECharacteristicValueOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReadBLECharacteristicValueOption.fail">
+        <member name="P:WeChatWASM.ReadBLECharacteristicValueOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReadBLECharacteristicValueOption.success">
+        <member name="P:WeChatWASM.ReadBLECharacteristicValueOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -7995,17 +8048,17 @@
             本地缓存中指定的 key
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveStorageOption.complete">
+        <member name="P:WeChatWASM.RemoveStorageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveStorageOption.fail">
+        <member name="P:WeChatWASM.RemoveStorageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveStorageOption.success">
+        <member name="P:WeChatWASM.RemoveStorageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8015,17 +8068,17 @@
             要删除掉 key 列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveUserCloudStorageOption.complete">
+        <member name="P:WeChatWASM.RemoveUserCloudStorageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveUserCloudStorageOption.fail">
+        <member name="P:WeChatWASM.RemoveUserCloudStorageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RemoveUserCloudStorageOption.success">
+        <member name="P:WeChatWASM.RemoveUserCloudStorageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8035,7 +8088,7 @@
             场景ID，在「小程序管理后台」获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReportSceneOption.complete">
+        <member name="P:WeChatWASM.ReportSceneOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -8050,7 +8103,7 @@
             自定义维度数据，key在「小程序管理后台」获取。只支持能够通过JSON.stringify序列化的对象，且序列化后长度不超过1024个字符
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReportSceneOption.fail">
+        <member name="P:WeChatWASM.ReportSceneOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -8060,7 +8113,7 @@
             自定义指标数据，key在「小程序管理后台」获取。只支持能够通过JSON.stringify序列化的对象，且序列化后长度不超过1024个字符
             </summary>
         </member>
-        <member name="F:WeChatWASM.ReportSceneOption.success">
+        <member name="P:WeChatWASM.ReportSceneOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8190,17 +8243,17 @@
             分区 ID
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentOption.complete">
+        <member name="P:WeChatWASM.RequestMidasFriendPaymentOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentOption.fail">
+        <member name="P:WeChatWASM.RequestMidasFriendPaymentOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentOption.success">
+        <member name="P:WeChatWASM.RequestMidasFriendPaymentOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8284,7 +8337,7 @@
             购买数量。mode=game 时必填。购买数量。详见 [buyQuantity 限制说明](#buyquantity-限制说明)。
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentOption.complete">
+        <member name="P:WeChatWASM.RequestMidasPaymentOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -8297,7 +8350,7 @@
             - 1: 米大师沙箱环境;
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentOption.fail">
+        <member name="P:WeChatWASM.RequestMidasPaymentOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -8309,7 +8362,7 @@
             - 'android': android;
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentOption.success">
+        <member name="P:WeChatWASM.RequestMidasPaymentOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8337,7 +8390,11 @@
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
             | -15011 |  | 请求的数据类型错误 |
+            | -15012 |  | SIGNATURE错误 |
             | -15013 |  | 代币未发布 |
+            | -15014 |  | paysig错误 |
+            | -15015 |  | sessionkey过期 |
+            | -15016 |  | 道具价格错误 |
             | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
@@ -8371,7 +8428,11 @@
             | -15009 |  | 虚拟支付接口错误码，由于健康系统限制，本次支付已超过限额（这种错误情况会有默认弹窗提示） |
             | -15010 |  | 虚拟支付接口错误码，正式版小游戏不允许在沙箱环境支付 |
             | -15011 |  | 请求的数据类型错误 |
+            | -15012 |  | SIGNATURE错误 |
             | -15013 |  | 代币未发布 |
+            | -15014 |  | paysig错误 |
+            | -15015 |  | sessionkey过期 |
+            | -15016 |  | 道具价格错误 |
             | -15017 |  | 订单已关闭 |
             | 1 |  | 虚拟支付接口错误码，用户取消支付 |
             | 2 |  | 虚拟支付接口错误码，客户端错误,判断到小程序在用户处于支付中时,又发起了一笔支付请求 |
@@ -8423,17 +8484,17 @@
             可参考[calc_signature](https://docs.qq.com/doc/DVUN0QWJja0J5c2x4)
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
+        <member name="P:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
+        <member name="P:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.success">
+        <member name="P:WeChatWASM.RequestMidasPaymentGameItemOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8512,17 +8573,17 @@
             需要订阅的消息模板的id的集合，一次调用最多可订阅3条消息（注意：iOS客户端7.0.6版本、Android客户端7.0.7版本之后的一次性订阅/长期订阅才支持多个模板消息，iOS客户端7.0.5版本、Android客户端7.0.6版本之前的一次订阅只支持一个模板消息）消息模板id在[微信公众平台(mp.weixin.qq.com)-功能-订阅消息]中配置。每个tmplId对应的模板标题需要不相同，否则会被过滤。
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeMessageOption.complete">
+        <member name="P:WeChatWASM.RequestSubscribeMessageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeMessageOption.fail">
+        <member name="P:WeChatWASM.RequestSubscribeMessageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeMessageOption.success">
+        <member name="P:WeChatWASM.RequestSubscribeMessageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8550,17 +8611,17 @@
             系统订阅消息类型列表，一次调用最多可订阅3种类型的消息，目前支持两种类型，"SYS_MSG_TYPE_INTERACTIVE"（好友互动提醒）、"SYS_MSG_TYPE_RANK"（排行榜超越提醒）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeSystemMessageOption.complete">
+        <member name="P:WeChatWASM.RequestSubscribeSystemMessageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeSystemMessageOption.fail">
+        <member name="P:WeChatWASM.RequestSubscribeSystemMessageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeSystemMessageOption.success">
+        <member name="P:WeChatWASM.RequestSubscribeSystemMessageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8573,17 +8634,17 @@
             接口调用成功时errMsg值为'requestSubscribeSystemMessage:ok'
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequirePrivacyAuthorizeOption.complete">
+        <member name="P:WeChatWASM.RequirePrivacyAuthorizeOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequirePrivacyAuthorizeOption.fail">
+        <member name="P:WeChatWASM.RequirePrivacyAuthorizeOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequirePrivacyAuthorizeOption.success">
+        <member name="P:WeChatWASM.RequirePrivacyAuthorizeOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8593,12 +8654,12 @@
             预告 id，通过 getChannelsLiveNoticeInfo 接口获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.RestartMiniProgramOption.complete">
+        <member name="P:WeChatWASM.RestartMiniProgramOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RestartMiniProgramOption.fail">
+        <member name="P:WeChatWASM.RestartMiniProgramOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -8608,7 +8669,7 @@
             打开的页面路径，path 中 ? 后面的部分会成为 query
             </summary>
         </member>
-        <member name="F:WeChatWASM.RestartMiniProgramOption.success">
+        <member name="P:WeChatWASM.RestartMiniProgramOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8618,17 +8679,17 @@
             待保存文件路径
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveFileToDiskOption.complete">
+        <member name="P:WeChatWASM.SaveFileToDiskOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveFileToDiskOption.fail">
+        <member name="P:WeChatWASM.SaveFileToDiskOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveFileToDiskOption.success">
+        <member name="P:WeChatWASM.SaveFileToDiskOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8638,27 +8699,27 @@
             图片文件路径，可以是临时文件路径或永久文件路径 (本地路径) ，不支持网络路径
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveImageToPhotosAlbumOption.complete">
+        <member name="P:WeChatWASM.SaveImageToPhotosAlbumOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveImageToPhotosAlbumOption.fail">
+        <member name="P:WeChatWASM.SaveImageToPhotosAlbumOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SaveImageToPhotosAlbumOption.success">
+        <member name="P:WeChatWASM.SaveImageToPhotosAlbumOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ScanCodeOption.complete">
+        <member name="P:WeChatWASM.ScanCodeOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ScanCodeOption.fail">
+        <member name="P:WeChatWASM.ScanCodeOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -8680,7 +8741,7 @@
             - 'pdf417': PDF417 条码;
             </summary>
         </member>
-        <member name="F:WeChatWASM.ScanCodeOption.success">
+        <member name="P:WeChatWASM.ScanCodeOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8740,17 +8801,17 @@
             最大传输单元。设置范围为 (22,512) 区间内，单位 bytes
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBLEMTUOption.complete">
+        <member name="P:WeChatWASM.SetBLEMTUOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBLEMTUOption.fail">
+        <member name="P:WeChatWASM.SetBLEMTUOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBLEMTUOption.success">
+        <member name="P:WeChatWASM.SetBLEMTUOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8770,17 +8831,17 @@
             自定义的登录态
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBackgroundFetchTokenOption.complete">
+        <member name="P:WeChatWASM.SetBackgroundFetchTokenOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBackgroundFetchTokenOption.fail">
+        <member name="P:WeChatWASM.SetBackgroundFetchTokenOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetBackgroundFetchTokenOption.success">
+        <member name="P:WeChatWASM.SetBackgroundFetchTokenOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8790,17 +8851,17 @@
             剪贴板的内容
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetClipboardDataOption.complete">
+        <member name="P:WeChatWASM.SetClipboardDataOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetClipboardDataOption.fail">
+        <member name="P:WeChatWASM.SetClipboardDataOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetClipboardDataOption.success">
+        <member name="P:WeChatWASM.SetClipboardDataOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8813,17 +8874,17 @@
             - 'portrait': 竖屏;
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetDeviceOrientationOption.complete">
+        <member name="P:WeChatWASM.SetDeviceOrientationOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetDeviceOrientationOption.fail">
+        <member name="P:WeChatWASM.SetDeviceOrientationOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetDeviceOrientationOption.success">
+        <member name="P:WeChatWASM.SetDeviceOrientationOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8833,27 +8894,27 @@
             是否打开调试
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetEnableDebugOption.complete">
+        <member name="P:WeChatWASM.SetEnableDebugOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetEnableDebugOption.fail">
+        <member name="P:WeChatWASM.SetEnableDebugOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetEnableDebugOption.success">
+        <member name="P:WeChatWASM.SetEnableDebugOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetInnerAudioOption.complete">
+        <member name="P:WeChatWASM.SetInnerAudioOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetInnerAudioOption.fail">
+        <member name="P:WeChatWASM.SetInnerAudioOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -8873,7 +8934,7 @@
             true 代表用扬声器播放，false 代表听筒播放，默认值为 true。
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetInnerAudioOption.success">
+        <member name="P:WeChatWASM.SetInnerAudioOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8883,17 +8944,17 @@
             是否保持屏幕常亮
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetKeepScreenOnOption.complete">
+        <member name="P:WeChatWASM.SetKeepScreenOnOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetKeepScreenOnOption.fail">
+        <member name="P:WeChatWASM.SetKeepScreenOnOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetKeepScreenOnOption.success">
+        <member name="P:WeChatWASM.SetKeepScreenOnOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8906,17 +8967,17 @@
             - 'dark': 深色;
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetMenuStyleOption.complete">
+        <member name="P:WeChatWASM.SetMenuStyleOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetMenuStyleOption.fail">
+        <member name="P:WeChatWASM.SetMenuStyleOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetMenuStyleOption.success">
+        <member name="P:WeChatWASM.SetMenuStyleOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8926,17 +8987,17 @@
             屏幕亮度值，范围 0 ~ 1，0 最暗，1 最亮。在安卓端支持传入特殊值 -1，表示屏幕亮度跟随系统变化
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetScreenBrightnessOption.complete">
+        <member name="P:WeChatWASM.SetScreenBrightnessOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetScreenBrightnessOption.fail">
+        <member name="P:WeChatWASM.SetScreenBrightnessOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetScreenBrightnessOption.success">
+        <member name="P:WeChatWASM.SetScreenBrightnessOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8949,17 +9010,17 @@
             - 'black': 浅色;
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetStatusBarStyleOption.complete">
+        <member name="P:WeChatWASM.SetStatusBarStyleOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetStatusBarStyleOption.fail">
+        <member name="P:WeChatWASM.SetStatusBarStyleOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetStatusBarStyleOption.success">
+        <member name="P:WeChatWASM.SetStatusBarStyleOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8969,17 +9030,17 @@
             要修改的 KV 数据列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetUserCloudStorageOption.complete">
+        <member name="P:WeChatWASM.SetUserCloudStorageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetUserCloudStorageOption.fail">
+        <member name="P:WeChatWASM.SetUserCloudStorageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetUserCloudStorageOption.success">
+        <member name="P:WeChatWASM.SetUserCloudStorageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -8994,17 +9055,17 @@
             数据的 value
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetVisualEffectOnCaptureOption.complete">
+        <member name="P:WeChatWASM.SetVisualEffectOnCaptureOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetVisualEffectOnCaptureOption.fail">
+        <member name="P:WeChatWASM.SetVisualEffectOnCaptureOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.SetVisualEffectOnCaptureOption.success">
+        <member name="P:WeChatWASM.SetVisualEffectOnCaptureOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9054,12 +9115,12 @@
             警示文案
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowActionSheetOption.complete">
+        <member name="P:WeChatWASM.ShowActionSheetOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowActionSheetOption.fail">
+        <member name="P:WeChatWASM.ShowActionSheetOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9069,7 +9130,7 @@
             按钮的文字颜色
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowActionSheetOption.success">
+        <member name="P:WeChatWASM.ShowActionSheetOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9110,17 +9171,17 @@
             是否为多行输入
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowKeyboardOption.complete">
+        <member name="P:WeChatWASM.ShowKeyboardOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowKeyboardOption.fail">
+        <member name="P:WeChatWASM.ShowKeyboardOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowKeyboardOption.success">
+        <member name="P:WeChatWASM.ShowKeyboardOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9130,12 +9191,12 @@
             提示的内容
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowLoadingOption.complete">
+        <member name="P:WeChatWASM.ShowLoadingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowLoadingOption.fail">
+        <member name="P:WeChatWASM.ShowLoadingOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9145,7 +9206,7 @@
             是否显示透明蒙层，防止触摸穿透
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowLoadingOption.success">
+        <member name="P:WeChatWASM.ShowLoadingOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9160,7 +9221,7 @@
             取消按钮的文字，最多 4 个字符
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowModalOption.complete">
+        <member name="P:WeChatWASM.ShowModalOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -9186,7 +9247,7 @@
             是否显示输入框
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowModalOption.fail">
+        <member name="P:WeChatWASM.ShowModalOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9202,7 +9263,7 @@
             是否显示取消按钮
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowModalOption.success">
+        <member name="P:WeChatWASM.ShowModalOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9233,7 +9294,7 @@
             要分享的图片地址，必须为本地路径或临时路径
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareImageMenuOption.complete">
+        <member name="P:WeChatWASM.ShowShareImageMenuOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -9244,7 +9305,7 @@
             从消息小程序入口打开小程序的路径，如果当前页面允许分享给朋友，则默认为当前页面路径，否则默认为小程序首页
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareImageMenuOption.fail">
+        <member name="P:WeChatWASM.ShowShareImageMenuOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9258,20 +9319,20 @@
         <member name="F:WeChatWASM.ShowShareImageMenuOption.style">
             <summary>
             需要基础库： `3.2.0`
-            分享样式，可选 v2
+            分享样式，小程序可选 v2
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareImageMenuOption.success">
+        <member name="P:WeChatWASM.ShowShareImageMenuOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareMenuOption.complete">
+        <member name="P:WeChatWASM.ShowShareMenuOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareMenuOption.fail">
+        <member name="P:WeChatWASM.ShowShareMenuOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9282,7 +9343,7 @@
             本接口为 Beta 版本，暂只在 Android 平台支持。需要显示的转发按钮名称列表，默认['shareAppMessage']。按钮名称合法值包含 "shareAppMessage"、"shareTimeline" 两种
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowShareMenuOption.success">
+        <member name="P:WeChatWASM.ShowShareMenuOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9297,7 +9358,7 @@
             提示的内容
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowToastOption.complete">
+        <member name="P:WeChatWASM.ShowToastOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
@@ -9307,7 +9368,7 @@
             提示的延迟时间
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowToastOption.fail">
+        <member name="P:WeChatWASM.ShowToastOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9333,17 +9394,17 @@
             是否显示透明蒙层，防止触摸穿透
             </summary>
         </member>
-        <member name="F:WeChatWASM.ShowToastOption.success">
+        <member name="P:WeChatWASM.ShowToastOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAccelerometerOption.complete">
+        <member name="P:WeChatWASM.StartAccelerometerOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAccelerometerOption.fail">
+        <member name="P:WeChatWASM.StartAccelerometerOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9358,7 +9419,7 @@
             - 'normal': 普通的回调频率，在 200ms/次 左右;
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartAccelerometerOption.success">
+        <member name="P:WeChatWASM.StartAccelerometerOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9368,12 +9429,12 @@
             Beacon 设备广播的 UUID 列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBeaconDiscoveryOption.complete">
+        <member name="P:WeChatWASM.StartBeaconDiscoveryOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBeaconDiscoveryOption.fail">
+        <member name="P:WeChatWASM.StartBeaconDiscoveryOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9383,7 +9444,7 @@
             是否校验蓝牙开关，仅在 iOS 下有效。iOS 11 起，控制面板里关掉蓝牙，还是能继续使用 Beacon 服务。
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBeaconDiscoveryOption.success">
+        <member name="P:WeChatWASM.StartBeaconDiscoveryOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9393,12 +9454,12 @@
             是否允许重复上报同一设备。如果允许重复上报，则 [wx.onBlueToothDeviceFound](#) 方法会多次上报同一设备，但是 RSSI 值会有不同。
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBluetoothDevicesDiscoveryOption.complete">
+        <member name="P:WeChatWASM.StartBluetoothDevicesDiscoveryOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBluetoothDevicesDiscoveryOption.fail">
+        <member name="P:WeChatWASM.StartBluetoothDevicesDiscoveryOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9422,32 +9483,32 @@
             要搜索的蓝牙设备主服务的 UUID 列表（支持 16/32/128 位 UUID）。某些蓝牙设备会广播自己的主 service 的 UUID。如果设置此参数，则只搜索广播包有对应 UUID 的主服务的蓝牙设备。建议通过该参数过滤掉周边不需要处理的其他蓝牙设备。
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartBluetoothDevicesDiscoveryOption.success">
+        <member name="P:WeChatWASM.StartBluetoothDevicesDiscoveryOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartCompassOption.complete">
+        <member name="P:WeChatWASM.StartCompassOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartCompassOption.fail">
+        <member name="P:WeChatWASM.StartCompassOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartCompassOption.success">
+        <member name="P:WeChatWASM.StartCompassOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartDeviceMotionListeningOption.complete">
+        <member name="P:WeChatWASM.StartDeviceMotionListeningOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartDeviceMotionListeningOption.fail">
+        <member name="P:WeChatWASM.StartDeviceMotionListeningOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9461,97 +9522,97 @@
             - 'normal': 普通的回调频率，在 200ms/次 左右;
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartDeviceMotionListeningOption.success">
+        <member name="P:WeChatWASM.StartDeviceMotionListeningOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAccelerometerOption.complete">
+        <member name="P:WeChatWASM.StopAccelerometerOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAccelerometerOption.fail">
+        <member name="P:WeChatWASM.StopAccelerometerOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopAccelerometerOption.success">
+        <member name="P:WeChatWASM.StopAccelerometerOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBeaconDiscoveryOption.complete">
+        <member name="P:WeChatWASM.StopBeaconDiscoveryOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBeaconDiscoveryOption.fail">
+        <member name="P:WeChatWASM.StopBeaconDiscoveryOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBeaconDiscoveryOption.success">
+        <member name="P:WeChatWASM.StopBeaconDiscoveryOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBluetoothDevicesDiscoveryOption.complete">
+        <member name="P:WeChatWASM.StopBluetoothDevicesDiscoveryOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBluetoothDevicesDiscoveryOption.fail">
+        <member name="P:WeChatWASM.StopBluetoothDevicesDiscoveryOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopBluetoothDevicesDiscoveryOption.success">
+        <member name="P:WeChatWASM.StopBluetoothDevicesDiscoveryOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopCompassOption.complete">
+        <member name="P:WeChatWASM.StopCompassOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopCompassOption.fail">
+        <member name="P:WeChatWASM.StopCompassOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopCompassOption.success">
+        <member name="P:WeChatWASM.StopCompassOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopDeviceMotionListeningOption.complete">
+        <member name="P:WeChatWASM.StopDeviceMotionListeningOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopDeviceMotionListeningOption.fail">
+        <member name="P:WeChatWASM.StopDeviceMotionListeningOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopDeviceMotionListeningOption.success">
+        <member name="P:WeChatWASM.StopDeviceMotionListeningOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopFaceDetectOption.complete">
+        <member name="P:WeChatWASM.StopFaceDetectOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopFaceDetectOption.fail">
+        <member name="P:WeChatWASM.StopFaceDetectOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StopFaceDetectOption.success">
+        <member name="P:WeChatWASM.StopFaceDetectOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9561,17 +9622,17 @@
             键盘输入框的当前值
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateKeyboardOption.complete">
+        <member name="P:WeChatWASM.UpdateKeyboardOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateKeyboardOption.fail">
+        <member name="P:WeChatWASM.UpdateKeyboardOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateKeyboardOption.success">
+        <member name="P:WeChatWASM.UpdateKeyboardOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9582,12 +9643,12 @@
             动态消息的 activityId。通过 [updatableMessage.createActivityId](https://developers.weixin.qq.com/minigame/dev/api-backend/open-api/updatable-message/updatableMessage.createActivityId.html) 接口获取
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateShareMenuOption.complete">
+        <member name="P:WeChatWASM.UpdateShareMenuOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateShareMenuOption.fail">
+        <member name="P:WeChatWASM.UpdateShareMenuOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
@@ -9604,7 +9665,7 @@
             是否是动态消息，详见[动态消息](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/updatable-message.html)
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateShareMenuOption.success">
+        <member name="P:WeChatWASM.UpdateShareMenuOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9651,47 +9712,47 @@
             静音设置
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateVoIPChatMuteConfigOption.complete">
+        <member name="P:WeChatWASM.UpdateVoIPChatMuteConfigOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateVoIPChatMuteConfigOption.fail">
+        <member name="P:WeChatWASM.UpdateVoIPChatMuteConfigOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateVoIPChatMuteConfigOption.success">
+        <member name="P:WeChatWASM.UpdateVoIPChatMuteConfigOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateWeChatAppOption.complete">
+        <member name="P:WeChatWASM.UpdateWeChatAppOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateWeChatAppOption.fail">
+        <member name="P:WeChatWASM.UpdateWeChatAppOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.UpdateWeChatAppOption.success">
+        <member name="P:WeChatWASM.UpdateWeChatAppOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateLongOption.complete">
+        <member name="P:WeChatWASM.VibrateLongOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateLongOption.fail">
+        <member name="P:WeChatWASM.VibrateLongOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateLongOption.success">
+        <member name="P:WeChatWASM.VibrateLongOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9702,17 +9763,17 @@
             震动强度类型，有效值为：heavy、medium、light
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateShortOption.complete">
+        <member name="P:WeChatWASM.VibrateShortOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateShortOption.fail">
+        <member name="P:WeChatWASM.VibrateShortOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.VibrateShortOption.success">
+        <member name="P:WeChatWASM.VibrateShortOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9744,17 +9805,17 @@
             蓝牙设备特征对应的二进制值
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteBLECharacteristicValueOption.complete">
+        <member name="P:WeChatWASM.WriteBLECharacteristicValueOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteBLECharacteristicValueOption.fail">
+        <member name="P:WeChatWASM.WriteBLECharacteristicValueOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.WriteBLECharacteristicValueOption.success">
+        <member name="P:WeChatWASM.WriteBLECharacteristicValueOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9772,32 +9833,32 @@
             自定义query
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartGameLiveOption.complete">
+        <member name="P:WeChatWASM.StartGameLiveOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartGameLiveOption.fail">
+        <member name="P:WeChatWASM.StartGameLiveOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.StartGameLiveOption.success">
+        <member name="P:WeChatWASM.StartGameLiveOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckGameLiveEnabledOption.complete">
+        <member name="P:WeChatWASM.CheckGameLiveEnabledOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckGameLiveEnabledOption.fail">
+        <member name="P:WeChatWASM.CheckGameLiveEnabledOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.CheckGameLiveEnabledOption.success">
+        <member name="P:WeChatWASM.CheckGameLiveEnabledOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9832,17 +9893,17 @@
             是否正在直播
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserCurrentGameliveInfoOption.complete">
+        <member name="P:WeChatWASM.GetUserCurrentGameliveInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserCurrentGameliveInfoOption.fail">
+        <member name="P:WeChatWASM.GetUserCurrentGameliveInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserCurrentGameliveInfoOption.success">
+        <member name="P:WeChatWASM.GetUserCurrentGameliveInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9852,17 +9913,17 @@
             最近几场直播的 feedId 列表
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserRecentGameLiveInfoOption.complete">
+        <member name="P:WeChatWASM.GetUserRecentGameLiveInfoOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserRecentGameLiveInfoOption.fail">
+        <member name="P:WeChatWASM.GetUserRecentGameLiveInfoOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserRecentGameLiveInfoOption.success">
+        <member name="P:WeChatWASM.GetUserRecentGameLiveInfoOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9897,17 +9958,17 @@
             要查询的直播的id
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserGameLiveDetailsOption.complete">
+        <member name="P:WeChatWASM.GetUserGameLiveDetailsOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserGameLiveDetailsOption.fail">
+        <member name="P:WeChatWASM.GetUserGameLiveDetailsOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetUserGameLiveDetailsOption.success">
+        <member name="P:WeChatWASM.GetUserGameLiveDetailsOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9917,17 +9978,17 @@
             支持填写最多4个openid，该用户的直播间将在直播专区置顶显示；可不填
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveCollectionOption.complete">
+        <member name="P:WeChatWASM.OpenChannelsLiveCollectionOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveCollectionOption.fail">
+        <member name="P:WeChatWASM.OpenChannelsLiveCollectionOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenChannelsLiveCollectionOption.success">
+        <member name="P:WeChatWASM.OpenChannelsLiveCollectionOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9937,32 +9998,32 @@
             用于打开指定游戏内容页面的开放链接
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPageOption.complete">
+        <member name="P:WeChatWASM.OpenPageOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPageOption.fail">
+        <member name="P:WeChatWASM.OpenPageOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenPageOption.success">
+        <member name="P:WeChatWASM.OpenPageOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeLiveActivityOption.complete">
+        <member name="P:WeChatWASM.RequestSubscribeLiveActivityOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeLiveActivityOption.fail">
+        <member name="P:WeChatWASM.RequestSubscribeLiveActivityOption.fail">
             <summary>
             接口调用失败的回调函数
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestSubscribeLiveActivityOption.success">
+        <member name="P:WeChatWASM.RequestSubscribeLiveActivityOption.success">
             <summary>
             接口调用成功的回调函数
             </summary>
@@ -9982,17 +10043,17 @@
             要打开的业务类型，目前仅支持 'servicecommentpage'
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBusinessViewOption.complete">
+        <member name="P:WeChatWASM.OpenBusinessViewOption.complete">
             <summary>
             调用成功、失败都会执行
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBusinessViewOption.fail">
+        <member name="P:WeChatWASM.OpenBusinessViewOption.fail">
             <summary>
             评价失败的回调
             </summary>
         </member>
-        <member name="F:WeChatWASM.OpenBusinessViewOption.success">
+        <member name="P:WeChatWASM.OpenBusinessViewOption.success">
             <summary>
             评价成功的回调
             </summary>
@@ -10028,35 +10089,35 @@
             </summary>
             <param name="msg">要发送的消息</param>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.WX_RealtimeLogManagerAddFilterMsg(System.String,System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.AddFilterMsg(System.String)">
             <summary>
             [RealtimeLogManager.addFilterMsg(string msg)](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.addFilterMsg.html)
             需要基础库： `2.14.4`
             添加过滤关键字，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.WX_RealtimeLogManagerError(System.String,System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Error(System.String)">
             <summary>
             [RealtimeLogManager.error()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.error.html)
             需要基础库： `2.14.4`
             写 error 日志，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.WX_RealtimeLogManagerInfo(System.String,System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Info(System.String)">
             <summary>
             [RealtimeLogManager.info()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.info.html)
             需要基础库： `2.14.4`
             写 info 日志，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.WX_RealtimeLogManagerSetFilterMsg(System.String,System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.SetFilterMsg(System.String)">
             <summary>
             [RealtimeLogManager.setFilterMsg(string msg)](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.setFilterMsg.html)
             需要基础库： `2.14.4`
             设置过滤关键字，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.WX_RealtimeLogManagerWarn(System.String,System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Warn(System.String)">
             <summary>
             [RealtimeLogManager.warn()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.warn.html)
             需要基础库： `2.14.4`
@@ -10427,7 +10488,7 @@
             绑定一个系统随机分配的可用端口，或绑定一个指定的端口号
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXUpdateManager.WX_UpdateManagerApplyUpdate(System.String)">
+        <member name="M:WeChatWASM.WXUpdateManager.ApplyUpdate">
             <summary>
             [UpdateManager.applyUpdate()](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.applyUpdate.html)
             强制小程序重启并使用新版本。在小程序新版本下载完成后（即收到 `onUpdateReady` 回调）调用。
@@ -10435,7 +10496,7 @@
             [示例代码](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.html#示例代码)
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXUpdateManager.WX_UpdateManagerOnCheckForUpdate(System.String)">
+        <member name="F:WeChatWASM.WXUpdateManager.OnCheckForUpdateActionList">
             <summary>
             [UpdateManager.onCheckForUpdate(function listener)](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.onCheckForUpdate.html)
             监听向微信后台请求检查更新结果事件。微信在小程序每次启动（包括热启动）时自动检查更新，不需由开发者主动触发。
@@ -10443,7 +10504,7 @@
             [示例代码](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.html#示例代码)
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXUpdateManager.WX_UpdateManagerOnUpdateFailed(System.String)">
+        <member name="F:WeChatWASM.WXUpdateManager.OnUpdateFailedActionList">
             <summary>
             [UpdateManager.onUpdateFailed(function listener)](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.onUpdateFailed.html)
             监听小程序更新失败事件。小程序有新版本，客户端主动触发下载（无需开发者触发），下载失败（可能是网络原因等）后回调
@@ -10451,7 +10512,7 @@
             [示例代码](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.html#示例代码)
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXUpdateManager.WX_UpdateManagerOnUpdateReady(System.String)">
+        <member name="F:WeChatWASM.WXUpdateManager.OnUpdateReadyActionList">
             <summary>
             [UpdateManager.onUpdateReady(function listener)](https://developers.weixin.qq.com/minigame/dev/api/base/update/UpdateManager.onUpdateReady.html)
             监听小程序有版本更新事件。客户端主动触发下载（无需开发者触发），下载成功后回调
@@ -10711,49 +10772,49 @@
             取消监听视频下载（缓冲）事件 ,action 为空表示移除全部事件监听
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderGetFrameData(System.String)">
+        <member name="M:WeChatWASM.WXVideoDecoder.GetFrameData">
             <summary>
             [Object VideoDecoder.getFrameData()](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.getFrameData.html)
             需要基础库： `2.11.1`
             获取下一帧的解码数据
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderRemove(System.String)">
+        <member name="M:WeChatWASM.WXVideoDecoder.Remove">
             <summary>
             [Promise VideoDecoder.remove()](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.remove.html)
             需要基础库： `2.11.1`
             移除解码器
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderSeek(System.String,System.Double)">
+        <member name="M:WeChatWASM.WXVideoDecoder.Seek(System.Double)">
             <summary>
             [Promise VideoDecoder.seek(number position)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.seek.html)
             需要基础库： `2.11.1`
             跳到某个时间点解码
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderStart(System.String,System.String)">
+        <member name="M:WeChatWASM.WXVideoDecoder.Start(WeChatWASM.VideoDecoderStartOption)">
             <summary>
             [Promise VideoDecoder.start(Object object)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.start.html)
             需要基础库： `2.11.1`
             开始解码
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderStop(System.String)">
+        <member name="M:WeChatWASM.WXVideoDecoder.Stop">
             <summary>
             [Promise VideoDecoder.stop()](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.stop.html)
             需要基础库： `2.11.1`
             停止解码
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderOff(System.String,System.String)">
+        <member name="M:WeChatWASM.WXVideoDecoder.Off(System.String)">
             <summary>
             [VideoDecoder.off(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.off.html)
             需要基础库： `2.11.1`
             取消监听录制事件。当对应事件触发时，该回调函数不再执行
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideoDecoder.WX_VideoDecoderOn(System.String,System.String)">
+        <member name="F:WeChatWASM.WXVideoDecoder.OnActionList">
             <summary>
             [VideoDecoder.on(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.on.html)
             需要基础库： `2.11.1`

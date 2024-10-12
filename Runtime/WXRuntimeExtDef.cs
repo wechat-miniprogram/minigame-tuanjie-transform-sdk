@@ -15,7 +15,7 @@ namespace WeChatWASM
 
         private static void Init()
         {
-            
+
 #if UNITY_2018_1_OR_NEWER
             WXRuntimeExtEnvDef.SETDEF("UNITY_2018_1_OR_NEWER", true);
 #else
@@ -118,16 +118,16 @@ namespace WeChatWASM
             */
             WXRuntimeExtEnvDef.RegisterAction("Unity.GetObjectInstanceID", (args) =>
             {
-            #if UNITY_2021_3_OR_NEWER
+#if UNITY_2021_3_OR_NEWER
                 if (args is UnityEngine.Object unityObject)
                 {
                     return unityObject.GetInstanceID();
                 }
-            #endif
+#endif
                 // unityObject.GetInstanceID() would never return 0. 
-                return 0; 
+                return 0;
             });
         }
     }
-    
+
 }

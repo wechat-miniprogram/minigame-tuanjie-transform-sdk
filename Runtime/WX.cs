@@ -489,6 +489,11 @@ namespace WeChatWASM
         /// [wx.getChannelsLiveInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/channels/wx.getChannelsLiveInfo.html)
         /// 需要基础库： `2.15.0`
         /// 获取视频号直播信息
+        /// **常见错误码说明**
+        /// 100008  视频号需要认证
+        /// 40097 入参异常
+        /// 1416104  视频号获取到的数据为空
+        /// 1416100  非法的视频号id
         /// </summary>
         public static void GetChannelsLiveInfo(GetChannelsLiveInfoOption callback)
         {
@@ -719,6 +724,7 @@ namespace WeChatWASM
         /// wx.getNetworkType({
         /// success (res) {
         /// const networkType = res.networkType
+        /// const weakNet = res.weakNet
         /// }
         /// })
         /// ```
@@ -726,6 +732,18 @@ namespace WeChatWASM
         public static void GetNetworkType(GetNetworkTypeOption callback)
         {
             WXSDKManagerHandler.Instance.GetNetworkType(callback);
+        }
+
+        /// <summary>
+        /// [wx.getPhoneNumber(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/user-info/wx.getPhoneNumber.html)
+        /// 手机号快速验证，向用户申请，并在用户同意后，快速填写和验证手机 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getPhoneNumber.html)
+        /// ****
+        /// ## 注意事项
+        /// - 用户点击后才可进行调用
+        /// </summary>
+        public static void GetPhoneNumber(GetPhoneNumberOption callback)
+        {
+            WXSDKManagerHandler.Instance.GetPhoneNumber(callback);
         }
 
         /// <summary>
@@ -1144,6 +1162,28 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.navigateBackMiniProgram(Object object)](https://developers.weixin.qq.com/minigame/dev/api/navigate/wx.navigateBackMiniProgram.html)
+        /// 需要基础库： `3.5.6`
+        /// 返回到上一个小程序。只有在当前小程序是被其他小程序打开时可以调用成功。
+        /// 注意：**微信客户端 iOS 6.5.9，Android 6.5.10 及以上版本支持**
+        /// **示例代码**
+        /// ```js
+        /// wx.navigateBackMiniProgram({
+        /// extraData: {
+        /// foo: 'bar'
+        /// },
+        /// success(res) {
+        /// // 返回成功
+        /// }
+        /// })
+        /// ```
+        /// </summary>
+        public static void NavigateBackMiniProgram(NavigateBackMiniProgramOption callback)
+        {
+            WXSDKManagerHandler.Instance.NavigateBackMiniProgram(callback);
+        }
+
+        /// <summary>
         /// [wx.navigateToMiniProgram(Object object)](https://developers.weixin.qq.com/minigame/dev/api/navigate/wx.navigateToMiniProgram.html)
         /// 需要基础库： `2.2.0`
         /// 打开另一个小程序
@@ -1422,11 +1462,11 @@ namespace WeChatWASM
         /// | 类型 | 说明 | 最低版本 |
         /// |------|------| -------|
         /// | 小程序码 |    |
-        /// | 微信个人码 | 不支持小游戏   | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
-        /// | 企业微信个人码 | 不支持小游戏   | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
-        /// | 普通群码 | 指仅包含微信用户的群，不支持小游戏   | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
-        /// | 互通群码 |  指既有微信用户也有企业微信用户的群，不支持小游戏  | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
-        /// | 公众号二维码 | 不支持小游戏  | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
+        /// | 微信个人码 |    | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
+        /// | 企业微信个人码 |    | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
+        /// | 普通群码 | 指仅包含微信用户的群  | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
+        /// | 互通群码 |  指既有微信用户也有企业微信用户的群  | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
+        /// | 公众号二维码 |   | [2.18.0](https://developers.weixin.qq.com/miniprogram/dev/framework/compatibility.html) |
         /// **示例代码**
         /// ```js
         /// wx.previewImage({
@@ -1569,8 +1609,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.requestMidasPayment(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPayment.html)
         /// 需要基础库： `2.19.2`
-        /// 发起购买游戏币支付请求，可参考[虚拟支付2.0游戏币](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/coins.html)
-        /// 虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
+        /// 发起购买游戏币支付请求，可参考[虚拟支付2.0游戏币](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/coins.html)，虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
         /// **buyQuantity 限制说明**
         /// 购买游戏币的时候，buyQuantity 不可任意填写。需满足 buyQuantity * 游戏币单价 = 限定的价格等级。如：游戏币单价为 0.1 元，一次购买最少数量是 10。
         /// 有效价格等级如下：
@@ -1614,7 +1653,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.requestMidasPaymentGameItem(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPaymentGameItem.html)
         /// 需要基础库： `2.19.2`
-        /// 发起道具直购支付请求，可参考[虚拟支付2.0道具直购](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/goods.html )，虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
+        /// 发起道具直购支付请求，可参考[虚拟支付2.0道具直购](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/goods.html)，虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
         /// **示例代码**
         /// ```js
         /// wx.requestMidasPaymentGameItem({
@@ -2651,7 +2690,7 @@ namespace WeChatWASM
         /// 主动拉起转发，进入选择通讯录界面。
         /// ****
         /// ## 注意事项
-        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用游戏画面截图。
+        /// - 转发图片说明：imageUrl，imageUrlId 都存在时，优先使用 imageUrl。 imageUrl，imageUrlId 都不填时使用游戏画面截图。
         /// </summary>
         public static void ShareAppMessage(ShareAppMessageOption option)
         {
@@ -3456,7 +3495,7 @@ namespace WeChatWASM
         /// 监听用户点击右上角菜单的「分享到朋友圈」按钮时触发的事件。本接口为 Beta 版本，暂只在 Android 平台支持。
         /// ****
         /// ## 注意事项
-        /// - 转发图片说明：仅当自定义分享图片权限被封禁时用 imageUrlId，其他情况都会用 imageUrl。 imageUrl 不填时使用当前游戏的icon。
+        /// - 转发图片说明：imageUrl，imageUrlId 都存在时，优先使用 imageUrl。  imageUrl，imageUrlId 都不填时使用当前游戏的icon。
         /// </summary>
         public static void OnShareTimeline(Action<Action<OnShareTimelineListenerResult>> callback)
         {
