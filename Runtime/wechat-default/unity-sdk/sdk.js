@@ -389,7 +389,7 @@ export default {
         if (!obj) {
             return JSON.stringify(formatResponse(returnType));
         }
-        const res = obj[functionName.replace(/^\w/, a => a.toLowerCase())](...params);
+        const res = obj[functionName.replace(/^\w/, a => a.toLowerCase())]();
         return JSON.stringify(formatResponse(returnType, res, id));
     },
     WX_ClassOneWayNoFunction_vt(className, functionName, id, param1) {
