@@ -289,21 +289,20 @@ namespace WeChatWASM
         {
 #if UNITY_2022_3_OR_NEWER
             return true;
-#endif
+#else
             return false;
+#endif
         }
 
         static bool IsCompatibleWithUnity202103To202203()
         {
 #if UNITY_2022_3_OR_NEWER
             return false;
-#endif
-
-#if !UNITY_2021_3_OR_NEWER
+#elif !UNITY_2021_3_OR_NEWER
             return false;
-#endif
-
+#else
             return true;
+#endif
         }
 
         private static void CheckBuildTarget()
@@ -1432,10 +1431,10 @@ namespace WeChatWASM
             }
             catch (Exception e)
             {
-                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message);
+                Debug.LogWarning("[可选]生成Boot info 失败！错误：" + e.Message); 
             }
 
-
+            
             return sb.ToString();
         }
 
