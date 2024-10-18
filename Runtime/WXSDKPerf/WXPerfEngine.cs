@@ -1,4 +1,3 @@
-#if ENABLE_WX_PERF_FEATURE
 
 using System;
 using System.Diagnostics;
@@ -7,8 +6,11 @@ using System.Runtime.InteropServices;
 using System.Xml;
 using UnityEngine;
 using UnityEngine.Scripting;
+
+#if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 using WXPerf;
 
+#if ENABLE_WX_PERF_FEATURE
 namespace WXSDKPerf
 {
 	[Preserve]
@@ -46,4 +48,6 @@ namespace WXSDKPerf
     }
 
 }
+#endif
+
 #endif // ENABLE_WX_PERF_FEATURE
