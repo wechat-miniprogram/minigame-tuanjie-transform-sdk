@@ -116,6 +116,9 @@ WX_GetLocalIPAddress:function(conf, callbackId) {
 WX_GetNetworkType:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetNetworkType(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
+WX_GetPhoneNumber:function(conf, callbackId) {
+    window.WXWASMSDK.WX_GetPhoneNumber(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+},
 WX_GetPrivacySetting:function(conf, callbackId) {
     window.WXWASMSDK.WX_GetPrivacySetting(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
@@ -175,6 +178,9 @@ WX_Login:function(conf, callbackId) {
 },
 WX_MakeBluetoothPair:function(conf, callbackId) {
     window.WXWASMSDK.WX_MakeBluetoothPair(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+},
+WX_NavigateBackMiniProgram:function(conf, callbackId) {
+    window.WXWASMSDK.WX_NavigateBackMiniProgram(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
 WX_NavigateToMiniProgram:function(conf, callbackId) {
     window.WXWASMSDK.WX_NavigateToMiniProgram(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
@@ -241,9 +247,6 @@ WX_RequestMidasFriendPayment:function(conf, callbackId) {
 },
 WX_RequestMidasPayment:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestMidasPayment(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
-},
-WX_RequestMidasPaymentGameItem:function(conf, callbackId) {
-    window.WXWASMSDK.WX_RequestMidasPaymentGameItem(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
 WX_RequestSubscribeMessage:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestSubscribeMessage(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));

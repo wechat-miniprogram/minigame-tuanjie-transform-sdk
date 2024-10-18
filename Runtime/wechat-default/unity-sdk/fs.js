@@ -472,4 +472,29 @@ export default {
         fs.truncateSync(formatJsonStr(option));
         return 'ok';
     },
+    
+    WX_RequestMidasPaymentGameItem(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.requestMidasPaymentGameItem({
+            ...config,
+            success(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('MidasPaymentError', res);
+                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
 };

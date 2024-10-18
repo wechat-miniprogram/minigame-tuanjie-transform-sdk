@@ -1058,4 +1058,7 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
+    WX_RequestMidasPaymentGameItem:function(conf, callbackId) {
+        window.WXWASMSDK.WX_RequestMidasPaymentGameItem(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
+    },
 });

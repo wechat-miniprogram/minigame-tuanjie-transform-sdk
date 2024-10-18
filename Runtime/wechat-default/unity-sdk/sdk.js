@@ -998,6 +998,30 @@ export default {
             },
         });
     },
+    WX_GetPhoneNumber(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.getPhoneNumber({
+            ...config,
+            success(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('GetPhoneNumberCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
     WX_GetPrivacySetting(conf, callbackId) {
         const config = formatJsonStr(conf);
         wx.getPrivacySetting({
@@ -1476,6 +1500,30 @@ export default {
             complete(res) {
                 formatResponse('GeneralCallbackResult', res);
                 moduleHelper.send('MakeBluetoothPairCallback', JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            },
+        });
+    },
+    WX_NavigateBackMiniProgram(conf, callbackId) {
+        const config = formatJsonStr(conf);
+        wx.navigateBackMiniProgram({
+            ...config,
+            success(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            },
+            fail(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            },
+            complete(res) {
+                formatResponse('GeneralCallbackResult', res);
+                moduleHelper.send('NavigateBackMiniProgramCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             },
@@ -2007,30 +2055,6 @@ export default {
             complete(res) {
                 formatResponse('MidasPaymentError', res);
                 moduleHelper.send('RequestMidasPaymentCallback', JSON.stringify({
-                    callbackId, type: 'complete', res: JSON.stringify(res),
-                }));
-            },
-        });
-    },
-    WX_RequestMidasPaymentGameItem(conf, callbackId) {
-        const config = formatJsonStr(conf);
-        wx.requestMidasPaymentGameItem({
-            ...config,
-            success(res) {
-                formatResponse('MidasPaymentError', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
-                    callbackId, type: 'success', res: JSON.stringify(res),
-                }));
-            },
-            fail(res) {
-                formatResponse('MidasPaymentError', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
-                    callbackId, type: 'fail', res: JSON.stringify(res),
-                }));
-            },
-            complete(res) {
-                formatResponse('MidasPaymentError', res);
-                moduleHelper.send('RequestMidasPaymentGameItemCallback', JSON.stringify({
                     callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             },
