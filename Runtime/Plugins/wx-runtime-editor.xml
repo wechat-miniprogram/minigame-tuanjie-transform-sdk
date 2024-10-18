@@ -3076,6 +3076,37 @@
             后端返回的经过json序列化后的数据
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.RequestMidasPaymentGameItemOption.paySig" -->
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signData">
+            <summary>
+            <b>支付原串</b>
+            具体支付参数见下面的signData，需要将数据以json格式传递
+            signData例子:
+            '{"mode":"goods","offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","platform":"android","zoneId":"1","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}'
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signature">
+            <summary>
+            <b>用户态签名</b>
+            signature参数签名算法参考[用户态签名](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%80%81%E7%AD%BE%E5%90%8D)
+            可参考[calc_signature](https://docs.qq.com/doc/DVUN0QWJja0J5c2x4)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.AccountInfo.miniProgram">
             <summary>
             小程序账号信息
@@ -8399,106 +8430,6 @@
         <member name="F:WeChatWASM.RequestMidasPaymentSuccessCallbackResult.errMsg">
             <summary>
             调用成功信息
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.RequestMidasPaymentGameItemOption.paySig" -->
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signData">
-            <summary>
-            <b>支付原串</b>
-            具体支付参数见下面的signData，需要将数据以json格式传递
-            signData例子:
-            '{"mode":"goods","offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","platform":"android","zoneId":"1","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}'
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.signature">
-            <summary>
-            <b>用户态签名</b>
-            signature参数签名算法参考[用户态签名](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%80%81%E7%AD%BE%E5%90%8D)
-            可参考[calc_signature](https://docs.qq.com/doc/DVUN0QWJja0J5c2x4)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.complete">
-            <summary>
-            接口调用结束的回调函数（调用成功、失败都会执行）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.fail">
-            <summary>
-            接口调用失败的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasPaymentGameItemOption.success">
-            <summary>
-            接口调用成功的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.buyQuantity">
-            <summary>
-            <b>购买数量</b>
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.currencyType">
-            <summary>
-            <b>币种</b>
-            可选值：
-            - 'CNY': 人民币;
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.goodsPrice">
-            <summary>
-            <b>道具单价（分）</b>
-            用来校验价格与后台道具价格是否一致，避免用户在业务商城页看到的价格与实际价格不一致导致投诉
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.mode">
-            <summary>
-            <b>支付的类型</b>
-            不同的支付类型有各自额外要传的附加参数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.offerId">
-            <summary>
-            <b>在米大师侧申请的应用id</b>
-            mp-支付基础配置中的offerid
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.outTradeNo">
-            <summary>
-            <b>业务订单号</b>
-            每个订单号只能使用一次，重复使用会失败（极端情况不保证唯一，不建议业务强依赖唯一性）。
-            要求32个字符内，只能是数字、大小写字母、符号 _-|*@组成，不能以下划线(_)开头。
-            若没有传入，则平台会自动填充一个，并以下划线开头。
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.productId">
-            <summary>
-            <b>道具ID</b>
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.attach">
-            <summary>
-            <b>透传数据</b>
-            发货通知时会透传给开发者
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.env">
-            <summary>
-            <b>环境配置</b>
-            可选值：
-            - 0: 米大师正式环境;
-            - 1: 米大师沙箱环境;
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.platform">
-            <summary>
-            <b>平台</b>
-            可选值：
-            - 'android': 安卓;
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SignData1.zoneId">
-            <summary>
-            <b>分区ID</b>
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestSubscribeMessageOption.tmplIds">
