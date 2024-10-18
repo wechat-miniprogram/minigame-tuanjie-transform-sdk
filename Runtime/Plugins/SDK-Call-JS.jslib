@@ -242,9 +242,6 @@ WX_RequestMidasFriendPayment:function(conf, callbackId) {
 WX_RequestMidasPayment:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestMidasPayment(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },
-WX_RequestMidasPaymentGameItem:function(conf, callbackId) {
-    window.WXWASMSDK.WX_RequestMidasPaymentGameItem(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
-},
 WX_RequestSubscribeMessage:function(conf, callbackId) {
     window.WXWASMSDK.WX_RequestSubscribeMessage(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId));
 },

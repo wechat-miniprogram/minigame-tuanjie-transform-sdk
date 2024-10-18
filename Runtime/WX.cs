@@ -1612,46 +1612,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.requestMidasPaymentGameItem(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasPaymentGameItem.html)
-        /// 需要基础库： `2.19.2`
-        /// 发起道具直购支付请求，可参考[虚拟支付2.0道具直购](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/goods.html )，虚拟支付全流程可参考[技术手册-虚拟支付篇](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/guide.html)
-        /// **示例代码**
-        /// ```js
-        /// wx.requestMidasPaymentGameItem({
-        /// signData: '{"mode":"goods","offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","platform":"android","zoneId":"1","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}',
-        /// paySig: 'd0b8bbccbe34ed11549bcfd6602b08711f4acc0965253a949cd6a2b895152f9d',
-        /// signature: 'd0b8bbccbe34ed11549bcfd6602b08711f4acc0965253a949cd6a2b895152f9d',
-        /// success(res, errCode) {
-        /// console.log('pay', res, errCode);
-        /// },
-        /// fail({
-        /// errMsg,
-        /// errCode
-        /// }) {
-        /// console.error(errMsg, errCode)
-        /// }
-        /// ```
-        /// 支付签名代码实现
-        /// ```python
-        /// import hmac
-        /// import hashlib
-        /// import urllib.parse
-        /// # sign_data 支付原串 注意这里sign_data需要和前端一致，原格式传递（包括空格和回车），建议后台下发，
-        /// # appkey 米大师密钥
-        /// # method 需要签名方法 requestMidasPaymentGameItem
-        /// def gen_pay_sig(sign_data, appkey, method):
-        /// need_encode_body = method + '&' + sign_data
-        /// print(need_encode_body)
-        /// return hmac.new(key=appkey.encode('utf-8'), msg=need_encode_body.encode('utf-8'),
-        ///     digestmod=hashlib.sha256).hexdigest()
-        /// ```
-        /// </summary>
-        public static void RequestMidasPaymentGameItem(RequestMidasPaymentGameItemOption callback)
-        {
-            WXSDKManagerHandler.Instance.RequestMidasPaymentGameItem(callback);
-        }
-
-        /// <summary>
         /// [wx.requestSubscribeMessage(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/subscribe-message/wx.requestSubscribeMessage.html)
         /// 需要基础库： `2.4.4`
         /// 调起客户端小游戏订阅消息界面，返回用户订阅消息的操作结果。当用户勾选了订阅面板中的“总是保持以上选择，不再询问”时，模板消息会被添加到用户的小游戏设置页，通过 [wx.getSetting](https://developers.weixin.qq.com/minigame/dev/api/open-api/setting/wx.getSetting.html) 接口可获取用户对相关模板消息的订阅状态。
