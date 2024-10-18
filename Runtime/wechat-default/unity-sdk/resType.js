@@ -571,6 +571,7 @@ export const ResType = {
         hasSystemProxy: 'bool',
         networkType: 'string',
         signalStrength: 'number',
+        weakNet: 'bool',
         errMsg: 'string',
     },
     GetPrivacySettingSuccessCallbackResult: {

@@ -32,7 +32,7 @@ export default {
             wx.cloud.init();
         }
         else {
-            CloudList[config.env].init(config);
+            wx.cloud.init(config);
         }
     },
     WX_CloudCallFunction(env, conf, callbackId) {

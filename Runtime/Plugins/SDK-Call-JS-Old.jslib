@@ -1058,4 +1058,7 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
+    WX_SetPreferredFramesPerSecond: function(fps) {
+        window.WXWASMSDK.WX_SetPreferredFramesPerSecond(fps);
+    }
 });
