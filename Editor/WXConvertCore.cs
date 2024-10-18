@@ -118,7 +118,7 @@ namespace WeChatWASM
 
             CheckBuildTarget();
             Init();
-            ProcessWxPerfBinaries(); 
+            ProcessWxPerfBinaries();
             // JSLib
             SettingWXTextureMinJSLib();
             UpdateGraphicAPI();
@@ -241,7 +241,7 @@ namespace WeChatWASM
                      $"{jsLibRootDir}wx_perf_2021.a",
                 };
             }
-            
+
             {
                 // WxPerfJsBridge.jslib
                 var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
@@ -254,7 +254,7 @@ namespace WeChatWASM
 
             {
                 // wx_perf_2022.a
-                bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer(); 
+                bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer();
 
                 var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
 #if PLATFORM_WEIXINMINIGAME
@@ -266,7 +266,7 @@ namespace WeChatWASM
 
             {
                 // wx_perf_2021.a
-                bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202103To202203(); 
+                bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202103To202203();
 
                 var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
 #if PLATFORM_WEIXINMINIGAME
@@ -422,8 +422,8 @@ namespace WeChatWASM
         {
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            
-            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1); 
+
+            return (!config.CompileOptions.DevelopBuild) && (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) != -1);
         }
 
         private static void ConvertDotnetCode()
@@ -1518,9 +1518,9 @@ namespace WeChatWASM
                 config.FontOptions.Mathematical_Operators ? "true" : "false",
                 customUnicodeRange,
                 boolConfigInfo,
-                config.CompileOptions.DevelopBuild ? "true" : "false", 
-                config.CompileOptions.enablePerfAnalysis ? "true" : "false", 
-                config.ProjectConf.MemorySize.ToString(), 
+                config.CompileOptions.DevelopBuild ? "true" : "false",
+                config.CompileOptions.enablePerfAnalysis ? "true" : "false",
+                config.ProjectConf.MemorySize.ToString(),
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

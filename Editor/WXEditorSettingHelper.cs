@@ -59,7 +59,7 @@ namespace WeChatWASM
         }
 
         private static WXEditorScriptObject config;
-        private static bool m_EnablePerfTool = false; 
+        private static bool m_EnablePerfTool = false;
 
         private static string _dstCache;
 
@@ -206,7 +206,7 @@ namespace WeChatWASM
                 {
                     this.formCheckbox("enablePerfAnalysis", "集成性能分析工具", "将性能分析工具集成入Development Build包中", false, null, OnPerfAnalysisFeatureToggleChanged);
                 }
-                
+
                 EditorGUILayout.EndVertical();
             }
 
@@ -470,7 +470,7 @@ namespace WeChatWASM
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", config.CompileOptions.brotliMT);
-            this.setData("enablePerfAnalysis", config.CompileOptions.enablePerfAnalysis);            
+            this.setData("enablePerfAnalysis", config.CompileOptions.enablePerfAnalysis);
             this.setData("autoUploadFirstBundle", true);
 
             // font options
@@ -565,7 +565,7 @@ namespace WeChatWASM
             config.FontOptions.Mathematical_Operators = this.getDataCheckbox("Mathematical_Operators");
             config.FontOptions.CustomUnicode = this.getDataInput("CustomUnicode");
 
-            ApplyPerfAnalysisSetting(); 
+            ApplyPerfAnalysisSetting();
         }
 
         private string getDataInput(string target)
@@ -703,7 +703,7 @@ namespace WeChatWASM
             // 针对non-dev build，取消性能分析工具的集成
             if (!InNewValue)
             {
-                this.setData("enablePerfAnalysis", false); 
+                this.setData("enablePerfAnalysis", false);
             }
         }
 
@@ -712,7 +712,7 @@ namespace WeChatWASM
             // 针对non-dev build，取消性能分析工具的集成
             if (!formCheckboxData["developBuild"] && InNewValue)
             {
-                this.setData("enablePerfAnalysis", false); 
+                this.setData("enablePerfAnalysis", false);
             }
         }
 
@@ -720,7 +720,7 @@ namespace WeChatWASM
         {
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            if (this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild")) 
+            if (this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild"))
             {
                 if (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) == -1)
                 {
@@ -767,7 +767,7 @@ namespace WeChatWASM
             {
                 return path;
             }
-            
+
             return Path.Combine(projectRootPath, path);
         }
     }
