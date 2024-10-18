@@ -571,6 +571,7 @@ export const ResType = {
         hasSystemProxy: 'bool',
         networkType: 'string',
         signalStrength: 'number',
+        weakNet: 'bool',
         errMsg: 'string',
     },
     GetPrivacySettingSuccessCallbackResult: {
@@ -902,19 +903,6 @@ export const ResType = {
     },
     RequestMidasPaymentSuccessCallbackResult: {
         errMsg: 'string',
-    },
-    SignData1: {
-        buyQuantity: 'number',
-        currencyType: 'string',
-        goodsPrice: 'number',
-        mode: 'string',
-        offerId: 'string',
-        outTradeNo: 'string',
-        productId: 'string',
-        attach: 'string',
-        env: 'number',
-        platform: 'string',
-        zoneId: 'string',
     },
     RequestSubscribeMessageFailCallbackResult: {
         errCode: 'number',
