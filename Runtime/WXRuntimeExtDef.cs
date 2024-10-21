@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 namespace WeChatWASM
 {
     public class WXRuntimeExtDef
@@ -129,5 +130,7 @@ namespace WeChatWASM
             });
         }
     }
-    
+
 }
+
+#endif
