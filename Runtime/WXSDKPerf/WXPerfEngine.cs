@@ -1,4 +1,3 @@
-#if ENABLE_WX_PERF_FEATURE
 
 using System;
 using System.Diagnostics;
@@ -7,8 +6,11 @@ using System.Runtime.InteropServices;
 using System.Xml;
 using UnityEngine;
 using UnityEngine.Scripting;
-using WXPerf;
 
+#if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
+
+
+#if ENABLE_WX_PERF_FEATURE
 namespace WXSDKPerf
 {
 	[Preserve]
@@ -22,11 +24,10 @@ namespace WXSDKPerf
 		{
 #if UNITY_EDITOR
             return; 
-#endif
-
+#else
             m_PerfEngineImplementation = new WXPerfEngine_Implementation();
-
             m_PerfEngineImplementation.StartPerfEngine(); 
+#endif
 		}
 
 
@@ -34,7 +35,7 @@ namespace WXSDKPerf
         {
 #if UNITY_EDITOR
             return; 
-#endif
+#else
             if (m_PerfEngineImplementation == null)
             {
                 UnityEngine.Debug.LogError("Annotation: Invalid m_PerfEngineImplementation! ");
@@ -42,8 +43,11 @@ namespace WXSDKPerf
             }
 
             m_PerfEngineImplementation.Annotation(InAnnotationString);
+#endif
         }
     }
 
 }
+#endif
+
 #endif // ENABLE_WX_PERF_FEATURE

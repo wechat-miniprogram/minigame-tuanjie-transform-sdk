@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 namespace WeChatWASM
 {
     public class WXRuntimeExtDef
@@ -109,11 +110,11 @@ namespace WeChatWASM
             /*
             WXRuntimeExtDef.RegisterAction("xxx", (args) =>
             {
-            #if UNITY_2018
+#if UNITY_2018
                 return 1;
-            #else
+#else
                 return 0; 
-            #endif
+#endif
             });
             */
             WXRuntimeExtEnvDef.RegisterAction("Unity.GetObjectInstanceID", (args) =>
@@ -131,3 +132,5 @@ namespace WeChatWASM
     }
 
 }
+
+#endif
