@@ -6,6 +6,14 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-11-14 【普通更新】
+### Feature
+* 普通: WXSDK代码简化
+* 普通: 增强JsonMapper报错信息
+* 普通: 适配插件版本升级到1.2.62
+### Fixed
+* 普通: WX.Cloud.Init 自定义环境报错 
+
 ## 2024-10-8 【重要更新】
 ### Feature
 * 普通: UDPSocket.write适配

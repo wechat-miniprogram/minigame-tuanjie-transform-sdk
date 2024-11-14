@@ -24,11 +24,10 @@ namespace WXSDKPerf
 		{
 #if UNITY_EDITOR
             return; 
-#endif
-
+#else
             m_PerfEngineImplementation = new WXPerfEngine_Implementation();
-
             m_PerfEngineImplementation.StartPerfEngine(); 
+#endif
 		}
 
 
@@ -36,7 +35,7 @@ namespace WXSDKPerf
         {
 #if UNITY_EDITOR
             return; 
-#endif
+#else
             if (m_PerfEngineImplementation == null)
             {
                 UnityEngine.Debug.LogError("Annotation: Invalid m_PerfEngineImplementation! ");
@@ -44,6 +43,7 @@ namespace WXSDKPerf
             }
 
             m_PerfEngineImplementation.Annotation(InAnnotationString);
+#endif
         }
     }
 

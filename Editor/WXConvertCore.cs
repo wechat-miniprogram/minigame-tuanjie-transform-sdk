@@ -216,6 +216,56 @@ namespace WeChatWASM
             return WXExportError.SUCCEED;
         }
 
+        private static int GetEnabledFlagStringIndex(string inAllText, string inTagStr)
+        {
+            try
+            {
+                int tagStrIdx = inAllText.IndexOf(inTagStr);
+                if (tagStrIdx == -1) throw new Exception($"Tag string '{inTagStr}' not found.");
+
+                int enabledStrIdx = inAllText.IndexOf("enabled: ", tagStrIdx);
+                if (enabledStrIdx == -1) throw new Exception("'enabled: ' string not found after tag.");
+
+                // inAllText[enabledStrIdx] == 'e'
+                // And that is to say, inAllText[enabledStrIdx + 9] should be 0 or 1
+                return enabledStrIdx + 9;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogError($"Failed to get enabled flag string index: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static void SetPluginCompatibilityByModifyingMetadataFile(string inAssetPath, bool inEnabled)
+        {
+            try
+            {
+                string metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(inAssetPath); // 获取.meta文件的路径
+                string enableFlagStr = inEnabled? "1" : "0";
+
+                // 读取.meta文件
+                // 处理WebGL
+                string metaContent = File.ReadAllText(metaPath);
+                int idxWebGLEnableFlag = GetEnabledFlagStringIndex(metaContent, "WebGL: WebGL");
+
+                metaContent = metaContent.Remove(idxWebGLEnableFlag, 1).Insert(idxWebGLEnableFlag, enableFlagStr);
+                // WeixinMiniGame
+                int idxWeixinMiniGameEnableFlag = GetEnabledFlagStringIndex(metaContent, "WeixinMiniGame: WeixinMiniGame");
+
+                metaContent = metaContent.Remove(idxWeixinMiniGameEnableFlag, 1).Insert(idxWeixinMiniGameEnableFlag, enableFlagStr);
+
+                // 写回.meta文件
+
+                File.WriteAllText(metaPath, metaContent);
+                AssetDatabase.ImportAsset(inAssetPath, ImportAssetOptions.ForceUpdate);
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogError($"Failed to enable plugin asset: {ex.Message}");
+            }
+        }
+
         private static void ProcessWxPerfBinaries()
         {
             string[] wxPerfPlugins;
@@ -250,6 +300,7 @@ namespace WeChatWASM
 #else
                 wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
 #endif
+                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[0], config.CompileOptions.enablePerfAnalysis);
             }
 
             {
@@ -262,6 +313,7 @@ namespace WeChatWASM
 #else
                 wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
 #endif
+                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin); 
             }
 
             {
@@ -274,36 +326,29 @@ namespace WeChatWASM
 #else
                 wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
 #endif
+                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
             }
-
-            for (int i = 0; i < wxPerfPlugins.Length; i++)
-            {
-                var importer = AssetImporter.GetAtPath(wxPerfPlugins[i]) as PluginImporter;
-                importer.SaveAndReimport();
-                AssetDatabase.WriteImportSettingsIfDirty(wxPerfPlugins[i]);
-                AssetDatabase.Refresh();
-            }
+            AssetDatabase.Refresh();
         }
 
         private static bool IsCompatibleWithUnity202203OrNewer()
         {
 #if UNITY_2022_3_OR_NEWER
             return true;
-#endif
+#else
             return false;
+#endif
         }
 
         static bool IsCompatibleWithUnity202103To202203()
         {
 #if UNITY_2022_3_OR_NEWER
             return false;
-#endif
-
-#if !UNITY_2021_3_OR_NEWER
+#elif !UNITY_2021_3_OR_NEWER
             return false;
-#endif
-
+#else
             return true;
+#endif
         }
 
         private static void CheckBuildTarget()
