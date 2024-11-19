@@ -871,10 +871,13 @@ namespace WeChatWASM
                     var abBytes = Unity.FontABTool.UnityFontABTool.PacKFontAB(inFontData, "WXFont", fSize * (Math.Abs(ascent) + Math.Abs(descent) + Math.Abs(lineGap)), fSize, fSize * ascent, fSize * descent);
                     try
                     {
+                        Debug.Log($"GetWXFont success, abBytes:{abBytes.Length}");
                         var ab = AssetBundle.LoadFromMemory(abBytes);
+                        Debug.Log($"GetWXFont success, ab:{ab}");
                         if (ab != null)
                         {
                             Font[] fonts = ab.LoadAllAssets<Font>();
+                            Debug.Log($"GetWXFont success, fonts:{fonts.Length}");
                             if (fonts.Length != 0)
                             {
                                 WriteLog($"Load font from ab. abBytes:{abBytes.Length}");

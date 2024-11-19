@@ -166,16 +166,19 @@ function WXGetFontRawData(conf, callbackId, forceFallback = false) {
             
         }
         else {
-            GameGlobal.manager.Logger.pluginError('[font] load font error: empty content');
+            
+            console.error('[font] load font error: empty content');
         }
     })
         .catch((err) => {
         if (err.errmsg === 'no support font' && forceFallback === false) {
             
+            console.error('[font] load font error: ', err);
             WXGetFontRawData(conf, callbackId, true);
         }
         else {
-            GameGlobal.manager.Logger.pluginError('[font] load font error: ', err); 
+            console.error('[font] load font error: ', err);
+            
         }
     });
 }
