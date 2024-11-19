@@ -222,7 +222,7 @@ const isWK = false;
         function _interopRequireDefault(obj) {
             return obj && obj.__esModule ? obj : { default: obj };
         }
-        const { screenWidth, screenHeight, pixelRatio } = wx.getWindowInfo();
+        const { screenWidth, screenHeight, pixelRatio } = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
         const innerWidth = exports.innerWidth = screenWidth;
         const innerHeight = exports.innerHeight = screenHeight;
         exports.devicePixelRatio = pixelRatio;

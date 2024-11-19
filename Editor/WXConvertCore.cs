@@ -242,7 +242,7 @@ namespace WeChatWASM
             try
             {
                 string metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(inAssetPath); // 获取.meta文件的路径
-                string enableFlagStr = inEnabled? "1" : "0";
+                string enableFlagStr = inEnabled ? "1" : "0";
 
                 // 读取.meta文件
                 // 处理WebGL
@@ -313,7 +313,7 @@ namespace WeChatWASM
 #else
                 wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin); 
+                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
             }
 
             {

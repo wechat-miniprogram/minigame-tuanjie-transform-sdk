@@ -107,8 +107,7 @@ function handleGetFontData(config, forceFallback) {
                 xhr.onload = () => {
                     
                     if ((xhr.status === 200 || xhr.status === 0) && xhr.response) {
-                        const notoFontData = xhr.response; 
-                        fontDataCache = notoFontData; 
+                        fontDataCache = xhr.response; 
                         isReadFromCache = xhr.isReadFromCache; 
                         resolve(); 
                     }
@@ -129,6 +128,7 @@ function handleGetFontData(config, forceFallback) {
             
             GameGlobal.manager.font.getCommonFont({
                 success(fontData) {
+                    console.warn('[font] get common font success', fontData);
                     
                     if (isIOS) {
                         fixCmapTable(fontData);
@@ -163,7 +163,7 @@ function WXGetFontRawData(conf, callbackId, forceFallback = false) {
             moduleHelper.send('GetFontRawDataCallback', JSON.stringify({ callbackId, type: 'success', res: JSON.stringify({ byteLength: fontDataCache.byteLength, ascent, descent, lineGap, unitsPerEm }) }));
             GameGlobal.manager.Logger.pluginLog(`[font] load font from ${forceFallback || loadFromRemote ? `network, url=${config.fallbackUrl}` : 'local'}`);
             
-            fontDataCache = null; 
+            
         }
         else {
             GameGlobal.manager.Logger.pluginError('[font] load font error: empty content');
