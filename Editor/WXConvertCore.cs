@@ -119,6 +119,7 @@ namespace WeChatWASM
             CheckBuildTarget();
             Init();
             ProcessWxPerfBinaries();
+            MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
             UpdateGraphicAPI();
@@ -242,7 +243,7 @@ namespace WeChatWASM
             try
             {
                 string metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(inAssetPath); // 获取.meta文件的路径
-                string enableFlagStr = inEnabled ? "1" : "0";
+                string enableFlagStr = inEnabled? "1" : "0";
 
                 // 读取.meta文件
                 // 处理WebGL
@@ -313,7 +314,7 @@ namespace WeChatWASM
 #else
                 wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
+                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin); 
             }
 
             {
@@ -331,6 +332,127 @@ namespace WeChatWASM
             AssetDatabase.Refresh();
         }
 
+        /**
+         * Lua Adaptor Settings.
+         */
+        
+        private static bool GetRequiredLuaHeaderFiles(out Dictionary<string, string> luaPaths)
+        {
+            luaPaths = new Dictionary<string, string>()
+            {
+                {"lua.h", null},
+                {"lobject.h", null},
+                {"lstate.h", null},
+                {"lfunc.h", null},
+                {"lapi.h", null},
+                {"lstring.h", null},
+                {"ltable.h", null},
+                {"lauxlib.h", null},
+            };
+            
+            string  rootPath  = Directory.GetParent(Application.dataPath).ToString();
+            string[] paths = Directory.GetFiles(rootPath, "*.h", SearchOption.AllDirectories);
+            foreach (var path in paths)
+            {
+                string filename = Path.GetFileName(path);
+                if (luaPaths.ContainsKey(Path.GetFileName(path)))
+                {
+                    luaPaths[filename] = path;
+                }
+            }
+
+            foreach (var expectFile in luaPaths)
+            {
+                if (expectFile.Value == null)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static string GetLuaAdaptorPath(string filename)
+        {
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                return $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}LuaAdaptor{DS}{filename}";
+            }
+            
+            return $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}LuaAdaptor{DS}{filename}";
+        }
+
+        private static void MakeLuaImport(Dictionary<string, string> luaPaths)
+        {
+            string luaAdaptorImportHeaderPath = GetLuaAdaptorPath("lua_adaptor_import.h");
+            if (!File.Exists(luaAdaptorImportHeaderPath))
+            {
+                Debug.LogError("Lua Adaptor File Not Found: " + luaAdaptorImportHeaderPath);
+                return;
+            }
+
+            string includeLuaContent = "//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_START";
+            foreach (var luaPath in luaPaths)
+            {
+                includeLuaContent += $"\n#include \"{luaPath.Value.Replace("\\", "\\\\")}\"";
+            }
+            includeLuaContent += "\n//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_END";
+
+            string importHeaderContent = File.ReadAllText(luaAdaptorImportHeaderPath);
+            importHeaderContent = Regex.Replace(
+                importHeaderContent,
+                "//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_START([\\s\\S]*?)//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_END",
+                includeLuaContent
+            );
+
+            File.WriteAllText(luaAdaptorImportHeaderPath, importHeaderContent);
+        }
+        
+        private static void ManageLuaAdaptorBuildOptions(bool shouldBuild) {
+            string[] maybeBuildFiles = new string[]
+            {
+                "lua_adaptor_501.c",
+                "lua_adaptor_503.c",
+                "lua_adaptor_comm.c",
+                "lua_adaptor_import.h",
+            };
+
+            foreach (var maybeBuildFile in maybeBuildFiles)
+            {
+                string path = GetLuaAdaptorPath(maybeBuildFile);
+                if (!File.Exists(path) && shouldBuild)
+                {
+                    Debug.LogError("Lua Adaptor File Not Found: " + maybeBuildFile);
+                    continue;
+                }
+
+                var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(path) as PluginImporter;
+                if (wxPerfJSBridgeImporter == null)
+                {
+                    Debug.LogError("Lua Adaptor Importer Not Found: " + maybeBuildFile);
+                    continue;
+                }
+#if PLATFORM_WEIXINMINIGAME
+                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, shouldBuild);
+#else
+                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, shouldBuild);
+#endif
+                SetPluginCompatibilityByModifyingMetadataFile(path, shouldBuild);
+            }
+        }
+        
+        private static void MakeEnvForLuaAdaptor()
+        {
+            bool hasLuaEnv = GetRequiredLuaHeaderFiles(out var luaPaths);
+            if (hasLuaEnv)
+            {
+                MakeLuaImport(luaPaths);
+            }
+            
+            ManageLuaAdaptorBuildOptions(hasLuaEnv && config.CompileOptions.enablePerfAnalysis);
+        }
+        
         private static bool IsCompatibleWithUnity202203OrNewer()
         {
 #if UNITY_2022_3_OR_NEWER
@@ -642,7 +764,7 @@ namespace WeChatWASM
 
             var header = "var OriginalAudioContext = window.AudioContext || window.webkitAudioContext;window.AudioContext = function() {if (this instanceof window.AudioContext) {return wx.createWebAudioContext();} else {return new OriginalAudioContext();}};";
 
-            if (config.CompileOptions.DevelopBuild)
+            if (config.CompileOptions.DevelopBuild && config.CompileOptions.enablePerfAnalysis)
             {
                 header = header + RenderAnalysisRules.header;
                 for (i = 0; i < RenderAnalysisRules.rules.Length; i++)
@@ -885,7 +1007,7 @@ namespace WeChatWASM
             }
         }
         /// <summary>
-        /// 等brotli之后，统计下资源包加brotli压缩后代码包是否超过了20M（小游戏代码分包总大小限制）
+        /// 等brotli之后，统计下资源包加brotli压缩后代码包是否超过了30M（小游戏代码分包总大小限制）
         /// </summary>
         private static void convertDataPackage(bool brotliError)
         {
@@ -956,8 +1078,8 @@ namespace WeChatWASM
                 // 计算首资源包大小
                 var tempDataInfo = new FileInfo(tempDataPath);
                 var tempFileSize = tempDataInfo.Length.ToString();
-                // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余19M
-                if (brcodeSize + int.Parse(tempFileSize) > (20 - 1) * 1024 * 1024)
+                // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余29M
+                if (brcodeSize + int.Parse(tempFileSize) > (30 - 1) * 1024 * 1024)
                 {
                     config.ProjectConf.assetLoadType = 0;
                     Debug.LogError("资源文件过大，不适宜用放小游戏包内加载，请上传资源文件到CDN");

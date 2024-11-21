@@ -107,7 +107,8 @@ function handleGetFontData(config, forceFallback) {
                 xhr.onload = () => {
                     
                     if ((xhr.status === 200 || xhr.status === 0) && xhr.response) {
-                        fontDataCache = xhr.response; 
+                        const notoFontData = xhr.response; 
+                        fontDataCache = notoFontData; 
                         isReadFromCache = xhr.isReadFromCache; 
                         resolve(); 
                     }
@@ -128,7 +129,6 @@ function handleGetFontData(config, forceFallback) {
             
             GameGlobal.manager.font.getCommonFont({
                 success(fontData) {
-                    console.warn('[font] get common font success', fontData);
                     
                     if (isIOS) {
                         fixCmapTable(fontData);
@@ -163,22 +163,19 @@ function WXGetFontRawData(conf, callbackId, forceFallback = false) {
             moduleHelper.send('GetFontRawDataCallback', JSON.stringify({ callbackId, type: 'success', res: JSON.stringify({ byteLength: fontDataCache.byteLength, ascent, descent, lineGap, unitsPerEm }) }));
             GameGlobal.manager.Logger.pluginLog(`[font] load font from ${forceFallback || loadFromRemote ? `network, url=${config.fallbackUrl}` : 'local'}`);
             
-            
+            fontDataCache = null; 
         }
         else {
-            
-            console.error('[font] load font error: empty content');
+            GameGlobal.manager.Logger.pluginError('[font] load font error: empty content');
         }
     })
         .catch((err) => {
         if (err.errmsg === 'no support font' && forceFallback === false) {
             
-            console.error('[font] load font error: ', err);
             WXGetFontRawData(conf, callbackId, true);
         }
         else {
-            console.error('[font] load font error: ', err);
-            
+            GameGlobal.manager.Logger.pluginError('[font] load font error: ', err); 
         }
     });
 }
