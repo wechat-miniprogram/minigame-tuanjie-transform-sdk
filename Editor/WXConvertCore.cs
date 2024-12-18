@@ -885,7 +885,7 @@ namespace WeChatWASM
             }
         }
         /// <summary>
-        /// 等brotli之后，统计下资源包加brotli压缩后代码包是否超过了20M（小游戏代码分包总大小限制）
+        /// 等brotli之后，统计下资源包加brotli压缩后代码包是否超过了30M（小游戏代码分包总大小限制）
         /// </summary>
         private static void convertDataPackage(bool brotliError)
         {
@@ -956,8 +956,8 @@ namespace WeChatWASM
                 // 计算首资源包大小
                 var tempDataInfo = new FileInfo(tempDataPath);
                 var tempFileSize = tempDataInfo.Length.ToString();
-                // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余19M
-                if (brcodeSize + int.Parse(tempFileSize) > (20 - 1) * 1024 * 1024)
+                // 胶水层及sdk可能占一定大小，粗略按照1M来算，则剩余29M
+                if (brcodeSize + int.Parse(tempFileSize) > (30 - 1) * 1024 * 1024)
                 {
                     config.ProjectConf.assetLoadType = 0;
                     Debug.LogError("资源文件过大，不适宜用放小游戏包内加载，请上传资源文件到CDN");

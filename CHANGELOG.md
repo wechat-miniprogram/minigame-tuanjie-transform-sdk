@@ -6,13 +6,23 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-12-18 【重要更新】
+### Feature
+* 普通: 开放数据域支持screenCanvas
+* 普通: 完善screenCanvas.toTempFilePath
+* 普通: 低版本WindowInfo适配
+* 普通: 调整autoAdaptScreen默认false
+* 普通: 首资源包放小游戏分包时，总大小调整为30MB
+### Fixed
+* 重要: 更改WebGLInput.mobileKeyboardSupport默认属性为 false，该属性导致Unity2022 以上版本 Touch 会多调用一次 MainLoop产生较大性能损耗。请使用微信键盘API或 WXTouchInputOverride支持文本输入框
+
 ## 2024-11-14 【普通更新】
 ### Feature
 * 普通: WXSDK代码简化
 * 普通: 增强JsonMapper报错信息
 * 普通: 适配插件版本升级到1.2.62
 ### Fixed
-* 普通: WX.Cloud.Init 自定义环境报错 
+* 普通: WX.Cloud.Init 自定义环境报错
 
 ## 2024-10-8 【重要更新】
 ### Feature

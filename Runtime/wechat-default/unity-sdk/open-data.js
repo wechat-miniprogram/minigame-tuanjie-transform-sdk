@@ -1,17 +1,47 @@
+import response from './response';
+import moduleHelper from './module-helper';
+import { getDefaultData } from './utils';
+import { isDebug, isSupportSharedCanvasMode } from '../check-version';
 
 let cachedOpenDataContext;
 let cachedSharedCanvas;
+var SharedCanvasMode;
+(function (SharedCanvasMode) {
+    SharedCanvasMode["ScreenCanvas"] = "screenCanvas";
+    SharedCanvasMode["OffScreenCanvas"] = "offscreenCanvas";
+})(SharedCanvasMode || (SharedCanvasMode = {}));
+let sharedCanvasMode;
+let timerId;
+let textureObject = null;
+let textureId;
 
-function getOpenDataContext() {
-    return cachedOpenDataContext || wx.getOpenDataContext();
+function getOpenDataContext(mode) {
+    if (cachedOpenDataContext) {
+        return cachedOpenDataContext;
+    }
+    
+    if (!isSupportSharedCanvasMode) {
+        sharedCanvasMode = SharedCanvasMode.OffScreenCanvas;
+    }
+    
+    if (!sharedCanvasMode) {
+        if (typeof mode === 'string' && SharedCanvasMode[mode]) {
+            sharedCanvasMode = SharedCanvasMode[mode];
+        }
+        else {
+            sharedCanvasMode = SharedCanvasMode.OffScreenCanvas;
+        }
+    }
+    // @ts-ignore
+    cachedOpenDataContext = wx.getOpenDataContext({
+        sharedCanvasMode,
+    });
+    return cachedOpenDataContext;
 }
 
 function getSharedCanvas() {
     return cachedSharedCanvas || getOpenDataContext().canvas;
 }
-let timerId;
-let textureObject = null;
-let textureId;
 
 function hookUnityRender() {
     if (!textureId) {
@@ -70,10 +100,22 @@ function stopHookUnityRender() {
     textureObject = null;
 }
 export default {
+    WXGetOpenDataContext(mode) {
+        if (isDebug) {
+            console.warn('WXGetOpenDataContext:', mode);
+        }
+        getOpenDataContext(mode);
+    },
     WXDataContextPostMessage(msg) {
+        if (isDebug) {
+            console.warn('WXDataContextPostMessage:', msg);
+        }
         getOpenDataContext().postMessage(msg);
     },
     WXShowOpenData(id, x, y, width, height) {
+        if (isDebug) {
+            console.warn('WXShowOpenData:', id, x, y, width, height);
+        }
         if (width <= 0 || height <= 0) {
             console.error('[unity-sdk]: WXShowOpenData要求 width 和 height 参数必须大于0');
         }
@@ -82,6 +124,12 @@ export default {
         const sharedCanvas = openDataContext.canvas;
         sharedCanvas.width = width;
         sharedCanvas.height = height;
+        if (sharedCanvasMode === SharedCanvasMode.ScreenCanvas && sharedCanvas.style) {
+            sharedCanvas.style.left = `${x / window.devicePixelRatio}px`;
+            sharedCanvas.style.top = `${y / window.devicePixelRatio}px`;
+            sharedCanvas.style.width = `${width / window.devicePixelRatio}px`;
+            sharedCanvas.style.height = `${height / window.devicePixelRatio}px`;
+        }
         openDataContext.postMessage({
             type: 'WXRender',
             x,
@@ -90,13 +138,60 @@ export default {
             height,
             devicePixelRatio: window.devicePixelRatio,
         });
-        textureId = id;
-        startHookUnityRender();
+        if (sharedCanvasMode === SharedCanvasMode.OffScreenCanvas) {
+            textureId = id;
+            startHookUnityRender();
+        }
     },
     WXHideOpenData() {
+        if (isDebug) {
+            console.warn('WXHideOpenData');
+        }
         getOpenDataContext().postMessage({
             type: 'WXDestroy',
         });
-        stopHookUnityRender();
+        if (sharedCanvasMode === SharedCanvasMode.OffScreenCanvas) {
+            stopHookUnityRender();
+        }
+        else if (sharedCanvasMode === SharedCanvasMode.ScreenCanvas) {
+            const sharedCanvas = getSharedCanvas();
+            if (sharedCanvas.style) {
+                sharedCanvas.style.top = '9999px';
+            }
+        }
+    },
+    WXOpenDataToTempFilePathSync(conf) {
+        if (isDebug) {
+            console.warn('WXOpenDataToTempFilePathSync', conf);
+        }
+        const sharedCanvas = getSharedCanvas();
+        if (!sharedCanvas) {
+            return 'Please use WX.GetOpenDataContext() first';
+        }
+        return sharedCanvas.toTempFilePathSync(getDefaultData(sharedCanvas, conf));
+    },
+    WXOpenDataToTempFilePath(conf, s, f, c) {
+        if (isDebug) {
+            console.warn('WXOpenDataToTempFilePath', conf);
+        }
+        if (conf) {
+            const sharedCanvas = getSharedCanvas();
+            if (!sharedCanvas) {
+                console.error('Please use WX.GetOpenDataContext() first');
+                return;
+            }
+            sharedCanvas.toTempFilePath({
+                ...getDefaultData(sharedCanvas, conf),
+                ...response.handleText(s, f, c),
+                success: (res) => {
+                    moduleHelper.send('ToTempFilePathCallback', JSON.stringify({
+                        callbackId: s,
+                        errMsg: res.errMsg,
+                        errCode: res.errCode || 0,
+                        tempFilePath: res.tempFilePath,
+                    }));
+                },
+            });
+        }
     },
 };

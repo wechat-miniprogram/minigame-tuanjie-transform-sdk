@@ -193,14 +193,31 @@
         </member>
         <member name="M:WeChatWASM.WXCanvas.ToTempFilePathSync(WeChatWASM.WXToTempFilePathSyncParam)">
             <summary>
-            同步的将当前 Canvas 保存为一个临时文件
+            同步的将当前 SharedCanvas（开放数据域） 截屏保存为一个临时文件
             华为机型分享有已知bug，推荐使用异步版本
             </summary>
             <returns>canvas 生成的临时文件路径 (本地路径)</returns>
         </member>
         <member name="M:WeChatWASM.WXCanvas.ToTempFilePath(WeChatWASM.WXToTempFilePathParam)">
             <summary>
-            异步的将当前 Canvas 保存为一个临时文件
+            异步的将当前 SharedCanvas（开放数据域） 截图保存为一个临时文件
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXSharedCanvas">
+            <summary>
+            开放数据域的sharedCanvas
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXSharedCanvas.ToTempFilePathSync(WeChatWASM.WXToTempFilePathSyncParam)">
+            <summary>
+            同步的将当前 SharedCanvas（开放数据域） 保存为一个临时文件
+            华为机型分享有已知bug，推荐使用异步版本
+            </summary>
+            <returns>canvas 生成的临时文件路径 (本地路径)</returns>
+        </member>
+        <member name="M:WeChatWASM.WXSharedCanvas.ToTempFilePath(WeChatWASM.WXToTempFilePathParam)">
+            <summary>
+            异步的将当前 SharedCanvas（开放数据域） 保存为一个临时文件
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "T:WeChatWASM.WXChat" -->

@@ -146,7 +146,26 @@ public class WXTouchInputOverride : BaseInput
                     button.onClick.Invoke();
                     button.onClick.SetPersistentListenerState(0, UnityEventCallState.Off);
                 }
+            } 
+#if !UNITY_EDITOR
+            Text text = selectedObject.GetComponent<Text>();
+            if (text != null) 
+            {
+            #if PLATFORM_WEIXINMINIGAME
+                WeixinMiniGameInput.mobileKeyboardSupport = true;
+            #elif PLATFORM_WEBGL
+                WebGLInput.mobileKeyboardSupport = true;
+            #endif
             }
+            else 
+            {
+            #if PLATFORM_WEIXINMINIGAME
+                WeixinMiniGameInput.mobileKeyboardSupport = false;
+            #elif PLATFORM_WEBGL
+                WebGLInput.mobileKeyboardSupport = false;
+            #endif
+            }
+#endif
         }
     }
 
