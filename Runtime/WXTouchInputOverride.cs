@@ -154,7 +154,9 @@ public class WXTouchInputOverride : BaseInput
             #if PLATFORM_WEIXINMINIGAME
                 WeixinMiniGameInput.mobileKeyboardSupport = true;
             #elif PLATFORM_WEBGL
+                #if UNITY_2022_1_OR_NEWER
                 WebGLInput.mobileKeyboardSupport = true;
+                #endif 
             #endif
             }
             else 
@@ -162,7 +164,9 @@ public class WXTouchInputOverride : BaseInput
             #if PLATFORM_WEIXINMINIGAME
                 WeixinMiniGameInput.mobileKeyboardSupport = false;
             #elif PLATFORM_WEBGL
+                #if UNITY_2022_1_OR_NEWER
                 WebGLInput.mobileKeyboardSupport = false;
+                #endif
             #endif
             }
 #endif

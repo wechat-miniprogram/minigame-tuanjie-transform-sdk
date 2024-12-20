@@ -13,7 +13,9 @@ internal class DisableKeyboardInput : MonoBehaviour
     #if PLATFORM_WEIXINMINIGAME
         WeixinMiniGameInput.mobileKeyboardSupport = false;
     #elif PLATFORM_WEBGL
-        WebGLInput.mobileKeyboardSupport = false;
+        #if UNITY_2022_1_OR_NEWER
+            WebGLInput.mobileKeyboardSupport = false;
+        #endif
     #endif 
 #endif 
     }
