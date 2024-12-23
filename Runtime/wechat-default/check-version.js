@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-assign */
 /* eslint-disable @typescript-eslint/naming-convention */
-const { version, SDKVersion } = wx.getAppBaseInfo();
-const { platform, system } = wx.getDeviceInfo();
+const { version, SDKVersion } = wx.getAppBaseInfo ? wx.getAppBaseInfo() : wx.getSystemInfoSync();
+const { platform, system } = wx.getDeviceInfo ? wx.getDeviceInfo() : wx.getSystemInfoSync();
 const accountInfo = wx.getAccountInfoSync();
 const envVersion = accountInfo?.miniProgram?.envVersion;
 function compareVersion(v1, v2) {

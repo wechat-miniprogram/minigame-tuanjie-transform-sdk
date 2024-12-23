@@ -165,8 +165,8 @@ function bindGloblException() {
         GameGlobal.logmanager.info('game starting', bootinfo);
         console.info('game starting', bootinfo);
     }
-    const appBaseInfo = wx.getAppBaseInfo();
-    const deviceInfo = wx.getDeviceInfo();
+    const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() : wx.getSystemInfoSync();
+    const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() : wx.getSystemInfoSync();
     printSystemInfo(appBaseInfo, deviceInfo);
 }
 bindGloblException();
