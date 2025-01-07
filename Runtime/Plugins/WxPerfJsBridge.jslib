@@ -81,5 +81,26 @@ mergeInto(LibraryManager.library, {
             const content = UTF8ToString(dataPtr);
             GameGlobal.manager.profiler.uploadStringWithDir({'str': content, 'len': bufSize, 'fileName': name, 'uploadDir': dir, 'cb': _JSProfilerUploadStringWithDirCallback});
         //}
+    }, 
+
+    JSExportFromIDBFS: function(idbfsPath, targetPath, snapshotFileName, frameIdx) {
+        const idbfsPathStr = UTF8ToString(idbfsPath);
+        const targetPathStr = UTF8ToString(targetPath);
+        const fileName = UTF8ToString(snapshotFileName); 
+        GameGlobal.manager.profiler.uploadSnapshotBuffer({
+            'fileName': fileName, 
+            'uploadSnapshotPath': targetPathStr, 
+            'frameIdx': frameIdx, 
+            'idbfsPathStr': idbfsPathStr, 
+            'targetPathStr': targetPathStr
+        })
+    }, 
+
+    JSGetConvertPluginVersion: function() {
+        var lengthBytes = lengthBytesUTF8(GameGlobal.unityNamespace.convertPluginVersion) + 1;
+        var stringOnWasmHeap = _malloc(lengthBytes);
+        stringToUTF8(GameGlobal.unityNamespace.convertPluginVersion, stringOnWasmHeap, lengthBytes);
+        
+        return stringOnWasmHeap;
     }
 });

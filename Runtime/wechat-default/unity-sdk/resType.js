@@ -929,9 +929,6 @@ export const ResType = {
         anyKeyWord: 'string',
         errMsg: 'string',
     },
-    ReserveChannelsLiveOption: {
-        noticeId: 'string',
-    },
     ScanCodeSuccessCallbackResult: {
         charSet: 'string',
         path: 'string',

@@ -6,6 +6,18 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2024-12-25 【预发布】
+PackageManager(git URL): https://github.com/wechat-miniprogram/minigame-tuanjie-transform-sdk.git#pre-v0.1.24
+### Feature
+* 普通: OffShareMessageToFriend支持
+### Fixed
+* 普通: reserveChannelsLive补充回调参数
+* 普通: 低基础库版本报错修复
+* 普通: BannerAd.OnResize回调报错修复
+* 普通: requestMidasPaymentGameItem修复
+* 普通: WriteSync接口无法正常返回已写入的字节数
+* 普通: ReadSync接口无法正常调用
+
 ## 2024-12-18 【重要更新】
 ### Feature
 * 普通: 开放数据域支持screenCanvas

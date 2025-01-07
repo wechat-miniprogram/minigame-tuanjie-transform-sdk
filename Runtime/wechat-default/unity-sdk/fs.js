@@ -408,7 +408,9 @@ export default {
     },
     WX_FileSystemManagerReadSync(option, callbackId) {
         const fs = wx.getFileSystemManager();
-        const res = fs.readSync(formatJsonStr(option));
+        const optionConfig = formatJsonStr(option);
+        optionConfig.arrayBuffer = new ArrayBuffer(optionConfig.arrayBuffer.length);
+        const res = fs.readSync(optionConfig);
         cacheArrayBuffer(callbackId, res.arrayBuffer);
         return JSON.stringify({
             bytesRead: res.bytesRead,
@@ -438,16 +440,12 @@ export default {
         const optionConfig = formatJsonStr(option);
         optionConfig.data = data.buffer;
         const res = fs.writeSync(optionConfig);
-        return JSON.stringify({
-            mode: res.bytesWritten,
-        });
+        return JSON.stringify(res);
     },
     WX_FileSystemManagerWriteStringSync(option) {
         const fs = wx.getFileSystemManager();
         const res = fs.writeSync(formatJsonStr(option));
-        return JSON.stringify({
-            mode: res.bytesWritten,
-        });
+        return JSON.stringify(res);
     },
     WX_FileSystemManagerOpenSync(option) {
         const fs = wx.getFileSystemManager();

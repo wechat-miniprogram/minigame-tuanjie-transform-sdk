@@ -1106,6 +1106,17 @@ namespace WeChatWASM
         {
             return WXSDKManagerHandler.CallJSFunctionWithReturn(sdkName, functionName, args);
         }
+
+        // TODO: 声明错误临时处理
+        /// <summary>
+        /// [wx.reserveChannelsLive(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/channels/wx.reserveChannelsLive.html)
+        /// 需要基础库： `2.19.0`
+        /// 预约视频号直播
+        /// </summary>
+        public static void ReserveChannelsLive(ReserveChannelsLiveOption option)
+        {
+            WXSDKManagerHandler.Instance.ReserveChannelsLive(option);
+        }
     }
 }
 #endif

@@ -3124,6 +3124,26 @@
             接口调用成功的回调函数
             </summary>
         </member>
+        <member name="F:WeChatWASM.ReserveChannelsLiveOption.noticeId">
+            <summary>
+            预告 id，通过 getChannelsLiveNoticeInfo 接口获取
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.ReserveChannelsLiveOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.ReserveChannelsLiveOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.ReserveChannelsLiveOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.AccountInfo.miniProgram">
             <summary>
             小程序账号信息
@@ -8589,11 +8609,6 @@
         <member name="P:WeChatWASM.RequirePrivacyAuthorizeOption.success">
             <summary>
             接口调用成功的回调函数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.ReserveChannelsLiveOption.noticeId">
-            <summary>
-            预告 id，通过 getChannelsLiveNoticeInfo 接口获取
             </summary>
         </member>
         <member name="P:WeChatWASM.RestartMiniProgramOption.complete">

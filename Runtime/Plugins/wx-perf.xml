@@ -14,5 +14,27 @@
             If the provided annotation string is null or empty, an error message will be logged.
             </remarks>
         </member>
+        <member name="M:WXSDKPerf.WXPerfEngine_Implementation.DeclareCustomStatInfo(System.String,System.String,System.Int32)">
+            <summary>
+            声明自定义性能指标
+            </summary>
+            <param name="inStatName">性能指标名称</param>
+            <param name="inStatCategory">性能指标类别</param>
+            <param name="inStatInterpType">性能指标展示方式，0. 不插值. 1. 线性插值；2. Step插值；</param>
+        </member>
+        <member name="M:WXSDKPerf.WXPerfEngine_Implementation.SetCustomStatInfo(System.String,System.Single)">
+            <summary>
+            设置自定义性能值，目前只支持浮点数
+            </summary>
+            <param name="inStatName">性能指标名称</param>
+            <param name="inValue">性能指标数值</param>
+        </member>
+        <member name="M:WXSDKPerf.WXPerfEngine_Implementation.SetLuaState(System.IntPtr)">
+            <summary>
+            指定luaState
+            </summary>
+            <param name="L">luaState</param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WXSDKPerf.WXPerfEngine_Implementation.AddCustomStatInfoBy(System.String,System.Single)" -->
     </members>
 </doc>
