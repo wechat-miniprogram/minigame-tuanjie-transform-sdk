@@ -96,6 +96,10 @@ mergeInto(LibraryManager.library, {
         })
     }, 
 
+    JSGetDPR: function() {
+        return window.devicePixelRatio;
+    },
+
     JSGetConvertPluginVersion: function() {
         var lengthBytes = lengthBytesUTF8(GameGlobal.unityNamespace.convertPluginVersion) + 1;
         var stringOnWasmHeap = _malloc(lengthBytes);
