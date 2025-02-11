@@ -264,9 +264,9 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         m_fpsCount++;
         m_fpsDeltaTime += Time.deltaTime;
 
-        if (m_fpsCount % 60 == 0)
+        if (m_fpsCount % 60 == 0 && m_fpsDeltaTime != 0.0f)
         {
-            m_fpsCount = 1;
+            m_fpsCount = 0;
             fps = (int)Mathf.Ceil(60.0f / m_fpsDeltaTime);
             m_fpsDeltaTime = 0;
         }

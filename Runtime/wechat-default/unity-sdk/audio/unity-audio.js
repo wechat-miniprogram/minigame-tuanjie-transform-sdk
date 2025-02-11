@@ -5,6 +5,7 @@ import { isAndroid, isPc, webAudioNeedResume, isSupportBufferURL, isSupportPlayB
 import { WEBAudio, unityAudioVolume } from './store';
 import { TEMP_DIR_PATH } from './const';
 import { createInnerAudio, destroyInnerAudio, printErrMsg, resumeWebAudio } from './utils';
+import { debugLog } from '../utils';
 
 const defaultSoundLength = 441000;
 
@@ -205,6 +206,7 @@ export class AudioChannelInstance {
         }
     }
     playUrl(startTime, url, startOffset, volume, soundClip) {
+        debugLog('playUrl: ', url, startTime, startOffset, volume, soundClip);
         try {
             this.setup(url);
             if (!this.source || !this.source.mediaElement) {
@@ -238,6 +240,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onPause(() => {
+                debugLog('onPause');
                 if (typeof this.source !== 'undefined') {
                     this.source.isPlaying = false;
                     if (this.source.stopTicker) {
@@ -247,6 +250,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onStop(() => {
+                debugLog('onStop');
                 if (typeof this.source !== 'undefined') {
                     if (this.source.playAfterStop) {
                         this.source._reset();
@@ -263,6 +267,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onEnded(() => {
+                debugLog('onEnded');
                 if (typeof this.source !== 'undefined') {
                     this.source._reset();
                     this.disconnectSource();
@@ -272,6 +277,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onError((e) => {
+                debugLog('onError', e);
                 printErrMsg(e);
                 const { errMsg } = e;
                 
@@ -350,6 +356,10 @@ export class AudioChannelInstance {
     disconnectSource() {
         if (this.source) {
             if (this.source.mediaElement) {
+                if (this.source.stopTimeout) {
+                    clearTimeout(this.source.stopTimeout);
+                    delete this.source.stopTimeout;
+                }
                 destroyInnerAudio(this.source.instanceId, false);
                 delete this.source.mediaElement;
                 delete this.source;
@@ -669,6 +679,7 @@ export class AudioChannelInstance {
                 if (startDelayMS > startDelayThresholdMS) {
                     if (this.source.playTimeout) {
                         clearTimeout(this.source.playTimeout);
+                        delete this.source.playTimeout;
                     }
                     this.source.playTimeout = setTimeout(() => {
                         if (typeof this.source !== 'undefined') {
@@ -691,7 +702,11 @@ export class AudioChannelInstance {
                 const stopDelayThresholdMS = 4;
                 const stopDelayMS = stopTime * 1e3;
                 if (stopDelayMS > stopDelayThresholdMS) {
-                    setTimeout(() => {
+                    if (this.source.stopTimeout) {
+                        clearTimeout(this.source.stopTimeout);
+                        delete this.source.stopTimeout;
+                    }
+                    this.source.stopTimeout = setTimeout(() => {
                         if (this.source && this.source.mediaElement) {
                             this.source.stopCache = true;
                             this.source.mediaElement.stop();
@@ -964,6 +979,7 @@ export default {
         if (!WEBAudio.audioContext || WEBAudio.audioWebEnabled === 0) {
             return;
         }
+        debugLog('_JS_Sound_Play', bufferInstance, channelInstance, offset, delay);
         WXWASMSDK._JS_Sound_Stop(channelInstance, 0);
         const soundClip = WEBAudio.audioInstances[bufferInstance];
         const channel = WEBAudio.audioInstances[channelInstance];
@@ -1160,6 +1176,7 @@ export default {
         if (WEBAudio.audioWebEnabled === 0) {
             return;
         }
+        debugLog('_JS_Sound_Stop', channelInstance, delay);
         const channel = WEBAudio.audioInstances[channelInstance];
         channel.stop(delay);
     },

@@ -89,6 +89,11 @@ namespace WeChatWASM
 #else
             WXRuntimeExtEnvDef.SETDEF("TUANJIE_2022_3_OR_NEWER", false);
 #endif
+#if UNITY_6000_0_OR_NEWER
+            WXRuntimeExtEnvDef.SETDEF("UNITY_6000_0_OR_NEWER", true);
+#else
+            WXRuntimeExtEnvDef.SETDEF("UNITY_6000_0_OR_NEWER", false);
+#endif
 
 #if PLATFORM_WEIXINMINIGAME
             WXRuntimeExtEnvDef.SETDEF("PLATFORM_WEIXINMINIGAME", true);

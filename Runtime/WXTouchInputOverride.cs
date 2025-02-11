@@ -38,7 +38,7 @@ public class WXTouchInputOverride : BaseInput
     {
         base.OnEnable();
 #if UNITY_WEBGL && !UNITY_EDITOR
-        if (string.IsNullOrEmpty(WeChatWASM.WX.GetDeviceInfo().platform)) return;
+        if (string.IsNullOrEmpty(WeChatWASM.WX.GetSystemInfoSync().platform)) return;
         InitWechatTouchEvents();
         if (_standaloneInputModule)
         {
@@ -144,7 +144,30 @@ public class WXTouchInputOverride : BaseInput
                     button.onClick.Invoke();
                     button.onClick.SetPersistentListenerState(0, UnityEventCallState.Off);
                 }
+            } 
+#if !UNITY_EDITOR
+            Text text = selectedObject.GetComponent<Text>();
+            if (text != null) 
+            {
+#if PLATFORM_WEIXINMINIGAME
+                WeixinMiniGameInput.mobileKeyboardSupport = true;
+#elif PLATFORM_WEBGL
+#if UNITY_2022_1_OR_NEWER
+                WebGLInput.mobileKeyboardSupport = true;
+#endif
+#endif
             }
+            else 
+            {
+#if PLATFORM_WEIXINMINIGAME
+                WeixinMiniGameInput.mobileKeyboardSupport = false;
+#elif PLATFORM_WEBGL
+#if UNITY_2022_1_OR_NEWER
+                WebGLInput.mobileKeyboardSupport = false;
+#endif
+#endif
+            }
+#endif
         }
     }
 

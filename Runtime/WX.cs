@@ -278,7 +278,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.exitMiniProgram(Object object)](https://developers.weixin.qq.com/minigame/dev/api/navigate/wx.exitMiniProgram.html)
         /// 需要基础库： `2.17.3`
-        /// 退出当前小程序。必须有点击行为才能调用成功。
+        /// 退出当前小程序
         /// </summary>
         public static void ExitMiniProgram(ExitMiniProgramOption callback)
         {
@@ -628,7 +628,7 @@ namespace WeChatWASM
         /// **encryptedData 解密后得到的 GameClubData 的结构**
         /// | 属性 | 类型 | 说明                                   |
         /// | ------- | ------- | -------------------------------------- |
-        /// |  dataList   | Array<GameClubDataByType> | 游戏圈相关数据的对象数组           |
+        /// |  dataList   | Array\<GameClubDataByType\> | 游戏圈相关数据的对象数组           |
         /// **GameClubDataByType 的结构**
         /// | 属性 | 类型 | 说明                                   |
         /// | ------- |------- |  -------------------------------------- |
@@ -737,9 +737,6 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.getPhoneNumber(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/user-info/wx.getPhoneNumber.html)
         /// 手机号快速验证，向用户申请，并在用户同意后，快速填写和验证手机 [具体说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/getPhoneNumber.html)
-        /// ****
-        /// ## 注意事项
-        /// - 用户点击后才可进行调用
         /// </summary>
         public static void GetPhoneNumber(GetPhoneNumberOption callback)
         {
@@ -790,10 +787,11 @@ namespace WeChatWASM
         /// **示例代码**
         /// ```js
         /// wx.getScreenRecordingState({
-        ///  success: function (res) {
-        ///    console.log(res.state)
-        ///  },
+        /// success: function (res) {
+        /// console.log(res.state)
+        /// },
         /// })
+        /// ```
         /// </summary>
         public static void GetScreenRecordingState(GetScreenRecordingStateOption callback)
         {
@@ -1364,7 +1362,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.openCustomerServiceChat(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/service-chat/wx.openCustomerServiceChat.html)
         /// 需要基础库： `2.30.4`
-        /// 打开微信客服，页面产生点击事件（例如 button 上 bindtap 的回调中）后才可调用。了解更多信息，可以参考[微信客服介绍](https://work.weixin.qq.com/kf/)。
+        /// 打开微信客服，页面产生点击事件后才可调用。了解更多信息，可以参考[微信客服介绍](https://work.weixin.qq.com/kf/)。
         /// **示例代码**
         /// ```js
         /// wx.openCustomerServiceChat({
@@ -1382,7 +1380,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.openCustomerServiceConversation(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/customer-message/wx.openCustomerServiceConversation.html)
         /// 需要基础库： `2.0.3`
-        /// 进入客服会话。要求在用户发生过至少一次 touch 事件后才能调用。后台接入方式与小程序一致，详见 [客服消息接入](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/customer-message/customer-message.html)
+        /// 进入客服会话。要求在用户发生过至少一次 touch 事件后才能调用。后台接入方式与小程序一致，详见 [客服消息接入](#)
         /// **注意事项**
         /// - 在客服会话内点击小程序消息卡片进入小程序时，不能通过 wx.onShow 或 wx.getEnterOptionsSync 等接口获取启动路径和参数，而是应该通过 wx.openCustomerServiceConversation 接口的 success 回调获取启动路径和参数
         /// </summary>
@@ -1453,6 +1451,16 @@ namespace WeChatWASM
         public static void OpenSystemBluetoothSetting(OpenSystemBluetoothSettingOption callback)
         {
             WXSDKManagerHandler.Instance.OpenSystemBluetoothSetting(callback);
+        }
+
+        /// <summary>
+        /// [wx.operateGameRecorderVideo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/game-recorder/wx.operateGameRecorderVideo.html)
+        /// 需要基础库： `2.26.1`
+        /// 分享游戏对局回放。安卓微信8.0.28开始支持，iOS微信8.0.30开始支持。
+        /// </summary>
+        public static void OperateGameRecorderVideo(OperateGameRecorderVideoOption callback)
+        {
+            WXSDKManagerHandler.Instance.OperateGameRecorderVideo(callback);
         }
 
         /// <summary>
@@ -1738,7 +1746,6 @@ namespace WeChatWASM
         /// 需要基础库： `2.9.4`
         /// 调起小游戏系统订阅消息界面，返回用户订阅消息的操作结果。当用户勾选了订阅面板中的“总是保持以上选择，不再询问”时，模板消息会被添加到用户的小游戏设置页，通过 [wx.getSetting](https://developers.weixin.qq.com/minigame/dev/api/open-api/setting/wx.getSetting.html) 接口可获取用户对相关模板消息的订阅状态。
         /// ## 注意事项
-        /// - 需要在 touchend 事件的回调中调用。
         /// - 使用前建议阅读 [小游戏系统订阅消息使用指引](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/subscribe-system-message.html)。
         /// - 系统订阅消息只需要订阅一次，永久有效。
         /// **错误码**
@@ -2135,7 +2142,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.showShareMenu(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.showShareMenu.html)
         /// 需要基础库： `1.1.0`
-        /// 显示当前页面的转发按钮
+        /// 设置右上角点开的详情界面中的分享按钮是否可用
         /// ****
         /// ## 注意事项
         /// - "shareAppMessage"表示“发送给朋友”按钮，"shareTimeline"表示“分享到朋友圈”按钮
@@ -2551,16 +2558,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.operateGameRecorderVideo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/game-recorder/wx.operateGameRecorderVideo.html)
-        /// 需要基础库： `2.26.1`
-        /// 分享游戏对局回放。安卓微信8.0.28开始支持，iOS微信8.0.30开始支持。
-        /// </summary>
-        public static void OperateGameRecorderVideo(OperateGameRecorderVideoOption option)
-        {
-            WXSDKManagerHandler.Instance.OperateGameRecorderVideo(option);
-        }
-
-        /// <summary>
         /// [wx.removeStorageSync(string key)](https://developers.weixin.qq.com/minigame/dev/api/storage/wx.removeStorageSync.html)
         /// [wx.removeStorage](https://developers.weixin.qq.com/minigame/dev/api/storage/wx.removeStorage.html) 的同步版本
         /// **示例代码**
@@ -2613,7 +2610,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.reportUserBehaviorBranchAnalytics(Object object)](https://developers.weixin.qq.com/minigame/dev/api/data-analysis/wx.reportUserBehaviorBranchAnalytics.html)
         /// 需要基础库： `2.12.0`
-        /// 用于分支相关的UI组件（一般是按钮）相关事件的上报，事件目前有曝光、点击两种
+        /// 上报场景分析，用于UI组件（一般是按钮）相关事件的上报，事件目前有曝光、点击两种，查看[相关文档](https://developers.weixin.qq.com/minigame/analysis/selfanalysis.html)
         /// </summary>
         public static void ReportUserBehaviorBranchAnalytics(ReportUserBehaviorBranchAnalyticsOption option)
         {
@@ -2624,29 +2621,19 @@ namespace WeChatWASM
         /// [wx.requestPointerLock()](https://developers.weixin.qq.com/minigame/dev/api/render/cursor/wx.requestPointerLock.html)
         /// 需要基础库： `3.2.0`
         /// 锁定鼠标指针。锁定指针后，鼠标会被隐藏，可以通过 [wx.touchMove](#) 事件获取鼠标偏移量。 **此接口仅在 Windows、Mac 端支持，且必须在用户进行操作后才可调用。**
-        /// **示例代码</title>
+        /// **示例代码**
         /// ```js
         /// wx.onTouchEnd(() => {
         /// wx.requestPointerLock() // 触发鼠标锁定
         /// })
         /// ```
-        /// <title>示例 demo**
+        /// **示例 demo**
         /// 下方打开后点按窗口会鼠标锁定，同时会在 touchMove 时持续在控制台打印偏移量。
         /// [https://developers.weixin.qq.com/s/wGruMHm97tMF](https://developers.weixin.qq.com/s/wGruMHm97tMF)
         /// </summary>
         public static void RequestPointerLock()
         {
             WXSDKManagerHandler.Instance.RequestPointerLock();
-        }
-
-        /// <summary>
-        /// [wx.reserveChannelsLive(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/channels/wx.reserveChannelsLive.html)
-        /// 需要基础库： `2.19.0`
-        /// 预约视频号直播
-        /// </summary>
-        public static void ReserveChannelsLive(ReserveChannelsLiveOption option)
-        {
-            WXSDKManagerHandler.Instance.ReserveChannelsLive(option);
         }
 
         /// <summary>
@@ -2995,6 +2982,36 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.onGamepadConnected(function listener)](https://developers.weixin.qq.com/minigame/dev/api/device/gamepad/wx.onGamepadConnected.html)
+        /// 需要基础库： `3.6.4`
+        /// 监听用户已连接游戏手柄的事件。
+        /// </summary>
+        public static void OnGamepadConnected(Action<OnGamepadConnectedListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OnGamepadConnected(result);
+        }
+
+        public static void OffGamepadConnected(Action<OnGamepadConnectedListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OffGamepadConnected(result);
+        }
+
+        /// <summary>
+        /// [wx.onGamepadDisconnected(function listener)](https://developers.weixin.qq.com/minigame/dev/api/device/gamepad/wx.onGamepadDisconnected.html)
+        /// 需要基础库： `3.6.4`
+        /// 监听用户断开游戏手柄的事件。
+        /// </summary>
+        public static void OnGamepadDisconnected(Action<OnGamepadDisconnectedListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OnGamepadDisconnected(result);
+        }
+
+        public static void OffGamepadDisconnected(Action<OnGamepadDisconnectedListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OffGamepadDisconnected(result);
+        }
+
+        /// <summary>
         /// [wx.onHide(function listener)](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.onHide.html)
         /// 监听小游戏隐藏到后台事件。锁屏、按 HOME 键退到桌面、显示在聊天顶部等操作会触发此事件。
         /// </summary>
@@ -3055,7 +3072,7 @@ namespace WeChatWASM
 
         /// <summary>
         /// [wx.onKeyboardComplete(function listener)](https://developers.weixin.qq.com/minigame/dev/api/device/keyboard/wx.onKeyboardComplete.html)
-        /// 监听监听键盘收起的事件
+        /// 监听键盘收起的事件
         /// </summary>
         public static void OnKeyboardComplete(Action<OnKeyboardInputListenerResult> result)
         {
@@ -3124,9 +3141,9 @@ namespace WeChatWASM
         /// **示例代码**
         /// ```js
         /// wx.onMemoryWarning(function () {
-        ///  console.log('onMemoryWarningReceive')
+        /// console.log('onMemoryWarningReceive')
         /// })
-        /// ``
+        /// ```
         /// </summary>
         public static void OnMemoryWarning(Action<OnMemoryWarningListenerResult> result)
         {
@@ -3283,6 +3300,10 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.OnShareMessageToFriend(result);
         }
 
+        public static void OffShareMessageToFriend(Action<OnShareMessageToFriendListenerResult> result)
+        {
+            WXSDKManagerHandler.Instance.OffShareMessageToFriend(result);
+        }
 
         /// <summary>
         /// [wx.onShow(function listener)](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.onShow.html)
@@ -3513,6 +3534,24 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [Array.&lt;Object&gt; wx.getGamepads()](https://developers.weixin.qq.com/minigame/dev/api/device/gamepad/wx.getGamepads.html)
+        /// 需要基础库： `3.6.4`
+        /// 获取已连接的游戏手柄信息，仅在 PC 平台支持。
+        /// **示例代码**
+        /// ```js
+        /// const gamepads = wx.getGamepads();
+        /// console.log(gamepads);
+        /// ```
+        /// **示例代码片段**
+        /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/6al1r2m17oV6)
+        /// </summary>
+        /// <returns></returns>
+        public static string[] GetGamepads()
+        {
+            return WXSDKManagerHandler.GetGamepads();
+        }
+
+        /// <summary>
         /// [Boolean wx.setHandoffQuery(String query)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.setHandoffQuery.html)
         /// 需要基础库： `2.14.4`
         /// 设置接力参数，该接口需要在游戏域调用
@@ -3520,7 +3559,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static bool SetHandoffQuery(string query)
         {
-            return WXSDKManagerHandler.Instance.SetHandoffQuery(query);
+            return WXSDKManagerHandler.SetHandoffQuery(query);
         }
 
         /// <summary>
@@ -3538,7 +3577,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static AccountInfo GetAccountInfoSync()
         {
-            return WXSDKManagerHandler.Instance.GetAccountInfoSync();
+            return WXSDKManagerHandler.GetAccountInfoSync();
         }
 
         /// <summary>
@@ -3568,7 +3607,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static AppAuthorizeSetting GetAppAuthorizeSetting()
         {
-            return WXSDKManagerHandler.Instance.GetAppAuthorizeSetting();
+            return WXSDKManagerHandler.GetAppAuthorizeSetting();
         }
 
         /// <summary>
@@ -3589,7 +3628,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static AppBaseInfo GetAppBaseInfo()
         {
-            return WXSDKManagerHandler.Instance.GetAppBaseInfo();
+            return WXSDKManagerHandler.GetAppBaseInfo();
         }
 
         /// <summary>
@@ -3599,7 +3638,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static GetBatteryInfoSyncResult GetBatteryInfoSync()
         {
-            return WXSDKManagerHandler.Instance.GetBatteryInfoSync();
+            return WXSDKManagerHandler.GetBatteryInfoSync();
         }
 
         /// <summary>
@@ -3620,7 +3659,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static DeviceInfo GetDeviceInfo()
         {
-            return WXSDKManagerHandler.Instance.GetDeviceInfo();
+            return WXSDKManagerHandler.GetDeviceInfo();
         }
 
         /// <summary>
@@ -3652,7 +3691,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static EnterOptionsGame GetEnterOptionsSync()
         {
-            return WXSDKManagerHandler.Instance.GetEnterOptionsSync();
+            return WXSDKManagerHandler.GetEnterOptionsSync();
         }
 
         /// <summary>
@@ -3667,7 +3706,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static T GetExptInfoSync<T>(string[] keys)
         {
-            return WXSDKManagerHandler.Instance.GetExptInfoSync<T>(keys);
+            return WXSDKManagerHandler.GetExptInfoSync<T>(keys);
         }
 
         /// <summary>
@@ -3685,7 +3724,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static T GetExtConfigSync<T>()
         {
-            return WXSDKManagerHandler.Instance.GetExtConfigSync<T>();
+            return WXSDKManagerHandler.GetExtConfigSync<T>();
         }
 
         /// <summary>
@@ -3707,7 +3746,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static LaunchOptionsGame GetLaunchOptionsSync()
         {
-            return WXSDKManagerHandler.Instance.GetLaunchOptionsSync();
+            return WXSDKManagerHandler.GetLaunchOptionsSync();
         }
 
         /// <summary>
@@ -3728,7 +3767,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static ClientRect GetMenuButtonBoundingClientRect()
         {
-            return WXSDKManagerHandler.Instance.GetMenuButtonBoundingClientRect();
+            return WXSDKManagerHandler.GetMenuButtonBoundingClientRect();
         }
 
         /// <summary>
@@ -3758,7 +3797,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static GetStorageInfoSyncOption GetStorageInfoSync()
         {
-            return WXSDKManagerHandler.Instance.GetStorageInfoSync();
+            return WXSDKManagerHandler.GetStorageInfoSync();
         }
 
         /// <summary>
@@ -3767,7 +3806,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static SystemInfo GetSystemInfoSync()
         {
-            return WXSDKManagerHandler.Instance.GetSystemInfoSync();
+            return WXSDKManagerHandler.GetSystemInfoSync();
         }
 
         /// <summary>
@@ -3786,7 +3825,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static SystemSetting GetSystemSetting()
         {
-            return WXSDKManagerHandler.Instance.GetSystemSetting();
+            return WXSDKManagerHandler.GetSystemSetting();
         }
 
         /// <summary>
@@ -3809,7 +3848,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static WindowInfo GetWindowInfo()
         {
-            return WXSDKManagerHandler.Instance.GetWindowInfo();
+            return WXSDKManagerHandler.GetWindowInfo();
         }
 
         /// <summary>
@@ -3825,7 +3864,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static ImageData CreateImageData(double width, double height)
         {
-            return WXSDKManagerHandler.Instance.CreateImageData(width, height);
+            return WXSDKManagerHandler.CreateImageData(width, height);
         }
 
         /// <summary>
@@ -3836,7 +3875,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static Path2D CreatePath2D()
         {
-            return WXSDKManagerHandler.Instance.CreatePath2D();
+            return WXSDKManagerHandler.CreatePath2D();
         }
 
         /// <summary>
@@ -3847,7 +3886,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static bool IsPointerLocked()
         {
-            return WXSDKManagerHandler.Instance.IsPointerLocked();
+            return WXSDKManagerHandler.IsPointerLocked();
         }
 
         /// <summary>
@@ -3862,7 +3901,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static bool IsVKSupport(string version)
         {
-            return WXSDKManagerHandler.Instance.IsVKSupport(version);
+            return WXSDKManagerHandler.IsVKSupport(version);
         }
 
         /// <summary>
@@ -3876,16 +3915,16 @@ namespace WeChatWASM
         /// <returns></returns>
         public static bool SetCursor(string path, double x, double y)
         {
-            return WXSDKManagerHandler.Instance.SetCursor(path, x, y);
+            return WXSDKManagerHandler.SetCursor(path, x, y);
         }
 
         /// <summary>
         /// [boolean wx.setMessageToFriendQuery(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.setMessageToFriendQuery.html)
         /// 设置 wx.shareMessageToFriend 接口 query 字段的值
-        /// **提示</title>
+        /// **提示**
         /// 1. 此处的 query 参数与 wx.onShow 取到的启动查询参数 query 不是同一个概念，仅仅是启动查询参数会增加一个字段为 query。
         /// 2. query 参数如涉及 "?"和"&" 等特殊符号，需自行进行 encodeURIComponent 和 decodeURIComponent 等操作。
-        /// <title>示例代码</title>
+        /// **示例代码**
         /// ```js
         /// // 发送方
         /// wx.setMessageToFriendQuery({
@@ -3895,7 +3934,8 @@ namespace WeChatWASM
         /// // 预期接收方可以通过以下方式拿到设置
         /// wx.getEnterOptionsSync().query.shareMessageToFriendScene // 1
         /// wx.getEnterOptionsSync().query.query // 'testquery'
-        /// <title>示例代码-特殊字符query**
+        /// ```
+        /// **示例代码-特殊字符query**
         /// ```js
         /// // 发送方
         /// wx.setMessageToFriendQuery({
@@ -3910,7 +3950,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static bool SetMessageToFriendQuery(SetMessageToFriendQueryOption option)
         {
-            return WXSDKManagerHandler.Instance.SetMessageToFriendQuery(option);
+            return WXSDKManagerHandler.SetMessageToFriendQuery(option);
         }
 
         /// <summary>
@@ -3920,7 +3960,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static double GetTextLineHeight(GetTextLineHeightOption option)
         {
-            return WXSDKManagerHandler.Instance.GetTextLineHeight(option);
+            return WXSDKManagerHandler.GetTextLineHeight(option);
         }
 
         /// <summary>
@@ -3930,7 +3970,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static string LoadFont(string path)
         {
-            return WXSDKManagerHandler.Instance.LoadFont(path);
+            return WXSDKManagerHandler.LoadFont(path);
         }
 
         /// <summary>
@@ -3939,7 +3979,7 @@ namespace WeChatWASM
         /// <returns></returns>
         public static GameLiveState GetGameLiveState()
         {
-            return WXSDKManagerHandler.Instance.GetGameLiveState();
+            return WXSDKManagerHandler.GetGameLiveState();
         }
 
         /// <summary>

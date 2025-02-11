@@ -65,6 +65,11 @@ PluginImporter:
       enabled: 1
       settings: {}
   - first:
+      WeixinMiniGame: WeixinMiniGame
+    second:
+      enabled: 1
+      settings: {}
+  - first:
       Windows Store Apps: WindowsStoreApps
     second:
       enabled: 0

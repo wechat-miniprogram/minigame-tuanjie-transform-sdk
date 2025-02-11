@@ -76,7 +76,7 @@ const isWK = false;
                 _window.canvas.addEventListener = _window.addEventListener;
                 _window.canvas.removeEventListener = _window.removeEventListener;
             }
-            const { platform } = wx.getDeviceInfo();
+            const { platform } = wx.getDeviceInfo ? wx.getDeviceInfo() : wx.getSystemInfoSync();
             // 开发者工具无法重定义 window
             if (platform === 'devtools') {
                 for (const key in _window) {
@@ -1221,7 +1221,7 @@ const isWK = false;
         });
         const _util = __webpack_require__(9);
         // TODO 需要 wx.getSystemInfo 获取更详细信息
-        const { platform } = wx.getDeviceInfo();
+        const { platform } = wx.getDeviceInfo ? wx.getDeviceInfo() : wx.getSystemInfoSync();
         const navigator = {
             platform,
             language: 'zh-cn',

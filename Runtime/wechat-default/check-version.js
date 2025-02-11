@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-assign */
 /* eslint-disable @typescript-eslint/naming-convention */
-const { version, SDKVersion } = wx.getAppBaseInfo();
-const { platform, system } = wx.getDeviceInfo();
+const { version, SDKVersion } = wx.getAppBaseInfo ? wx.getAppBaseInfo() : wx.getSystemInfoSync();
+const { platform, system } = wx.getDeviceInfo ? wx.getDeviceInfo() : wx.getSystemInfoSync();
 const accountInfo = wx.getAccountInfoSync();
 const envVersion = accountInfo?.miniProgram?.envVersion;
 function compareVersion(v1, v2) {
@@ -17,6 +17,7 @@ function compareVersion(v1, v2) {
             .map(v => v.padStart(2, '0'))
             .join(''));
 }
+export const isDebug = false;
 export const isPc = platform === 'windows' || platform === 'mac';
 export const isIOS = platform === 'ios';
 export const isAndroid = platform === 'android';
@@ -63,7 +64,9 @@ const isMobileBrotliInvalid = isMobile && !compareVersion(SDKVersion, '2.21.1');
 // @ts-ignore
 const isBrotliInvalid = $COMPRESS_DATA_PACKAGE && (isPcBrotliInvalid || isMobileBrotliInvalid);
 // iOS系统版本>=17.5时，小游戏退后台会导致异常
-export const isIOS175 = compareVersion(systemVersion, '17.5') || isH5Renderer;
+export const isIOS175 = compareVersion(systemVersion, '17.5') && isH5Renderer;
+// 是否支持开放数据域渲染模式，使用ScreenCanvas模式可以优化ToTempFilePath的使用
+export const isSupportSharedCanvasMode = compareVersion(SDKVersion, '3.6.6');
 // 是否能以iOS高性能模式运行
 // 请勿修改GameGlobal.canUseH5Renderer赋值！！！
 GameGlobal.canUseH5Renderer = isH5Renderer && isH5LibVersionValid;

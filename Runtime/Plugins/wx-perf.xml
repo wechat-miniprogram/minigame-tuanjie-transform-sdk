@@ -20,7 +20,7 @@
             </summary>
             <param name="inStatName">性能指标名称</param>
             <param name="inStatCategory">性能指标类别</param>
-            <param name="inStatInterpType">性能指标展示方式，1. 线性插值；2. Step插值；0. 只显示单一值</param>
+            <param name="inStatInterpType">性能指标展示方式，0. 不插值. 1. 线性插值；2. Step插值；</param>
         </member>
         <member name="M:WXSDKPerf.WXPerfEngine_Implementation.SetCustomStatInfo(System.String,System.Single)">
             <summary>

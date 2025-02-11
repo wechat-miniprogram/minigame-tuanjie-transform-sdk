@@ -232,6 +232,16 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
+    WXOpenDataToTempFilePath: function (conf, s, f, c) {
+        window.WXWASMSDK.WXOpenDataToTempFilePath(_WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c))
+    },
+    WXOpenDataToTempFilePathSync: function (conf) {
+        var returnStr = window.WXWASMSDK.WXOpenDataToTempFilePathSync(_WXPointer_stringify_adaptor(conf));
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
+    },
     WXGetUserDataPath: function () {
         var returnStr = window.WXWASMSDK.WXGetUserDataPath();
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
@@ -252,6 +262,9 @@ mergeInto(LibraryManager.library, {
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
+    },
+    WXGetOpenDataContext: function (mode) {
+        window.WXWASMSDK.WXGetOpenDataContext(_WXPointer_stringify_adaptor(mode));
     },
     WXDataContextPostMessage: function (msg) {
         window.WXWASMSDK.WXDataContextPostMessage(_WXPointer_stringify_adaptor(msg));

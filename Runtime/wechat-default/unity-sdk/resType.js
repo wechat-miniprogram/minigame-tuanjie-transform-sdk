@@ -574,6 +574,11 @@ export const ResType = {
         weakNet: 'bool',
         errMsg: 'string',
     },
+    GetPhoneNumberSuccessCallbackResult: {
+        code: 'string',
+        errMsg: 'string',
+        errno: 'number',
+    },
     GetPrivacySettingSuccessCallbackResult: {
         needAuthorization: 'bool',
         privacyContractName: 'string',
@@ -724,6 +729,12 @@ export const ResType = {
         message: 'string',
         stack: 'string',
     },
+    OnGamepadConnectedListenerResult: {
+        gamepad: 'string',
+    },
+    OnGamepadDisconnectedListenerResult: {
+        gamepad: 'string',
+    },
     OnHandoffListenerResult: {
         query: 'string',
     },
@@ -849,17 +860,6 @@ export const ResType = {
         subscriptionsSetting: 'SubscriptionsSetting',
         errMsg: 'string',
     },
-    OperateGameRecorderVideoOption: {
-        atempo: 'number',
-        audioMix: 'bool',
-        bgm: 'string',
-        desc: 'string',
-        path: 'string',
-        query: 'string',
-        timeRange: 'number[]',
-        title: 'string',
-        volume: 'number',
-    },
     MediaSource: {
         url: 'string',
         poster: 'string',
@@ -928,9 +928,6 @@ export const ResType = {
     RequestSubscribeSystemMessageSuccessCallbackResult: {
         anyKeyWord: 'string',
         errMsg: 'string',
-    },
-    ReserveChannelsLiveOption: {
-        noticeId: 'string',
     },
     ScanCodeSuccessCallbackResult: {
         charSet: 'string',
