@@ -1,4 +1,11 @@
 export const ResType = {
+    Gamepad: {
+        axes: 'IAnyObject[]',
+        buttons: 'IAnyObject[]',
+        connected: 'bool',
+        id: 'string',
+        index: 'string',
+    },
     AccountInfo: {
         miniProgram: 'MiniProgram',
         plugin: 'Plugin',
@@ -496,7 +503,7 @@ export const ResType = {
         headUrl: 'string',
         nickname: 'string',
         nonceId: 'string',
-        otherInfos: 'AnyKeyword[]',
+        otherInfos: 'any[]',
         replayStatus: 'number',
         status: 'number',
         errMsg: 'string',
@@ -505,7 +512,7 @@ export const ResType = {
         headUrl: 'string',
         nickname: 'string',
         noticeId: 'string',
-        otherInfos: 'AnyKeyword[]',
+        otherInfos: 'any[]',
         reservable: 'bool',
         startTime: 'string',
         status: 'number',

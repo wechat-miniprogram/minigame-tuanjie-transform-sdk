@@ -2587,7 +2587,7 @@ namespace WeChatWASM
         /// 需要基础库： `2.14.4`
         /// 事件上报
         /// </summary>
-        public static void ReportEvent<T>(string eventId, T data)
+        public static void ReportEvent(string eventId, Dictionary<string, string> data)
         {
             WXSDKManagerHandler.Instance.ReportEvent(eventId, data);
         }
@@ -3546,7 +3546,7 @@ namespace WeChatWASM
         /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/6al1r2m17oV6)
         /// </summary>
         /// <returns></returns>
-        public static string[] GetGamepads()
+        public static Gamepad[] GetGamepads()
         {
             return WXSDKManagerHandler.GetGamepads();
         }
@@ -3704,9 +3704,9 @@ namespace WeChatWASM
         /// 而 wx.getExptInfoSync(['color']) 则只会返回 `{color:'#fff'}`
         /// </summary>
         /// <returns></returns>
-        public static T GetExptInfoSync<T>(string[] keys)
+        public static Dictionary<string, string> GetExptInfoSync(string[] keys)
         {
-            return WXSDKManagerHandler.GetExptInfoSync<T>(keys);
+            return WXSDKManagerHandler.GetExptInfoSync(keys);
         }
 
         /// <summary>
@@ -3722,9 +3722,9 @@ namespace WeChatWASM
         /// ```
         /// </summary>
         /// <returns></returns>
-        public static T GetExtConfigSync<T>()
+        public static Dictionary<string, string> GetExtConfigSync()
         {
-            return WXSDKManagerHandler.GetExtConfigSync<T>();
+            return WXSDKManagerHandler.GetExtConfigSync();
         }
 
         /// <summary>
