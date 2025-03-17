@@ -610,6 +610,10 @@ export const ResType = {
         mainSwitch: 'bool',
         itemSettings: 'object',
     },
+    GetShowSplashAdStatusSuccessCallbackResult: {
+        status: 'string',
+        errMsg: 'string',
+    },
     GetStorageInfoSuccessCallbackOption: {
         currentSize: 'number',
         keys: 'string[]',
@@ -758,14 +762,6 @@ export const ResType = {
     },
     OnMemoryWarningListenerResult: {
         level: 'number',
-    },
-    OnMenuButtonBoundingClientRectWeightChangeListenerResult: {
-        bottom: 'number',
-        height: 'number',
-        left: 'number',
-        right: 'number',
-        top: 'number',
-        width: 'number',
     },
     OnMouseDownListenerResult: {
         button: 'number',

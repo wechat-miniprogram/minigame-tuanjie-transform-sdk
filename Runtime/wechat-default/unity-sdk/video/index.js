@@ -63,7 +63,7 @@ function _JS_Video_Create(url) {
             videoWidth: 0,
             videoHeight: 0,
             isReady: false,
-            stoped: false,
+            stoped: true,
             paused: false,
             ended: false,
             seeking: false,
@@ -75,8 +75,7 @@ function _JS_Video_Create(url) {
         videoDecoder.remove();
         videoDecoder.on('start', (res) => {
             debugLog('wxVideoDecoder start:', res);
-            videoInstance.paused = false;
-            videoInstance.stoped = false;
+            
             if (!videoInstance.isReady) {
                 if (res.video && res.video.duration) {
                     videoInstance.duration = res.video.duration / 1000;
@@ -85,6 +84,10 @@ function _JS_Video_Create(url) {
                 videoInstance.videoHeight = res.height ?? 0;
                 videoInstance.isReady = true;
                 videoDecoder.stop();
+            }
+            else {
+                videoInstance.paused = false;
+                videoInstance.stoped = false;
             }
         });
         videoDecoder.on('stop', (res) => {
@@ -143,7 +146,6 @@ function _JS_Video_Create(url) {
             videoInstance.seeking = true;
             videoDecoder.emitter.emit('seek', {});
         };
-        videoInstance.play();
         videoInstance.destroy = () => {
             if (needCache) {
                 videoDecoder.stop();
@@ -158,13 +160,14 @@ function _JS_Video_Create(url) {
             delete videoInstance.videoDecoder;
             delete videoInstance.onendedCallback;
             delete videoInstance.frameData;
-            videoInstance.stoped = false;
+            videoInstance.stoped = true;
             videoInstance.paused = false;
             videoInstance.ended = false;
             videoInstance.seeking = false;
             videoInstance.currentTime = 0;
             videoInstance.onended = null;
         };
+        videoInstance.play();
     }
     return videoInstanceIdCounter;
 }

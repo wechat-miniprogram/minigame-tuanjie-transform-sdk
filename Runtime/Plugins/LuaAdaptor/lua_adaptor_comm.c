@@ -1,4 +1,5 @@
 #include "lua_adaptor_import.h"
+#include <emscripten/emscripten.h>
 
 lua_Debug* lua_newdebugar() { return malloc(sizeof(lua_Debug)); }
 void lua_deletedebugar(lua_Debug* ar) { return free(ar); }
@@ -17,4 +18,13 @@ lua_State* lua_State_getmainthread(lua_State* L) { return G(L)->mainthread; }
 
 void (lua_do_sethook) (lua_State *L, lua_Hook func, int mask, int count) {
   lua_sethook(L, func, mask, count);
+}
+
+extern void SetLuaState(lua_State* L);
+EMSCRIPTEN_KEEPALIVE lua_State* invoke_lua_newstate_with_wx_perf_callback(lua_Alloc f, void *ud) {
+  lua_State* L;
+  L = lua_newstate(f, ud);
+  SetLuaState(L);
+
+  return L;
 }

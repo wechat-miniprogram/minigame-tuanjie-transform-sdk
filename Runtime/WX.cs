@@ -865,6 +865,25 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.getShowSplashAdStatus(Object object)](https://developers.weixin.qq.com/minigame/dev/api/ad/wx.getShowSplashAdStatus.html)
+        /// 需要基础库： `3.7.8`
+        /// 获取封面广告组件展示状态。请通过 [wx.getSystemInfoSync()](https://developers.weixin.qq.com/minigame/dev/api/base/system/wx.getSystemInfoSync.html) 返回对象的 SDKVersion 判断基础库版本号后再使用该 API（小游戏端要求 >= 3.7.8， 小程序端要求 >= 3.7.8）。
+        /// **示例代码**
+        /// ```js
+        /// // 获取封面广告展示状态
+        /// wx.getShowSplashAdStatus({
+        /// success: res => {
+        /// console.log('getShowSplashAdStatus res', res.status, res.code)
+        /// },
+        /// })
+        /// ```
+        /// </summary>
+        public static void GetShowSplashAdStatus(GetShowSplashAdStatusOption callback)
+        {
+            WXSDKManagerHandler.Instance.GetShowSplashAdStatus(callback);
+        }
+
+        /// <summary>
         /// [wx.getStorageInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/storage/wx.getStorageInfo.html)
         /// 异步获取当前storage的相关信息。
         /// **示例代码**
@@ -3154,28 +3173,6 @@ namespace WeChatWASM
         public static void OffMemoryWarning(Action<OnMemoryWarningListenerResult> result)
         {
             WXSDKManagerHandler.Instance.OffMemoryWarning(result);
-        }
-
-        /// <summary>
-        /// [wx.onMenuButtonBoundingClientRectWeightChange(function listener)](https://developers.weixin.qq.com/minigame/dev/api/ui/menu/wx.onMenuButtonBoundingClientRectWeightChange.html)
-        /// 需要基础库： `3.4.3`
-        /// 监听菜单按钮（右上角胶囊按钮）的布局位置信息变化事件
-        /// **示例代码**
-        /// ```js
-        /// const callback = res => console.log('menuButtonBoundingClientRectWeightChange', res)
-        /// wx.onMenuButtonBoundingClientRectWeightChange(callback)
-        /// // 取消监听
-        /// wx.offMenuButtonBoundingClientRectWeightChange(callback)
-        /// ```
-        /// </summary>
-        public static void OnMenuButtonBoundingClientRectWeightChange(Action<OnMenuButtonBoundingClientRectWeightChangeListenerResult> result)
-        {
-            WXSDKManagerHandler.Instance.OnMenuButtonBoundingClientRectWeightChange(result);
-        }
-
-        public static void OffMenuButtonBoundingClientRectWeightChange(Action<OnMenuButtonBoundingClientRectWeightChangeListenerResult> result)
-        {
-            WXSDKManagerHandler.Instance.OffMenuButtonBoundingClientRectWeightChange(result);
         }
 
         /// <summary>
