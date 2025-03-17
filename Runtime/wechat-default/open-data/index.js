@@ -14,6 +14,7 @@ setUserRecord(RANK_KEY, Math.ceil(Math.random() * 1000));
 const MessageType = {
     WX_RENDER: 'WXRender',
     WX_DESTROY: 'WXDestroy',
+    WX_SHOW: 'WXShow',
     SHOW_FRIENDS_RANK: 'showFriendsRank',
     SHOW_GROUP_FRIENDS_RANK: 'showGroupFriendsRank',
     SET_USER_RECORD: 'setUserRecord',
@@ -129,6 +130,10 @@ function main() {
             // 来自 WX Unity SDK 的信息
             case MessageType.WX_DESTROY:
                 Layout.clearAll();
+                break;
+            // 来自 WX Unity SDK 的信息
+            case MessageType.WX_SHOW:
+                Layout.repaint();
                 break;
             // 下面为业务自定义消息
             case MessageType.SHOW_FRIENDS_RANK:

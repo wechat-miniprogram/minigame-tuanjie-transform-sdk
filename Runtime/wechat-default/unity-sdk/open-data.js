@@ -1,7 +1,7 @@
 import response from './response';
 import moduleHelper from './module-helper';
-import { getDefaultData } from './utils';
-import { isDebug, isSupportSharedCanvasMode } from '../check-version';
+import { getDefaultData, debugLog } from './utils';
+import { isSupportSharedCanvasMode } from '../check-version';
 
 let cachedOpenDataContext;
 let cachedSharedCanvas;
@@ -99,23 +99,24 @@ function stopHookUnityRender() {
     gl.deleteTexture(textureObject);
     textureObject = null;
 }
+wx.onShow(() => {
+    if (cachedOpenDataContext) {
+        getOpenDataContext().postMessage({
+            type: 'WXShow',
+        });
+    }
+});
 export default {
     WXGetOpenDataContext(mode) {
-        if (isDebug) {
-            console.warn('WXGetOpenDataContext:', mode);
-        }
+        debugLog('WXGetOpenDataContext:', mode);
         getOpenDataContext(mode);
     },
     WXDataContextPostMessage(msg) {
-        if (isDebug) {
-            console.warn('WXDataContextPostMessage:', msg);
-        }
+        debugLog('WXDataContextPostMessage:', msg);
         getOpenDataContext().postMessage(msg);
     },
     WXShowOpenData(id, x, y, width, height) {
-        if (isDebug) {
-            console.warn('WXShowOpenData:', id, x, y, width, height);
-        }
+        debugLog('WXShowOpenData:', id, x, y, width, height);
         if (width <= 0 || height <= 0) {
             console.error('[unity-sdk]: WXShowOpenData要求 width 和 height 参数必须大于0');
         }
@@ -144,9 +145,7 @@ export default {
         }
     },
     WXHideOpenData() {
-        if (isDebug) {
-            console.warn('WXHideOpenData');
-        }
+        debugLog('WXHideOpenData');
         getOpenDataContext().postMessage({
             type: 'WXDestroy',
         });
@@ -161,9 +160,7 @@ export default {
         }
     },
     WXOpenDataToTempFilePathSync(conf) {
-        if (isDebug) {
-            console.warn('WXOpenDataToTempFilePathSync', conf);
-        }
+        debugLog('WXOpenDataToTempFilePathSync', conf);
         const sharedCanvas = getSharedCanvas();
         if (!sharedCanvas) {
             return 'Please use WX.GetOpenDataContext() first';
@@ -171,9 +168,7 @@ export default {
         return sharedCanvas.toTempFilePathSync(getDefaultData(sharedCanvas, conf));
     },
     WXOpenDataToTempFilePath(conf, s, f, c) {
-        if (isDebug) {
-            console.warn('WXOpenDataToTempFilePath', conf);
-        }
+        debugLog('WXOpenDataToTempFilePath', conf);
         if (conf) {
             const sharedCanvas = getSharedCanvas();
             if (!sharedCanvas) {

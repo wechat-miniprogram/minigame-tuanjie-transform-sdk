@@ -474,7 +474,9 @@ namespace WeChatWASM
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", config.CompileOptions.brotliMT);
+#if UNITY_6000_0_OR_NEWER
             this.setData("enableWasm2023", config.CompileOptions.enableWasm2023);
+#endif      
             this.setData("enablePerfAnalysis", config.CompileOptions.enablePerfAnalysis);
             this.setData("autoUploadFirstBundle", true);
 
@@ -729,15 +731,15 @@ namespace WeChatWASM
             const string MACRO_ENABLE_WX_PERF_FEATURE = "ENABLE_WX_PERF_FEATURE";
             string defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
 
-            bool shouldAddSymbol = this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild"); 
+            bool shouldAddSymbol = this.getDataCheckbox("enablePerfAnalysis") && this.getDataCheckbox("developBuild");
 
 #if !UNITY_2021_2_OR_NEWER || UNITY_2023_2_OR_NEWER
-            if(shouldAddSymbol)
+            if (shouldAddSymbol)
             {
                 shouldAddSymbol = false;
                 EditorUtility.DisplayDialog("警告", $"当前Unity版本({Application.unityVersion})不在性能分析工具适配范围内(2021.2-2023.1), 性能分析工具将被禁用。", "确定");
-                config.CompileOptions.enablePerfAnalysis = false; 
-                this.setData("enablePerfAnalysis", false); 
+                config.CompileOptions.enablePerfAnalysis = false;
+                this.setData("enablePerfAnalysis", false);
             }
 #endif
 
