@@ -202,6 +202,10 @@ namespace WeChatWASM
                 this.formCheckbox("enableProfileStats", "显示性能面板");
                 this.formCheckbox("enableRenderAnalysis", "显示渲染日志(dev only)");
                 this.formCheckbox("brotliMT", "brotli多线程压缩(?)", "开启多线程压缩可以提高出包速度，但会降低压缩率。如若不使用wasm代码分包请勿用多线程出包上线");
+#if UNITY_6000_0_OR_NEWER
+                this.formCheckbox("enableWasm2023", "WebAssembly 2023(?)", "WebAssembly 2023包括对WebAssembly.Table和BigInt的支持。（Android (Android 10 or later recommended), iOS (iOS 15 or later recommended)）");
+#endif
+
                 if (m_EnablePerfTool)
                 {
                     this.formCheckbox("enablePerfAnalysis", "集成性能分析工具", "将性能分析工具集成入Development Build包中", false, null, OnPerfAnalysisFeatureToggleChanged);
@@ -470,6 +474,9 @@ namespace WeChatWASM
             this.setData("enableProfileStats", config.CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", config.CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", config.CompileOptions.brotliMT);
+#if UNITY_6000_0_OR_NEWER
+            this.setData("enableWasm2023", config.CompileOptions.enableWasm2023);
+#endif      
             this.setData("enablePerfAnalysis", config.CompileOptions.enablePerfAnalysis);
             this.setData("autoUploadFirstBundle", true);
 
@@ -542,6 +549,9 @@ namespace WeChatWASM
             config.CompileOptions.enableProfileStats = this.getDataCheckbox("enableProfileStats");
             config.CompileOptions.enableRenderAnalysis = this.getDataCheckbox("enableRenderAnalysis");
             config.CompileOptions.brotliMT = this.getDataCheckbox("brotliMT");
+#if UNITY_6000_0_OR_NEWER
+            config.CompileOptions.enableWasm2023 = this.getDataCheckbox("enableWasm2023");
+#endif
             config.CompileOptions.enablePerfAnalysis = this.getDataCheckbox("enablePerfAnalysis");
 
             // font options

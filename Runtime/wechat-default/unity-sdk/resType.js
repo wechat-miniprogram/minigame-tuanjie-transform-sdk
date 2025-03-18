@@ -1,11 +1,4 @@
 export const ResType = {
-    Gamepad: {
-        axes: 'IAnyObject[]',
-        buttons: 'IAnyObject[]',
-        connected: 'bool',
-        id: 'string',
-        index: 'string',
-    },
     AccountInfo: {
         miniProgram: 'MiniProgram',
         plugin: 'Plugin',
@@ -503,7 +496,7 @@ export const ResType = {
         headUrl: 'string',
         nickname: 'string',
         nonceId: 'string',
-        otherInfos: 'any[]',
+        otherInfos: 'AnyKeyword[]',
         replayStatus: 'number',
         status: 'number',
         errMsg: 'string',
@@ -512,7 +505,7 @@ export const ResType = {
         headUrl: 'string',
         nickname: 'string',
         noticeId: 'string',
-        otherInfos: 'any[]',
+        otherInfos: 'AnyKeyword[]',
         reservable: 'bool',
         startTime: 'string',
         status: 'number',
@@ -581,11 +574,6 @@ export const ResType = {
         weakNet: 'bool',
         errMsg: 'string',
     },
-    GetPhoneNumberSuccessCallbackResult: {
-        code: 'string',
-        errMsg: 'string',
-        errno: 'number',
-    },
     GetPrivacySettingSuccessCallbackResult: {
         needAuthorization: 'bool',
         privacyContractName: 'string',
@@ -609,10 +597,6 @@ export const ResType = {
     SubscriptionsSetting: {
         mainSwitch: 'bool',
         itemSettings: 'object',
-    },
-    GetShowSplashAdStatusSuccessCallbackResult: {
-        status: 'string',
-        errMsg: 'string',
     },
     GetStorageInfoSuccessCallbackOption: {
         currentSize: 'number',
@@ -740,12 +724,6 @@ export const ResType = {
         message: 'string',
         stack: 'string',
     },
-    OnGamepadConnectedListenerResult: {
-        gamepad: 'string',
-    },
-    OnGamepadDisconnectedListenerResult: {
-        gamepad: 'string',
-    },
     OnHandoffListenerResult: {
         query: 'string',
     },
@@ -762,6 +740,14 @@ export const ResType = {
     },
     OnMemoryWarningListenerResult: {
         level: 'number',
+    },
+    OnMenuButtonBoundingClientRectWeightChangeListenerResult: {
+        bottom: 'number',
+        height: 'number',
+        left: 'number',
+        right: 'number',
+        top: 'number',
+        width: 'number',
     },
     OnMouseDownListenerResult: {
         button: 'number',
@@ -862,6 +848,17 @@ export const ResType = {
         authSetting: 'AuthSetting',
         subscriptionsSetting: 'SubscriptionsSetting',
         errMsg: 'string',
+    },
+    OperateGameRecorderVideoOption: {
+        atempo: 'number',
+        audioMix: 'bool',
+        bgm: 'string',
+        desc: 'string',
+        path: 'string',
+        query: 'string',
+        timeRange: 'number[]',
+        title: 'string',
+        volume: 'number',
     },
     MediaSource: {
         url: 'string',

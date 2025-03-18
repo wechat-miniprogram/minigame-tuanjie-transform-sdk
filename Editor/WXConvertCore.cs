@@ -810,7 +810,7 @@ namespace WeChatWASM
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
                 PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
-#if UNITY_2021_2_5
+#if UNITY_2021_2_5 || UNITY_6000_0_OR_NEWER
                 PlayerSettings.WebGL.emscriptenArgs += ",_main";
 #endif
                 PlayerSettings.WebGL.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
@@ -876,8 +876,11 @@ namespace WeChatWASM
             }
 
 #if UNITY_6000_0_OR_NEWER
-            // 从小游戏转换工具里无法直接开启wasm2023特性 会导致转出的webgl异常，所以强制关闭
-           	PlayerSettings.WebGL.wasm2023 = false;
+            if (config.CompileOptions.enableWasm2023) {
+                PlayerSettings.WebGL.wasm2023 = true;
+            } else {
+                PlayerSettings.WebGL.wasm2023 = false;
+            }
 #endif   
 
 #if UNITY_2021_2_OR_NEWER

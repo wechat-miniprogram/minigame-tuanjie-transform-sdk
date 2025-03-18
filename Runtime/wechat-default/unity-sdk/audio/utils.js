@@ -10,8 +10,6 @@ export const resumeWebAudio = () => {
     
     
     WEBAudio.audioContext?.resume();
-    GameGlobal.Module.mContext?.resume();
-    GameGlobal.Module.context?.resume();
 };
 export const createInnerAudio = () => {
     const id = uid();

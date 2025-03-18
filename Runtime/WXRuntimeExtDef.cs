@@ -69,6 +69,11 @@ namespace WeChatWASM
 #else
             WXRuntimeExtEnvDef.SETDEF("UNITY_2022", false);
 #endif
+#if UNITY_6000
+            WXRuntimeExtEnvDef.SETDEF("UNITY_6000", true);
+#else
+            WXRuntimeExtEnvDef.SETDEF("UNITY_6000", false);
+#endif
 #if UNITY_2022_2_OR_NEWER
             WXRuntimeExtEnvDef.SETDEF("UNITY_2022_2_OR_NEWER", true);
 #else

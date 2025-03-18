@@ -99,6 +99,13 @@ function stopHookUnityRender() {
     gl.deleteTexture(textureObject);
     textureObject = null;
 }
+wx.onShow(() => {
+    if (cachedOpenDataContext) {
+        getOpenDataContext().postMessage({
+            type: 'WXShow',
+        });
+    }
+});
 export default {
     WXGetOpenDataContext(mode) {
         debugLog('WXGetOpenDataContext:', mode);
