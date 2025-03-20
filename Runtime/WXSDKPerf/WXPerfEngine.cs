@@ -47,6 +47,12 @@ namespace WXSDKPerf
 #if UNITY_EDITOR
             return; 
 #else
+            // Don't record annotation if we are not recording.
+            if (!IsRecording())
+            {
+                return;
+            }
+
             if (m_PerfEngineImplementation == null)
             {
                 UnityEngine.Debug.LogError("Annotation: Invalid m_PerfEngineImplementation! ");
