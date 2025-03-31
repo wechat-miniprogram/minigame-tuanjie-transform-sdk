@@ -24,7 +24,7 @@ const typeMap = {
     number: 0,
     bool: false,
     object: {},
-};
+}; // 类型默认值映射
 const interfaceTypeMap = {
     array: 'object',
     arrayBuffer: 'object',
