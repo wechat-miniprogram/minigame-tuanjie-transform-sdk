@@ -170,6 +170,7 @@ namespace WeChatWASM
                 this.formCheckbox("useFriendRelation", "使用好友关系链");
                 this.formCheckbox("useMiniGameChat", "使用社交组件");
                 this.formCheckbox("preloadWXFont", "预加载微信字体(?)", "在game.js执行开始时预载微信系统字体，运行期间可使用WX.GetWXFont获取微信字体");
+                this.formCheckbox("disableMultiTouch", "禁用多点触控");
 
                 EditorGUILayout.EndVertical();
             }
@@ -455,6 +456,7 @@ namespace WeChatWASM
             this.setData("useFriendRelation", config.SDKOptions.UseFriendRelation);
             this.setData("useMiniGameChat", config.SDKOptions.UseMiniGameChat);
             this.setData("preloadWXFont", config.SDKOptions.PreloadWXFont);
+            this.setData("disableMultiTouch", config.SDKOptions.disableMultiTouch);
             this.setData("bgImageSrc", config.ProjectConf.bgImageSrc);
             tex = AssetDatabase.LoadAssetAtPath<Texture>(config.ProjectConf.bgImageSrc);
             this.setData("memorySize", config.ProjectConf.MemorySize.ToString());
@@ -532,6 +534,7 @@ namespace WeChatWASM
             config.SDKOptions.UseFriendRelation = this.getDataCheckbox("useFriendRelation");
             config.SDKOptions.UseMiniGameChat = this.getDataCheckbox("useMiniGameChat");
             config.SDKOptions.PreloadWXFont = this.getDataCheckbox("preloadWXFont");
+            config.SDKOptions.disableMultiTouch = this.getDataCheckbox("disableMultiTouch");
             config.ProjectConf.bgImageSrc = this.getDataInput("bgImageSrc");
             config.ProjectConf.MemorySize = int.Parse(this.getDataInput("memorySize"));
             config.ProjectConf.HideAfterCallMain = this.getDataCheckbox("hideAfterCallMain");

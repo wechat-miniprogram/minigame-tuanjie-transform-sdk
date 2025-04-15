@@ -543,6 +543,11 @@
             预载系统字体
             </summary>
         </member>
+        <member name="F:WeChatWASM.SDKOptions.disableMultiTouch">
+            <summary>
+            是否禁止多点触控
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.DevelopBuild">
             <summary>
             Development Build

@@ -113,6 +113,7 @@ GameGlobal.WebAssembly = GameGlobal.WXWebAssembly;
 GameGlobal.unityNamespace = GameGlobal.unityNamespace || unityNamespace;
 GameGlobal.realtimeLogManager = wx.getRealtimeLogManager();
 GameGlobal.logmanager = wx.getLogManager({ level: 0 });
+GameGlobal.disableMultiTouch = $DISABLE_MULTI_TOUCH;
 // 提前监听错误并打日志
 function bindGloblException() {
     // 默认上报小游戏实时日志与用户反馈日志(所有error日志+小程序框架异常)
