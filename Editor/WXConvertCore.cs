@@ -1910,6 +1910,7 @@ namespace WeChatWASM
                 config.CompileOptions.DevelopBuild ? "true" : "false",
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
+                config.SDKOptions.disableMultiTouch ? "true" : "false",
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

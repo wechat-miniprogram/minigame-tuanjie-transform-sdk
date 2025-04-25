@@ -1197,8 +1197,52 @@ const isWK = false;
                 identifier: formatIdentifier(v.identifier, type, changed)
             };
         }
+        let activeTouchId = -1;
         function touchEventHandlerFactory(type) {
             return function (event) {
+                // 禁止多点触控
+                if (GameGlobal.disableMultiTouch) {
+                    if (event.touches.length > 0 || event.changedTouches.length > 0) {
+                        if (activeTouchId !== -1) {
+                            const touch = event.touches.find(v => v.identifier === activeTouchId);
+                            const changedTouch = event.changedTouches.find(v => v.identifier === activeTouchId);
+                            event.touches = touch ? [touch] : [];
+                            event.changedTouches = changedTouch ? [changedTouch] : [];
+                        }
+                        else {
+                            event.touches = event.touches.slice(0, 1);
+                            event.changedTouches = event.changedTouches.slice(0, 1);
+                        }
+                        let getFirstTouchId;
+                        if (event.changedTouches.length > 0) {
+                            getFirstTouchId = event.changedTouches[0].identifier;
+                        }
+                        if (type === 'touchstart') {
+                            if (activeTouchId === -1) {
+                                activeTouchId = getFirstTouchId;
+                            }
+                            else {
+                                return;
+                            }
+                        }
+                        else if (type === 'touchmove') {
+                            if (getFirstTouchId !== activeTouchId) {
+                                return;
+                            }
+                        }
+                        else if (type === 'touchend') {
+                            if (getFirstTouchId === activeTouchId) {
+                                activeTouchId = -1;
+                            }
+                            else {
+                                return;
+                            }
+                        }
+                        else if (type === 'touchcancel') {
+                            activeTouchId = -1;
+                        }
+                    }
+                }
                 const touchEvent = new TouchEvent(type);
                 touchEvent.touches = event.touches.map(v => formatTouchEvent(v, event.type));
                 touchEvent.targetTouches = Array.prototype.slice.call(event.touches).map(v => formatTouchEvent(v, event.type));
