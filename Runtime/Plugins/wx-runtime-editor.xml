@@ -1395,25 +1395,25 @@
             运行JS函数
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.Debug(System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Debug(System.String[])">
             <summary>
             [LogManager.debug()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.debug.html)
             写 debug 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.Info(System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Info(System.String[])">
             <summary>
             [LogManager.info()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.info.html)
             写 info 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.Log(System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Log(System.String[])">
             <summary>
             [LogManager.log()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.log.html)
             写 log 日志
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXLogManager.Warn(System.String)">
+        <member name="M:WeChatWASM.WXLogManager.Warn(System.String[])">
             <summary>
             [LogManager.warn()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.warn.html)
             写 warn 日志
@@ -3144,6 +3144,41 @@
             接口调用成功的回调函数
             </summary>
         </member>
+        <member name="F:WeChatWASM.OnShareMessageToFriendListenerResult.errMsg">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnShareMessageToFriendListenerResult.success">
+            <summary>
+            是否成功
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.Gamepad.axes">
+            <summary>
+            一个表示控制器设备上存在的坐标轴的数组 (比如控制器摇杆)。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.Gamepad.buttons">
+            <summary>
+            设备上的按键的数组。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.Gamepad.connected">
+            <summary>
+            控制器是否仍然连接着系统.
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.Gamepad.id">
+            <summary>
+            一个包含着控制器标识信息的 string
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.Gamepad.index">
+            <summary>
+            一个自增的整形数字，对于当前连接到系统的每一个设备是唯一的
+            </summary>
+        </member>
         <member name="F:WeChatWASM.AccountInfo.miniProgram">
             <summary>
             小程序账号信息
@@ -3296,8 +3331,8 @@
         </member>
         <member name="F:WeChatWASM.GetBatteryInfoSyncResult.isLowPowerModeEnabled">
             <summary>
-            需要基础库： `3.4.3`
-            是否处于省电模式，目前仅 iOS 端支持
+            需要基础库： `3.5.0`
+            是否处于省电模式
             </summary>
         </member>
         <member name="F:WeChatWASM.GetBatteryInfoSyncResult.level">
@@ -3621,6 +3656,7 @@
             可选值：
             - 'ios': iOS微信（包含 iPhone、iPad）;
             - 'android': Android微信;
+            - 'ohos': HarmonyOS微信;
             - 'windows': Windows微信;
             - 'mac': macOS微信;
             - 'devtools': 微信开发者工具;
@@ -3807,7 +3843,7 @@
         <member name="F:WeChatWASM.DownloadFileOption.enableQuic">
             <summary>
             需要基础库： `2.10.4`
-            是否开启 Quic 协议（gQUIC Q43）
+            是否开启 Quic/h3 协议（iOS 微信目前使用 gQUIC-Q43；Android 微信在 v8.0.54 前使用 gQUIC-Q43，v8.0.54 开始使用 IETF QUIC，即 h3 协议；PC微信使用 IETF QUIC，即 h3 协议）
             </summary>
         </member>
         <member name="P:WeChatWASM.DownloadFileOption.fail">
@@ -4283,7 +4319,7 @@
         </member>
         <member name="F:WeChatWASM.AuthPrivateMessageSuccessCallbackResult.encryptedData">
             <summary>
-            经过加密的activityId，解密后可得到原始的activityId。若解密后得到的activityId可以与开发者后台的活动id对应上则验证通过，否则表明valid字段不可靠（被篡改） 详细见[加密数据解密算法](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/signature.html)
+            经过加密的activityId，解密后可得到原始的activityId。若解密后得到的activityId可以与开发者后台的活动id对应上则验证通过，否则表明valid字段不可靠（被篡改） 详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
             </summary>
         </member>
         <member name="F:WeChatWASM.AuthPrivateMessageSuccessCallbackResult.errMsg">
@@ -5640,8 +5676,8 @@
         </member>
         <member name="F:WeChatWASM.GetBatteryInfoSuccessCallbackResult.isLowPowerModeEnabled">
             <summary>
-            需要基础库： `3.4.3`
-            是否处于省电模式，目前仅 iOS 端支持
+            需要基础库： `3.5.0`
+            是否处于省电模式
             </summary>
         </member>
         <member name="F:WeChatWASM.GetBatteryInfoSuccessCallbackResult.level">
@@ -6308,6 +6344,21 @@
             接口调用成功的回调函数
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetPhoneNumberSuccessCallbackResult.code">
+            <summary>
+            动态令牌
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetPhoneNumberSuccessCallbackResult.errMsg">
+            <summary>
+            回调信息（成功失败都会返回）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetPhoneNumberSuccessCallbackResult.errno">
+            <summary>
+            错误码（失败时返回）
+            </summary>
+        </member>
         <member name="P:WeChatWASM.GetPrivacySettingOption.complete">
             <summary>
             接口调用结束的回调函数（调用成功、失败都会执行）
@@ -6452,6 +6503,41 @@
             <summary>
             需要基础库： `1.9.90`
             超时时间，单位 ms
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetShowSplashAdStatusOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetShowSplashAdStatusOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GetShowSplashAdStatusOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetShowSplashAdStatusSuccessCallbackResult.code">
+            <summary>
+            封面广告组件展示状态码
+            可选值：
+            - -1: 初始值，状态未知;
+            - 1: 展示成功;
+            - 2: 主动拦截过滤，不展示广告;
+            - 3: 展示超时;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetShowSplashAdStatusSuccessCallbackResult.status">
+            <summary>
+            封面广告组件展示状态
+            可选值：
+            - 'unknown': 初始值，状态未知;
+            - 'pending': 进行展示中;
+            - 'success': 展示成功;
+            - 'fail': 展示失败;
             </summary>
         </member>
         <member name="P:WeChatWASM.GetStorageInfoOption.complete">
@@ -6944,7 +7030,7 @@
         </member>
         <member name="F:WeChatWASM.LoginSuccessCallbackResult.code">
             <summary>
-            用户登录凭证（有效期五分钟）。开发者需要在开发者服务器后台调用 [code2Session](#)，使用 code 换取 openid、unionid、session_key 等信息
+            用户登录凭证（有效期五分钟）。开发者需要在开发者服务器后台调用 [code2Session](https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html)，使用 code 换取 openid、unionid、session_key 等信息
             </summary>
         </member>
         <member name="F:WeChatWASM.MakeBluetoothPairOption.deviceId">
@@ -7264,6 +7350,16 @@
             错误调用堆栈
             </summary>
         </member>
+        <member name="F:WeChatWASM.OnGamepadConnectedListenerResult.gamepad">
+            <summary>
+            本次连接到的 Gamepad 实例。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnGamepadDisconnectedListenerResult.gamepad">
+            <summary>
+            本次断开的 Gamepad 实例。
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OnHandoffListenerResult.query">
             <summary>
             需要传递给接力客户端的 query
@@ -7301,36 +7397,6 @@
             - 5: TRIM_MEMORY_RUNNING_MODERATE;
             - 10: TRIM_MEMORY_RUNNING_LOW;
             - 15: TRIM_MEMORY_RUNNING_CRITICAL;
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.bottom">
-            <summary>
-            下边界坐标，单位：px
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.height">
-            <summary>
-            高度，单位：px
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.left">
-            <summary>
-            左边界坐标，单位：px
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.right">
-            <summary>
-            右边界坐标，单位：px
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.top">
-            <summary>
-            上边界坐标，单位：px
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnMenuButtonBoundingClientRectWeightChangeListenerResult.width">
-            <summary>
-            宽度，单位：px
             </summary>
         </member>
         <member name="F:WeChatWASM.OnMouseDownListenerResult.button">
@@ -7414,16 +7480,6 @@
             - 'stop': 结束录屏;
             </summary>
         </member>
-        <member name="F:WeChatWASM.OnShareMessageToFriendListenerResult.errMsg">
-            <summary>
-            错误信息
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.OnShareMessageToFriendListenerResult.success">
-            <summary>
-            是否成功
-            </summary>
-        </member>
         <member name="F:WeChatWASM.OnShareTimelineListenerResult.imageUrl">
             <summary>
             转发显示图片的链接，可以是网络图片路径或本地图片文件路径或相对代码包根目录的图片文件路径。（该图片用于分享到朋友圈的卡片以及从朋友圈转发到会话消息的卡片展示）
@@ -7438,12 +7494,12 @@
         <member name="F:WeChatWASM.OnShareTimelineListenerResult.imagePreviewUrlId">
             <summary>
             需要基础库： `2.14.3`
-            审核通过的朋友圈预览图图片 ID，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
+            审核通过的朋友圈预览图图片编号，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
             </summary>
         </member>
         <member name="F:WeChatWASM.OnShareTimelineListenerResult.imageUrlId">
             <summary>
-            审核通过的图片 ID，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
+            审核通过的图片编号，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
             </summary>
         </member>
         <member name="F:WeChatWASM.OnShareTimelineListenerResult.path">
@@ -7953,9 +8009,19 @@
             对局回放背景音乐的地址
             </summary>
         </member>
+        <member name="P:WeChatWASM.OperateGameRecorderVideoOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OperateGameRecorderVideoOption.desc">
             <summary>
             分享的对局回放打开后的描述内容
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.OperateGameRecorderVideoOption.fail">
+            <summary>
+            接口调用失败的回调函数
             </summary>
         </member>
         <member name="F:WeChatWASM.OperateGameRecorderVideoOption.path">
@@ -7966,6 +8032,11 @@
         <member name="F:WeChatWASM.OperateGameRecorderVideoOption.query">
             <summary>
             分享的对局回放打开后跳转小游戏的 query
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.OperateGameRecorderVideoOption.success">
+            <summary>
+            接口调用成功的回调函数
             </summary>
         </member>
         <member name="F:WeChatWASM.OperateGameRecorderVideoOption.timeRange">
@@ -8570,7 +8641,7 @@
         </member>
         <member name="F:WeChatWASM.RequestSubscribeSystemMessageOption.msgTypeList">
             <summary>
-            系统订阅消息类型列表，一次调用最多可订阅3种类型的消息，目前支持两种类型，"SYS_MSG_TYPE_INTERACTIVE"（好友互动提醒）、"SYS_MSG_TYPE_RANK"（排行榜超越提醒）
+            系统订阅消息类型列表，一次调用最多可订阅3种类型的消息，目前支持："SYS_MSG_TYPE_INTERACTIVE"（好友互动提醒）、"SYS_MSG_TYPE_RANK"（排行榜超越提醒）、"SYS_MSG_TYPE_WHATS_NEW"（游戏更新提醒）
             </summary>
         </member>
         <member name="P:WeChatWASM.RequestSubscribeSystemMessageOption.complete">
@@ -8694,6 +8765,7 @@
             可选值：
             - 'barCode': 一维码;
             - 'qrCode': 二维码;
+            - 'wxCode': 小程序码;
             - 'datamatrix': Data Matrix 码;
             - 'pdf417': PDF417 条码;
             </summary>
@@ -9040,7 +9112,7 @@
         <member name="F:WeChatWASM.ShareAppMessageOption.imageUrlId">
             <summary>
             需要基础库： `2.4.3`
-            审核通过的图片 ID，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
+            审核通过的图片编号，详见 [使用审核通过的转发图片](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/share/share.html#使用审核通过的转发图片)
             </summary>
         </member>
         <member name="F:WeChatWASM.ShareAppMessageOption.path">
@@ -9099,7 +9171,7 @@
         </member>
         <member name="F:WeChatWASM.ShowKeyboardOption.confirmHold">
             <summary>
-            当点击完成时键盘是否收起
+            当点击完成时键盘是否保持显示
             </summary>
         </member>
         <member name="F:WeChatWASM.ShowKeyboardOption.confirmType">
@@ -10053,14 +10125,14 @@
             添加过滤关键字，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.Error(System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Error(System.String[])">
             <summary>
             [RealtimeLogManager.error()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.error.html)
             需要基础库： `2.14.4`
             写 error 日志，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.Info(System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Info(System.String[])">
             <summary>
             [RealtimeLogManager.info()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.info.html)
             需要基础库： `2.14.4`
@@ -10074,7 +10146,7 @@
             设置过滤关键字，暂不支持在插件使用
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXRealtimeLogManager.Warn(System.String)">
+        <member name="M:WeChatWASM.WXRealtimeLogManager.Warn(System.String[])">
             <summary>
             [RealtimeLogManager.warn()](https://developers.weixin.qq.com/minigame/dev/api/base/debug/RealtimeLogManager.warn.html)
             需要基础库： `2.14.4`

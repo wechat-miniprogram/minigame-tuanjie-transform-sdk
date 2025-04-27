@@ -93,6 +93,14 @@ namespace WeChatWASM
 #endif
             }
         }
+        // 用于replaceRules判断是否需要注入相关的修改
+        public static bool UseNativeCommandbuffer
+        {
+            get
+            {
+                return config.CompileOptions.enableIOSNativeCommandbuffer;
+            }
+        }
         // 可以调用这个来集成
         public static WXExportError DoExport(bool buildWebGL = true)
         {
@@ -118,6 +126,7 @@ namespace WeChatWASM
             CheckBuildTarget();
             Init();
             ProcessWxPerfBinaries();
+            ProcessWxNativeCommandbufferBinaries();
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -329,6 +338,39 @@ namespace WeChatWASM
                 SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
             }
             AssetDatabase.Refresh();
+        }
+
+        private static void ProcessWxNativeCommandbufferBinaries()
+        {
+            string[] glLibs;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                glLibs = new string[]
+                {
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libnative_command_buffer.a",
+                };
+            }
+            else
+            {
+                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                glLibs = new string[]
+                {
+                    $"{glLibRootDir}libnative_command_buffer.a",
+                };
+            }
+            for (int i = 0; i < glLibs.Length; i++)
+            {
+                var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableIOSNativeCommandbuffer);
+                #else
+                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableIOSNativeCommandbuffer);
+                #endif
+                importer.SaveAndReimport();
+                // SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableIOSNativeCommandbuffer);
+            }
+            // AssetDatabase.Refresh();
         }
 
         /**
@@ -801,7 +843,8 @@ namespace WeChatWASM
             PlayerSettings.WeixinMiniGame.emscriptenArgs = string.Empty;
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
-                 PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_main,_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
+                // PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_main,_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
+                PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
             }
 
 #else
@@ -809,7 +852,7 @@ namespace WeChatWASM
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
                 PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
-#if UNITY_2021_2_5 || UNITY_6000_0_OR_NEWER
+#if UNITY_2021_2_5
                 PlayerSettings.WebGL.emscriptenArgs += ",_main";
 #endif
                 PlayerSettings.WebGL.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
@@ -875,11 +918,8 @@ namespace WeChatWASM
             }
 
 #if UNITY_6000_0_OR_NEWER
-            if (config.CompileOptions.enableWasm2023) {
-                PlayerSettings.WebGL.wasm2023 = true;
-            } else {
-                PlayerSettings.WebGL.wasm2023 = false;
-            }
+            // 从小游戏转换工具里无法直接开启wasm2023特性 会导致转出的webgl异常，所以强制关闭
+           	PlayerSettings.WebGL.wasm2023 = false;
 #endif   
 
 #if UNITY_2021_2_OR_NEWER

@@ -633,6 +633,11 @@
             是否使用iOS高性能Plus
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enableIOSNativeCommandbuffer">
+            <summary>
+            是否使用iOS高性能Plus NativeCommandbuffer
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
             <summary>
             是否使用brotli多线程压缩
