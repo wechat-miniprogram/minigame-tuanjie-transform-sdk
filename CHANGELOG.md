@@ -6,6 +6,13 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## v0.1.26 【普通更新】
+### Feature
+* 普通：增加禁止多点触控的配置
+### Fixed
+* 普通：修复IOS长音频获取数据延迟的bug
+* 普通：性能分析工具，修复callstack中的堆栈悬空丢失的问题
+
 ## v0.1.25 【普通更新】
 ### Feature
 * 普通：性能深入分析工具，支持Lua capture能力
