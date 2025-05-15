@@ -1292,7 +1292,8 @@ namespace WeChatWASM
             var info = new FileInfo(dataPath);
             dataFileSize = info.Length.ToString();
             UnityEngine.Debug.LogFormat("[Converter] that to genarate md5 and copy files ended");
-            if (config.ProjectConf.Appid == "wx7c792ca878775717") // 快适配小游戏示例
+            // 若APPID为快适配小游戏示例，则插入预览盒子
+            if (config.ProjectConf.Appid == "wx7c792ca878775717")
             {
                 InsertPreviewCode();
             }
@@ -1401,14 +1402,9 @@ namespace WeChatWASM
                     "      } else {\n" +
                     "        this._send = GameGlobal.Module.SendMessage;\n" +
                     "      }",
-                },
-                new Rule()
-                {
-                    old = "3.5.1", // project.config.json 转换插件 hardcode
-                    newStr = "latest",
                 }
             };
-            string[] files = { "game.js", "game.json", "unity-sdk/module-helper.js", "project.config.json" };
+            string[] files = { "game.js", "game.json", "unity-sdk/module-helper.js" };
             ReplaceFileContent(files, rules);
             Debug.LogWarning("[WeChat Preview] InsertPreviewCode End");
         }
