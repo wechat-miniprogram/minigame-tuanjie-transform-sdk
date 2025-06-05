@@ -367,10 +367,10 @@ namespace WeChatWASM
                 #else
                     importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableIOSNativeCommandbuffer);
                 #endif
-                importer.SaveAndReimport();
-                // SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableIOSNativeCommandbuffer);
+                // importer.SaveAndReimport();
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableIOSNativeCommandbuffer);
             }
-            // AssetDatabase.Refresh();
+            AssetDatabase.Refresh();
         }
 
         /**
