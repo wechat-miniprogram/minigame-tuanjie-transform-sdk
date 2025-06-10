@@ -125,6 +125,10 @@ namespace WeChatWASM
             {
                 return WXConvertCore.UseIL2CPP;
             });
+            WXExtEnvDef.RegisterAction("WXConvertCore.UseNativeCommandbuffer", (args) =>
+            {
+                return WXConvertCore.UseNativeCommandbuffer;
+            });
             WXExtEnvDef.RegisterAction("UnityUtil.GetWxSDKRootPath", (args) =>
             {
 #if UNITY_2018
