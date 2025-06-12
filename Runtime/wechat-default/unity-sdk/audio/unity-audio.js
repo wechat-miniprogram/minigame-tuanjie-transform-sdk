@@ -9,7 +9,7 @@ import { debugLog } from '../utils';
 
 const defaultSoundLength = 441000;
 
-const needGetLength = true;
+const needGetLength = false;
 function jsAudioCreateUncompressedSoundClip(buffer, error, length) {
     const soundClip = {
         buffer,
@@ -70,25 +70,6 @@ function jsAudioCreateUncompressedSoundClipFromCompressedAudio(audioData, ptr, l
     });
     return soundClip;
 }
-function getSoundLength(getAudio, retryCount = 3) {
-    return new Promise((resolve, reject) => {
-        const { duration } = getAudio;
-        if (duration > 0) {
-            resolve(duration);
-        }
-        else {
-            if (retryCount > 0) {
-                
-                setTimeout(() => {
-                    resolve(getSoundLength(getAudio, retryCount - 1));
-                }, 100);
-            }
-            else {
-                reject('getAudio.duration is 0');
-            }
-        }
-    });
-}
 function jsAudioCreateCompressedSoundClip(audioData, ptr, length) {
     const soundClip = {
         error: false,
@@ -122,14 +103,12 @@ function jsAudioCreateCompressedSoundClip(audioData, ptr, length) {
     if (isSupportBufferURL) {
         const url = wx.createBufferURL(audioData);
         soundClip.url = url;
-        setSoundLength();
         WEBAudio.audioBufferLength += length;
     }
     else {
         const tempFilePath = `${TEMP_DIR_PATH}/temp-audio${ptr + length}.mp3`;
         if (GameGlobal.manager.getCachePath(tempFilePath)) {
             soundClip.url = tempFilePath;
-            setSoundLength();
             WEBAudio.audioBufferLength += length;
         }
         else {
@@ -137,7 +116,6 @@ function jsAudioCreateCompressedSoundClip(audioData, ptr, length) {
                 .writeFile(tempFilePath, audioData)
                 .then(() => {
                 soundClip.url = tempFilePath;
-                setSoundLength();
                 WEBAudio.audioBufferLength += length;
             })
                 .catch((res) => {
@@ -146,24 +124,16 @@ function jsAudioCreateCompressedSoundClip(audioData, ptr, length) {
             });
         }
     }
-    function setSoundLength() {
-        if (needGetLength && soundClip.url) {
-            const { audio: getAudio } = createInnerAudio();
-            getAudio.src = soundClip.url;
-            getAudio.onCanplay(() => {
-                getSoundLength(getAudio).then((duration) => {
-                    soundClip.length = duration * 44100;
-                    getAudio.destroy();
-                })
-                    .catch((e) => {
-                    if (soundClip.length === 0) {
-                        soundClip.error = true;
-                        printErrMsg(e);
-                    }
-                    getAudio.destroy();
-                });
-            });
-        }
+    if (needGetLength && soundClip.url) {
+        const { audio: getAudio } = createInnerAudio();
+        getAudio.src = soundClip.url;
+        getAudio.onCanplay(() => {
+            soundClip.length = getAudio.duration * 44100;
+            setTimeout(() => {
+                soundClip.length = getAudio.duration * 44100;
+                getAudio.destroy();
+            }, 0);
+        });
     }
     return soundClip;
 }
@@ -249,7 +219,6 @@ export class AudioChannelInstance {
                 this.source.mediaElement.volume = 0;
             }
             this.source.mediaElement.onPlay(() => {
-                debugLog('this.source.mediaElement.onPlay');
                 if (typeof this.source !== 'undefined') {
                     this.source.isPlaying = true;
                     if (!this.source.loop && this.source.mediaElement) {
@@ -271,7 +240,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onPause(() => {
-                debugLog('this.source.mediaElement.onPause');
+                debugLog('onPause');
                 if (typeof this.source !== 'undefined') {
                     this.source.isPlaying = false;
                     if (this.source.stopTicker) {
@@ -281,7 +250,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onStop(() => {
-                debugLog('this.source.mediaElement.onStop');
+                debugLog('onStop');
                 if (typeof this.source !== 'undefined') {
                     if (this.source.playAfterStop) {
                         this.source._reset();
@@ -298,7 +267,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onEnded(() => {
-                debugLog('this.source.mediaElement.onEnded');
+                debugLog('onEnded');
                 if (typeof this.source !== 'undefined') {
                     this.source._reset();
                     this.disconnectSource();
@@ -308,7 +277,7 @@ export class AudioChannelInstance {
                 }
             });
             this.source.mediaElement.onError((e) => {
-                debugLog('this.source.mediaElement.onError', e);
+                debugLog('onError', e);
                 printErrMsg(e);
                 const { errMsg } = e;
                 
@@ -322,17 +291,15 @@ export class AudioChannelInstance {
                 }
             });
             const fn = () => {
-                debugLog('this.source.mediaElement.onCanplay');
                 if (typeof this.source !== 'undefined' && this.source.mediaElement) {
-                    getSoundLength(this.source.mediaElement).then((duration) => {
-                        soundClip.length = duration * 44100;
-                    })
-                        .catch((e) => {
-                        if (soundClip.length === 0) {
-                            soundClip.error = true;
-                            printErrMsg(e);
+                    // @ts-ignore
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { duration } = this.source.mediaElement;
+                    setTimeout(() => {
+                        if (soundClip && this.source && this.source.mediaElement) {
+                            soundClip.length = Math.round(Math.max(this.source.mediaElement.duration, 0) * 44100);
                         }
-                    });
+                    }, 0);
                 }
             };
             if (!this.source.canPlayFnList) {
@@ -943,7 +910,7 @@ export default {
                 if (isIOS175) {
                     WEBAudio.audioContext?.close();
                     WEBAudio.audioContext = wx.createWebAudioContext();
-                    Object.values(WEBAudio.audioInstances).forEach((it) => it.resetGain());
+                    Object.values(WEBAudio.audioInstances).forEach(it => it.resetGain());
                 }
                 else {
                     WEBAudio.audioContext?.resume();
@@ -1159,7 +1126,6 @@ export default {
         if (WEBAudio.audioWebEnabled === 0) {
             return;
         }
-        debugLog('_JS_Sound_SetPaused', channelInstance, paused);
         const channel = WEBAudio.audioInstances[channelInstance];
         if (!!paused !== channel.isPaused()) {
             if (paused) {

@@ -543,11 +543,6 @@
             预载系统字体
             </summary>
         </member>
-        <member name="F:WeChatWASM.SDKOptions.disableMultiTouch">
-            <summary>
-            是否禁止多点触控
-            </summary>
-        </member>
         <member name="F:WeChatWASM.CompileOptions.DevelopBuild">
             <summary>
             Development Build
@@ -636,6 +631,11 @@
         <member name="F:WeChatWASM.CompileOptions.enableIOSPerformancePlus">
             <summary>
             是否使用iOS高性能Plus
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CompileOptions.enableIOSNativeCommandbuffer">
+            <summary>
+            是否使用iOS高性能Plus NativeCommandbuffer
             </summary>
         </member>
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
