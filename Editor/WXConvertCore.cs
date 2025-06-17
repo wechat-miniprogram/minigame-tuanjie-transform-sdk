@@ -93,6 +93,14 @@ namespace WeChatWASM
 #endif
             }
         }
+        // 用于replaceRules判断是否需要注入相关的修改
+        public static bool UseEmscriptenGLX
+        {
+            get
+            {
+                return config.CompileOptions.enableEmscriptenGLX;
+            }
+        }
         // 可以调用这个来集成
         public static WXExportError DoExport(bool buildWebGL = true)
         {
@@ -118,6 +126,7 @@ namespace WeChatWASM
             CheckBuildTarget();
             Init();
             ProcessWxPerfBinaries();
+            ProcessWxEmscriptenGLXBinaries();
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -327,6 +336,39 @@ namespace WeChatWASM
                 wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
 #endif
                 SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+            }
+            AssetDatabase.Refresh();
+        }
+
+        private static void ProcessWxEmscriptenGLXBinaries()
+        {
+            string[] glLibs;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                glLibs = new string[]
+                {
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libnative_command_buffer.a",
+                };
+            }
+            else
+            {
+                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                glLibs = new string[]
+                {
+                    $"{glLibRootDir}libnative_command_buffer.a",
+                };
+            }
+            for (int i = 0; i < glLibs.Length; i++)
+            {
+                var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableEmscriptenGLX);
+                #else
+                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
+                #endif
+                // importer.SaveAndReimport();
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
             }
             AssetDatabase.Refresh();
         }
@@ -801,7 +843,8 @@ namespace WeChatWASM
             PlayerSettings.WeixinMiniGame.emscriptenArgs = string.Empty;
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
-                 PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_main,_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
+                // PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_main,_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
+                PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end -s ERROR_ON_UNDEFINED_SYMBOLS=0";
             }
 
 #else
@@ -1861,7 +1904,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.Webgl2 ? "2" : "1",
+                config.CompileOptions.enableEmscriptenGLX ? config.CompileOptions.Webgl2 ? "4" : "3" : config.CompileOptions.Webgl2 ? "2" : "1",
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
@@ -1908,7 +1951,6 @@ namespace WeChatWASM
                 config.CompileOptions.DevelopBuild ? "true" : "false",
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
-                config.SDKOptions.disableMultiTouch ? "true" : "false",
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

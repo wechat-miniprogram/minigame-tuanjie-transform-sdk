@@ -125,6 +125,10 @@ namespace WeChatWASM
             {
                 return WXConvertCore.UseIL2CPP;
             });
+            WXExtEnvDef.RegisterAction("WXConvertCore.UseEmscriptenGLX", (args) =>
+            {
+                return WXConvertCore.UseEmscriptenGLX;
+            });
             WXExtEnvDef.RegisterAction("UnityUtil.GetWxSDKRootPath", (args) =>
             {
 #if UNITY_2018
