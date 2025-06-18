@@ -28,6 +28,22 @@ mergeInto(LibraryManager.library, {
             GameGlobal.unityNamespace.ProfileWebgl.stopRecord();
         }
     },
+    JSProfilerUploadBinary: function(dataPtr, bufSize, namePtr, dirPtr, id, inStartFrameIdx, inEndFrameIdx) {
+        //if (GameGlobal && GameGlobal.manager && GameGlobal.manager.profiler) {
+            const name = UTF8ToString(namePtr);
+            const dir = UTF8ToString(dirPtr);
+            const content = HEAPU8.slice(dataPtr, dataPtr+bufSize);
+            GameGlobal.manager.profiler.uploadBinary({
+                'data': content,
+                'len': bufSize,
+                'fileName': name,
+                'uploadDir': dir,
+                'id': id,
+                'startFrameIndex': inStartFrameIdx,
+                'endFrameIndex': inEndFrameIdx
+            });
+        //}
+    },
     JSProfilerUploadString: function(dataPtr, bufSize, namePtr, dirPtr, id, inStartFrameIdx, inEndFrameIdx) {
         //if (GameGlobal && GameGlobal.manager && GameGlobal.manager.profiler) {
             const name = UTF8ToString(namePtr);
@@ -106,5 +122,12 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(GameGlobal.unityNamespace.convertPluginVersion, stringOnWasmHeap, lengthBytes);
         
         return stringOnWasmHeap;
+    },
+    
+    JSProfilerCanvasToFilepathSync: function(savePath) {
+        if (GameGlobal && GameGlobal.unityNamespace && GameGlobal.unityNamespace.ProfileWebgl && GameGlobal.unityNamespace.ProfileWebgl.stopRecord) {
+            const savePathJSStr = UTF8ToString(savePath);
+            GameGlobal.manager.profiler.canvasToFilepathSync(savePathJSStr);
+        }
     }
 });
