@@ -163,7 +163,9 @@ namespace WeChatWASM
 
             // 记录上次导出的brotliType
             {
+                Debug.LogError("config.ProjectConf.DST: " + config.ProjectConf.DST);
                 var filePath = Path.Combine(config.ProjectConf.DST, miniGameDir, "unity-namespace.js");
+                Debug.LogError("filePath: " + filePath);
                 string content = string.Empty;
                 if (File.Exists(filePath))
                 {
