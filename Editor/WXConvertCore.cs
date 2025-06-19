@@ -112,8 +112,7 @@ namespace WeChatWASM
             CheckBuildTarget();
             Init();
             // 可能有顺序要求？如果没要求，可挪到此函数外
-            if (!isPlayableBuild)
-            {
+            if (!isPlayableBuild) {
                 ProcessWxPerfBinaries();
             }
             MakeEnvForLuaAdaptor();
@@ -141,7 +140,7 @@ namespace WeChatWASM
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
             dynamic config = isPlayableBuild ? UnityUtil.GetPlayableEditorConf() : UnityUtil.GetEditorConf();
-            if (config.ProjectConf.DST == string.Empty)
+            if (config.ProjectConf.relativeDST == string.Empty)
             {
                 Debug.LogError("请先配置游戏导出路径");
                 return WXExportError.BUILD_WEBGL_FAILED;
@@ -163,9 +162,7 @@ namespace WeChatWASM
 
             // 记录上次导出的brotliType
             {
-                Debug.LogError("config.ProjectConf.DST: " + config.ProjectConf.DST);
                 var filePath = Path.Combine(config.ProjectConf.DST, miniGameDir, "unity-namespace.js");
-                Debug.LogError("filePath: " + filePath);
                 string content = string.Empty;
                 if (File.Exists(filePath))
                 {
@@ -690,8 +687,6 @@ namespace WeChatWASM
         {
             UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framework. Dst: " + config.ProjectConf.DST);
 
-            Debug.LogError("config.ProjectConf.DST: " + config.ProjectConf.DST);
-            Debug.LogError("miniGameDir: " + Path.Combine(config.ProjectConf.DST, miniGameDir));
             UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, miniGameDir));
             string text = String.Empty;
             var target = "webgl.wasm.framework.unityweb.js";
@@ -1199,8 +1194,7 @@ namespace WeChatWASM
 
         public static void convertDataPackageJS()
         {
-            if (!isPlayableBuild)
-            {
+            if (!isPlayableBuild) {
                 checkNeedRmovePackageParallelPreload();
             }
 
@@ -1656,8 +1650,7 @@ namespace WeChatWASM
             content = content.Replace("$unityVersion$", Application.unityVersion);
             File.WriteAllText(Path.Combine(dst, "unity-sdk", "index.js"), content, Encoding.UTF8);
             // content = File.ReadAllText(Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "storage.js"), Encoding.UTF8);
-            if (!isPlayableBuild)
-            {
+            if (!isPlayableBuild) {
                 content = File.ReadAllText(Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir, "unity-sdk", "storage.js"), Encoding.UTF8);
                 var PreLoadKeys = config.PlayerPrefsKeys.Count > 0 ? JsonMapper.ToJson(config.PlayerPrefsKeys) : "[]";
                 content = content.Replace("'$PreLoadKeys'", PreLoadKeys);
@@ -1963,8 +1956,7 @@ namespace WeChatWASM
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
             List<string> files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js", "unity-sdk/font/index.js" };
-            if (isPlayableBuild)
-            {
+            if (isPlayableBuild) {
                 files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js" };
             }
 
