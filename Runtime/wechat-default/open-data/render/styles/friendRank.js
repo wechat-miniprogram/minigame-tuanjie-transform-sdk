@@ -63,9 +63,10 @@ export default function getStyle(data) {
             width: data.width * 0.35,
             height: (data.height / 2 / 3) * 0.4,
             textAlign: 'center',
-            lineHeight: (data.height / 2 / 3) * 0.4,
+            verticalAlign: 'center',
             fontSize: data.width * 0.043,
             textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
             color: '#fff',
         },
         rankScoreTip: {

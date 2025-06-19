@@ -648,6 +648,7 @@ namespace WeChatWASM
         /// ## 注意事项
         /// - 基础库 v2.10.4 开始支持获取群工具小程序启动信息
         /// - 基础库 v2.17.3 开始支持获取群聊小程序消息卡片、群待办小程序启动信息
+        /// - 基础库 v3.7.8 支持获取单聊群启动信息，获取的群(含单聊)唯一标识，可用于[聊天工具模式](https://developers.weixin.qq.com/minigame/dev/api/chattool/wx.openChatTool.html)。
         /// **示例代码**
         /// ```js
         /// wx.getGroupEnterInfo({
@@ -667,7 +668,10 @@ namespace WeChatWASM
         /// 获取得到的开放数据为以下 json 结构（其中 opengid 为当前群的唯一标识）：
         /// ```json
         /// {
-        /// "opengid": "OPENGID"
+        /// "opengid": "OPENGID",       // 多聊群下返回的群唯一标识
+        /// "open_single_roomid": "",   // 单聊群下返回的群唯一标识
+        /// "group_openid": "",         // 用户在当前群的唯一标识
+        /// "chat_type": 3,             // 聊天室类型
         /// }
         /// ```
         /// **Tips**
@@ -1400,7 +1404,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.openCustomerServiceConversation(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/customer-message/wx.openCustomerServiceConversation.html)
         /// 需要基础库： `2.0.3`
-        /// 进入客服会话。要求在用户发生过至少一次 touch 事件后才能调用。后台接入方式与小程序一致，详见 [客服消息接入](#)
+        /// 进入客服会话。要求在用户发生过至少一次 touch 事件后才能调用。后台接入方式与小程序一致，详见 [客服消息接入](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/customer-message/customer-message.html)
         /// **注意事项**
         /// - 在客服会话内点击小程序消息卡片进入小程序时，不能通过 wx.onShow 或 wx.getEnterOptionsSync 等接口获取启动路径和参数，而是应该通过 wx.openCustomerServiceConversation 接口的 success 回调获取启动路径和参数
         /// </summary>
@@ -2150,9 +2154,6 @@ namespace WeChatWASM
         /// [wx.showShareImageMenu(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.showShareImageMenu.html)
         /// 需要基础库： `2.14.3`
         /// 打开分享图片弹窗，可以将图片发送给朋友、收藏或下载
-        /// **Bug & Tip**
-        /// 1. `tip`: `needShowEntrance`分享的图片消息是否要带小程序入口，支持申明类目：商家自营、电商平台、餐饮服务(餐饮服务场所/餐饮服务管理企业、点餐平台、外卖平台)、旅游服务(住宿服务、景区服务、OTA、旅游管理单位)、生活服务(家政服务、丽人服务、宠物(非医院类)、婚庆服务、洗浴保健、休闲娱乐、百货/超市/便利店、开锁服务、营业性演出票务、其他宠物健康服务、洗浴保健平台、共享服务、跑腿、寄存、求职/招聘)
-        /// 2. `tip`: `needShowEntrance`小游戏所有类目都支持
         /// </summary>
         public static void ShowShareImageMenu(ShowShareImageMenuOption callback)
         {
@@ -4033,6 +4034,32 @@ namespace WeChatWASM
         public static WXLogManager GetLogManager(GetLogManagerOption option)
         {
             return WXSDKManagerHandler.Instance.GetLogManager(option);
+        }
+
+        /// <summary>
+        /// [[PageManager](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/PageManager.html) wx.createPageManager()](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html)
+        /// 需要基础库： `3.6.7`
+        /// 小游戏开放页面管理器，用于启动微信内置的各种小游戏活动、功能页面。具体OPENLINK值由不同的能力渠道获得。
+        /// **示例代码**
+        /// ```js
+        /// const pageManager = wx.createPageManager();
+        /// pageManager.load({
+        /// openlink: 'xxxxxxx-xxxxxx', // 由不同渠道获得的OPENLINK值
+        /// }).then((res) => {
+        /// // 加载成功，res 可能携带不同活动、功能返回的特殊回包信息（具体请参阅渠道说明）
+        /// console.log(res);
+        /// // 加载成功后按需显示
+        /// pageManager.show();
+        /// }).catch((err) => {
+        /// // 加载失败，请查阅 err 给出的错误信息
+        /// console.error(err);
+        /// })
+        /// ```
+        /// </summary>
+        /// <returns></returns>
+        public static WXPageManager CreatePageManager()
+        {
+            return WXSDKManagerHandler.Instance.CreatePageManager();
         }
 
         /// <summary>
