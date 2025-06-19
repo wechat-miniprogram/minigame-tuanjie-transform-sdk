@@ -11,6 +11,13 @@ using System.IO;
 
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 
+namespace WXSDKPerf {
+    public class WXGameDataMonitor() {
+        [DllImport("__Internal", EntryPoint = "JSStartGameDataMonitor")]
+        public static extern void Start();
+    }
+}
+
 
 #if ENABLE_WX_PERF_FEATURE
 namespace WXSDKPerf
