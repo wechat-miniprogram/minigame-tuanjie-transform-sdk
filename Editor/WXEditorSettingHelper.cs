@@ -514,7 +514,7 @@ namespace WeChatWASM
             config.ProjectConf.VideoUrl = this.getDataInput("videoUrl");
             config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
             _dstCache = this.getDataInput("dst");
-            config.ProjectConf.DST = GetAbsolutePath(_dstCache);
+            config.ProjectConf.DST = _dstCache;
             config.ProjectConf.bundleHashLength = int.Parse(this.getDataInput("bundleHashLength"));
             config.ProjectConf.bundlePathIdentifier = this.getDataInput("bundlePathIdentifier");
             config.ProjectConf.bundleExcludeExtensions = this.getDataInput("bundleExcludeExtensions");

@@ -3130,6 +3130,26 @@
             是否成功
             </summary>
         </member>
+        <member name="F:WeChatWASM.NotifyMiniProgramPlayableStatusOption.isEnd">
+            <summary>
+             是否结束
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.complete">
+            <summary>
+            接口调用结束的回调函数（调用成功、失败都会执行）
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.fail">
+            <summary>
+            接口调用失败的回调函数
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.success">
+            <summary>
+            接口调用成功的回调函数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.Gamepad.axes">
             <summary>
             一个表示控制器设备上存在的坐标轴的数组 (比如控制器摇杆)。

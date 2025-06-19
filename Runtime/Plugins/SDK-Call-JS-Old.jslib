@@ -1008,7 +1008,6 @@ mergeInto(LibraryManager.library, {
         var sdk = _WXPointer_stringify_adaptor(sdkName);
         var func = _WXPointer_stringify_adaptor(functionName);
         var formattedArgs = JSON.parse(_WXPointer_stringify_adaptor(args));
-        console.log('!!!WX_CallJSFunction', sdk, func, formattedArgs);
         GameGlobal[sdk][func].apply(GameGlobal[sdk], formattedArgs);
     },
     WX_CallJSFunctionWithReturn: function (sdkName, functionName, args) {

@@ -2668,6 +2668,23 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.setStorageSync(string key, any data)](https://developers.weixin.qq.com/minigame/dev/api/storage/wx.setStorageSync.html)
+        /// 将数据存储在本地缓存中指定的 key 中。会覆盖掉原来该 key 对应的内容。除非用户主动删除或因存储空间原因被系统清理，否则数据都一直可用。单个 key 允许存储的最大数据长度为 1MB，所有数据存储上限为 10MB。
+        /// **注意**
+        /// storage 应只用来进行数据的持久化存储，不应用于运行时的数据传递或全局状态管理。启动过程中过多的同步读写存储，会显著影响启动耗时。
+        /// **示例代码**
+        /// ```js
+        /// try {
+        /// wx.setStorageSync('key', 'value')
+        /// } catch (e) { }
+        /// ```
+        /// </summary>
+        public static void SetStorageSync<T>(string key, T data)
+        {
+            WXSDKManagerHandler.Instance.SetStorageSync(key, data);
+        }
+
+        /// <summary>
         /// [wx.shareAppMessage(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.shareAppMessage.html)
         /// 主动拉起转发，进入选择通讯录界面。
         /// ****
