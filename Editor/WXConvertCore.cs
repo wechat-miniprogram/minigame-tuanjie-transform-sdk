@@ -690,6 +690,8 @@ namespace WeChatWASM
         {
             UnityEngine.Debug.LogFormat("[Converter] Starting to adapt framework. Dst: " + config.ProjectConf.DST);
 
+            Debug.LogError("config.ProjectConf.DST: " + config.ProjectConf.DST);
+            Debug.LogError("miniGameDir: " + Path.Combine(config.ProjectConf.DST, miniGameDir));
             UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, miniGameDir));
             string text = String.Empty;
             var target = "webgl.wasm.framework.unityweb.js";
