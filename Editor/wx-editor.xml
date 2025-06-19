@@ -778,6 +778,11 @@
             试玩 appid
             </summary>
         </member>
+        <member name="F:WeChatWASM.WXPlayableProjectConf.relativeDST">
+            <summary>
+            导出路径(相对路径)
+            </summary>
+        </member>
         <member name="F:WeChatWASM.WXPlayableProjectConf.DST">
             <summary>
             导出路径(绝对路径)
