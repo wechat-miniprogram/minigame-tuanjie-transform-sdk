@@ -1705,26 +1705,6 @@
             如果返回的是字符串，则数据在这个字段
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXStatInfo.mode">
-            <summary>
-             文件的类型和存取的权限，对应 POSIX stat.st_mode
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.size">
-            <summary>
-            文件大小，单位：B，对应 POSIX stat.st_size
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.lastAccessedTime">
-            <summary>
-            文件最近一次被存取或被执行的时间，UNIX 时间戳，对应 POSIX stat.st_atime
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.lastModifiedTime">
-            <summary>
-            文件最后一次被修改的时间，UNIX 时间戳，对应 POSIX stat.st_mtime
-            </summary>
-        </member>
         <member name="F:WeChatWASM.WXStat.path">
             <summary>
              文件的路径
