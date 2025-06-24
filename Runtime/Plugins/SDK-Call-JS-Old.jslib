@@ -829,14 +829,22 @@ mergeInto(LibraryManager.library, {
         )
     },
     WX_FileSystemManagerAppendFileSync:function(filePath, data, dataLength, encoding) {
-        window.WXWASMSDK.WX_FileSystemManagerAppendFileSync(
+        var returnStr = window.WXWASMSDK.WX_FileSystemManagerAppendFileSync(
             _WXPointer_stringify_adaptor(filePath),
             HEAPU8.slice(data, dataLength + data),
             _WXPointer_stringify_adaptor(encoding)
         );
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
     },
     WX_FileSystemManagerAppendFileStringSync:function(filePath, data, encoding) {
-        window.WXWASMSDK.WX_FileSystemManagerAppendFileStringSync(_WXPointer_stringify_adaptor(filePath), _WXPointer_stringify_adaptor(data), _WXPointer_stringify_adaptor(encoding));
+        var returnStr = window.WXWASMSDK.WX_FileSystemManagerAppendFileStringSync(_WXPointer_stringify_adaptor(filePath), _WXPointer_stringify_adaptor(data), _WXPointer_stringify_adaptor(encoding));
+        var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
     },
     WX_FileSystemManagerReaddirSync:function(dirPath) {
         var res = window.WXWASMSDK.WX_FileSystemManagerReaddirSync(_WXPointer_stringify_adaptor(dirPath));

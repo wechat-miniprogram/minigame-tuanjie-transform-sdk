@@ -395,11 +395,29 @@ export default {
     },
     WX_FileSystemManagerAppendFileStringSync(filePath, data, encoding) {
         const fs = wx.getFileSystemManager();
-        fs.appendFileSync(filePath, data, encoding);
+        try {
+            fs.appendFileSync(filePath, data, encoding);
+        }
+        catch (e) {
+            if (e.message) {
+                return e.message;
+            }
+            return 'fail';
+        }
+        return 'ok';
     },
     WX_FileSystemManagerAppendFileSync(filePath, data, encoding) {
         const fs = wx.getFileSystemManager();
-        fs.appendFileSync(filePath, data.buffer, encoding);
+        try {
+            fs.appendFileSync(filePath, data.buffer, encoding);
+        }
+        catch (e) {
+            if (e.message) {
+                return e.message;
+            }
+            return 'fail';
+        }
+        return 'ok';
     },
     WX_FileSystemManagerRenameSync(oldPath, newPath) {
         const fs = wx.getFileSystemManager();
