@@ -12,9 +12,42 @@ using System.IO;
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 
 namespace WXSDKPerf {
-    public class WXGameDataMonitor() {
+    public class WXGameDataMonitor()
+    {
         [DllImport("__Internal", EntryPoint = "JSStartGameDataMonitor")]
-        public static extern void Start();
+        private static extern void StartJSGameDataMonitor();
+
+        public static void Start()
+        {
+            // js侧启动.
+            StartJSGameDataMonitor();
+
+            // 注册gameobject, 循环上报.
+            GameObject go = new GameObject("WXGameDataMonitor");
+            UnityEngine.Object.DontDestroyOnLoad(go);
+
+            if (go.GetComponent<WXGameDataUnityReporter>() == null)
+			{
+				go.AddComponent<WXGameDataUnityReporter>();
+			}
+        }
+    }
+
+	public class WXGameDataUnityReporter : MonoBehaviour
+	{
+        private int frameCount = 0;
+
+        [DllImport("__Internal", EntryPoint = "JSReportUnityProfileData")]
+        private static extern void ReportUnityProfileData();
+
+        void Update() {
+            frameCount++;
+
+            if (frameCount == 25) {
+                ReportUnityProfileData();
+                frameCount = 0;
+            }
+        }
     }
 }
 
