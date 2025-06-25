@@ -157,4 +157,7 @@ WX_ClassOneWayNoFunction_vt: function(className, functionName, id, param1) {
 WX_ClassOneWayNoFunction_vn: function(className, functionName, id, param1) {
     window.WXWASMSDK.WX_ClassOneWayNoFunction_vs(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(id), param1);
 },
+WX_ClassOneWayNoFunction_bs: function(className, functionName, id, param1) {
+    return window.WXWASMSDK.WX_ClassOneWayNoFunction_bs(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(param1));
+},
 })
