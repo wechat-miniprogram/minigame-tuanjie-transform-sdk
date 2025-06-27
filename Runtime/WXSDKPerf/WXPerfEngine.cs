@@ -40,13 +40,8 @@ namespace WXSDKPerf {
         [DllImport("__Internal", EntryPoint = "JSReportUnityProfileData")]
         private static extern void ReportUnityProfileData();
 
-        void Update() {
-            frameCount++;
-
-            if (frameCount == 25) {
-                ReportUnityProfileData();
-                frameCount = 0;
-            }
+        public OnFrameInterval() {
+            UnityEngine.Debug.LogError("OnFrameInterval");
         }
     }
 }
