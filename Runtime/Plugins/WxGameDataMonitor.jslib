@@ -5,7 +5,7 @@ mergeInto(LibraryManager.library, {
     JSReportUnityProfileData: function() {
         GameGlobal.manager.getGameDataMonitor().reportUnityProfileData({
             timestamp: new Date().getTime(),
-            dynamicMemorySize: WXGetDynamicMemorySize(),
+            dynamicMemorySize: _WXGetDynamicMemorySize(),
         })
     },
 });
