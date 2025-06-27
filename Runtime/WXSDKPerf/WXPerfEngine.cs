@@ -8,6 +8,9 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using System.IO;
 
+using Unity.Profiling;
+using UnityEngine.Profiling;
+
 
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 
@@ -34,14 +37,52 @@ namespace WXSDKPerf {
     }
 
 	public class WXGameDataUnityReporter : MonoBehaviour
-	{
-        private int frameCount = 0;
+    {
+        private Stopwatch stopwatch;
+        private ProfilerRecorder setPassCallsRecorder;
+        private ProfilerRecorder drawCallsRecorder;
+        private ProfilerRecorder verticesRecorder;
+        private ProfilerRecorder trianglesCountRecorder;
+
+        private long maxSetPassCallsCount = 0;
+        private long maxDrawCallsCount = 0;
+
+        public WXGameDataUnityReporter()
+        {
+            setPassCallsRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "SetPass Calls Count");
+            drawCallsRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count");
+            verticesRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Vertices Count");
+            trianglesCountRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Triangles Count");
+
+            stopwatch = Stopwatch.StartNew();
+        }
 
         [DllImport("__Internal", EntryPoint = "JSReportUnityProfileData")]
-        private static extern void ReportUnityProfileData();
+        private static extern void ReportUnityProfileData(
+            int targetFrameRate, // fps
+            long monoHeapReserved, long monoHeapUsed, long nativeReserved, long nativeUnused, long nativeAllocated, // profiler.
+            long setPassCalls, long drawCalls, long vertices, long trianglesCount // render.
+        );
 
-        public OnFrameInterval() {
-            UnityEngine.Debug.LogError("OnFrameInterval");
+        public void OnFrameInterval()
+        {
+            maxSetPassCallsCount = Math.Max(maxSetPassCallsCount, setPassCallsRecorder.LastValue);
+            maxDrawCallsCount = Math.Max(maxDrawCallsCount, drawCallsRecorder.LastValue);
+
+            if (stopwatch.ElapsedMilliseconds < 1000)
+            {
+                return;
+            }
+
+            ReportUnityProfileData(
+                Application.targetFrameRate,
+                Profiler.GetMonoHeapSizeLong(), Profiler.GetMonoHeapSizeLong(), Profiler.GetMonoHeapSizeLong(), Profiler.GetMonoHeapSizeLong(), Profiler.GetMonoHeapSizeLong(),
+                maxSetPassCallsCount, maxDrawCallsCount, verticesRecorder.LastValue, trianglesCountRecorder.LastValue
+            );
+
+            maxSetPassCallsCount = 0;
+            maxDrawCallsCount = 0;
+            stopwatch.Restart();
         }
     }
 }
