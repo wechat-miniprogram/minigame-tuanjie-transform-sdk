@@ -48,7 +48,7 @@ checkVersion().then((enable) => {
                     canvas,
                     events: GameGlobal.events,
                     WXWASMSDK: GameGlobal.WXWASMSDK,
-                    isSuppportEmscriptenGLX: wx.env.isSuppportEmscriptenGLX ?? false,
+                    isSupportEmscriptenGLX: wx.env.isSuppportEmscriptenGLX || wx.env.isSupportEmscriptenGLX || false,
                 },
             }).default;
         }
