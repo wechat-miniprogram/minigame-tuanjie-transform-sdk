@@ -233,6 +233,14 @@ export const ResType = {
     GetLogManagerOption: {
         level: 'number',
     },
+    LoadOption: {
+        openlink: 'string',
+        query: 'object',
+    },
+    ShowOption: {
+        openlink: 'string',
+        query: 'object',
+    },
     Path2D: {},
     OnCheckForUpdateListenerResult: {
         hasUpdate: 'bool',
