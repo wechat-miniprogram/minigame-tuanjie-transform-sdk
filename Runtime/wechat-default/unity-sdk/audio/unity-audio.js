@@ -1265,4 +1265,7 @@ export default {
         }
         return WEBAudio.audioContext.sampleRate;
     },
+    _JS_Sound_GetPosition() {
+        return 0;
+    },
 };
