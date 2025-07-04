@@ -1117,6 +1117,16 @@ namespace WeChatWASM
         {
             WXSDKManagerHandler.Instance.ReserveChannelsLive(option);
         }
+#region 试玩特有接口
+        /// <summary>
+        /// 通知试玩结束
+        /// </summary>
+        /// <param name="option"></param>
+        public static void NotifyMiniProgramPlayableStatus(NotifyMiniProgramPlayableStatusOption option)
+        {
+            WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
+        }
+#endregion
     }
 }
 #endif

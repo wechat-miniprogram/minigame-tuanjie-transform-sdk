@@ -1265,4 +1265,18 @@ export default {
         }
         return WEBAudio.audioContext.sampleRate;
     },
+    _JS_Sound_GetPosition(channelInstance) {
+        if (WEBAudio.audioWebEnabled == 0) {
+            return 0;
+        }
+        const channel = WEBAudio.audioInstances[channelInstance];
+        if (!channel) {
+            return 0;
+        }
+        const { source } = channel;
+        if (!source) {
+            return 0;
+        }
+        return source.estimatePlaybackPosition ? source.estimatePlaybackPosition() : 0;
+    },
 };

@@ -1,0 +1,9 @@
+{
+  "deviceOrientation": "$ORIENTATION",
+  "engine": {
+    "name": "unity"
+  },
+  "features": [
+    "api.fs.readCompressedFile"
+  ]
+}
