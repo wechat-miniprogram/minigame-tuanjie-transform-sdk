@@ -56,7 +56,6 @@ function LayoutWithTplAndStyle(xml, style) {
     Layout.clear();
     Layout.init(xml, style);
     Layout.layout(sharedContext);
-    console.log(Layout);
 }
 // 仅仅渲染一些提示，比如数据加载中、当前无授权等
 function renderTips(tips = '') {

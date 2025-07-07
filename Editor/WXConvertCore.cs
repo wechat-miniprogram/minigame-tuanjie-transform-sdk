@@ -99,6 +99,14 @@ namespace WeChatWASM
 #endif
             }
         }
+        // 用于replaceRules判断是否需要注入相关的修改
+        public static bool UseEmscriptenGLX
+        {
+            get
+            {
+                return config.CompileOptions.enableEmscriptenGLX;
+            }
+        }
         // public static void SetPlayableEnabled(bool enabled)
         // {
         //     isPlayableBuild = enabled;
@@ -115,6 +123,8 @@ namespace WeChatWASM
             if (!isPlayableBuild) {
                 ProcessWxPerfBinaries();
             }
+            // emscriptenglx的相关特性
+            ProcessWxEmscriptenGLXBinaries();
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -140,7 +150,7 @@ namespace WeChatWASM
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
             dynamic config = isPlayableBuild ? UnityUtil.GetPlayableEditorConf() : UnityUtil.GetEditorConf();
-            if (config.ProjectConf.DST == string.Empty)
+            if (config.ProjectConf.relativeDST == string.Empty)
             {
                 Debug.LogError("请先配置游戏导出路径");
                 return WXExportError.BUILD_WEBGL_FAILED;
@@ -356,6 +366,39 @@ namespace WeChatWASM
                 wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
 #endif
                 SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+            }
+            AssetDatabase.Refresh();
+        }
+
+        private static void ProcessWxEmscriptenGLXBinaries()
+        {
+            string[] glLibs;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                glLibs = new string[]
+                {
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libnative_command_buffer.a",
+                };
+            }
+            else
+            {
+                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                glLibs = new string[]
+                {
+                    $"{glLibRootDir}libnative_command_buffer.a",
+                };
+            }
+            for (int i = 0; i < glLibs.Length; i++)
+            {
+                var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableEmscriptenGLX);
+                #else
+                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
+                #endif
+                // importer.SaveAndReimport();
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
             }
             AssetDatabase.Refresh();
         }
@@ -1904,7 +1947,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.Webgl2 ? "2" : "1",
+                config.CompileOptions.enableEmscriptenGLX ? config.CompileOptions.Webgl2 ? "4" : "3" : config.CompileOptions.Webgl2 ? "2" : "1",
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,

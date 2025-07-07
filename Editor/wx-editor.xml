@@ -381,6 +381,11 @@
             视频url
             </summary>
         </member>
+        <member name="F:WeChatWASM.WXProjectConf.relativeDST">
+            <summary>
+            导出路径(相对路径)
+            </summary>
+        </member>
         <member name="F:WeChatWASM.WXProjectConf.DST">
             <summary>
             导出路径(绝对路径)
@@ -643,6 +648,11 @@
             是否使用iOS高性能Plus
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enableEmscriptenGLX">
+            <summary>
+            是否使用EmscriptenGLX
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
             <summary>
             是否使用brotli多线程压缩
@@ -771,6 +781,11 @@
         <member name="F:WeChatWASM.WXPlayableProjectConf.Appid">
             <summary>
             试玩 appid
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXPlayableProjectConf.relativeDST">
+            <summary>
+            导出路径(相对路径)
             </summary>
         </member>
         <member name="F:WeChatWASM.WXPlayableProjectConf.DST">
