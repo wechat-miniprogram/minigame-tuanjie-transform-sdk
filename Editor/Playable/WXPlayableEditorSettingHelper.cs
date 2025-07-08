@@ -17,8 +17,6 @@ namespace WeChatWASM
     public static string projectRootPath;
     private static WXPlayableEditorScriptObject config;
     private static bool m_EnablePerfTool = false;
-
-    private static string _dstCache;
     public static bool UseIL2CPP
     {
       get
@@ -34,7 +32,6 @@ namespace WeChatWASM
     public WXPlayableSettingsHelper()
     {
       projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
-      _dstCache = "";
     }
 
     public void OnFocus()
@@ -156,12 +153,11 @@ namespace WeChatWASM
     {
       SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-playable-default", "unity-sdk", "index.js");
       config = UnityUtil.GetPlayableEditorConf();
-      _dstCache = config.ProjectConf.DST;
 
       this.setData("projectName", config.ProjectConf.projectName);
       this.setData("appid", config.ProjectConf.Appid);
       this.setData("orientation", (int)config.ProjectConf.Orientation);
-      this.setData("dst", _dstCache);
+      this.setData("dst", config.ProjectConf.relativeDST);
 
       this.setData("developBuild", config.CompileOptions.DevelopBuild);
       this.setData("il2CppOptimizeSize", config.CompileOptions.Il2CppOptimizeSize);
@@ -177,8 +173,8 @@ namespace WeChatWASM
       config.ProjectConf.projectName = this.getDataInput("projectName");
       config.ProjectConf.Appid = this.getDataInput("appid");
       config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
-      _dstCache = this.getDataInput("dst");
-      config.ProjectConf.DST = GetAbsolutePath(_dstCache);
+      config.ProjectConf.relativeDST = this.getDataInput("dst");
+      config.ProjectConf.DST = GetAbsolutePath(config.ProjectConf.relativeDST);
 
       config.CompileOptions.DevelopBuild = this.getDataCheckbox("developBuild");
       config.CompileOptions.Il2CppOptimizeSize = this.getDataCheckbox("il2CppOptimizeSize");

@@ -54,14 +54,10 @@ namespace WeChatWASM
             foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
-
-            _dstCache = "";
         }
 
         private static WXEditorScriptObject config;
         private static bool m_EnablePerfTool = false;
-
-        private static string _dstCache;
 
         public void OnFocus()
         {
@@ -187,8 +183,9 @@ namespace WeChatWASM
                 this.formCheckbox("il2CppOptimizeSize", "Il2Cpp Optimize Size(?)", "对应于Il2CppCodeGeneration选项，勾选时使用OptimizeSize(默认推荐)，生成代码小15%左右，取消勾选则使用OptimizeSpeed。游戏中大量泛型集合的高频访问建议OptimizeSpeed，在使用HybridCLR等第三方组件时只能用OptimizeSpeed。(Dotnet Runtime模式下该选项无效)", !UseIL2CPP);
                 this.formCheckbox("profilingFuncs", "Profiling Funcs");
                 this.formCheckbox("profilingMemory", "Profiling Memory");
-                this.formCheckbox("webgl2", "WebGL2.0");
+                this.formCheckbox("webgl2", "WebGL2.0(beta)");
                 this.formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
+                this.formCheckbox("iOSMetal", "iOSMetal(?)", "是否使用iOSMetal渲染方案");
                 this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
                 this.formCheckbox("cleanBuild", "Clean WebGL Build");
                 // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
@@ -394,7 +391,6 @@ namespace WeChatWASM
             // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "index.js");
             SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
             config = UnityUtil.GetEditorConf();
-            _dstCache = config.ProjectConf.DST;
 
             // Instant Game
             if (WXConvertCore.IsInstantGameAutoStreaming())
@@ -436,7 +432,7 @@ namespace WeChatWASM
             this.setData("compressDataPackage", config.ProjectConf.compressDataPackage);
             this.setData("videoUrl", config.ProjectConf.VideoUrl);
             this.setData("orientation", (int)config.ProjectConf.Orientation);
-            this.setData("dst", _dstCache);
+            this.setData("dst", config.ProjectConf.relativeDST);
             this.setData("bundleHashLength", config.ProjectConf.bundleHashLength.ToString());
             this.setData("bundlePathIdentifier", config.ProjectConf.bundlePathIdentifier);
             this.setData("bundleExcludeExtensions", config.ProjectConf.bundleExcludeExtensions);
@@ -452,6 +448,7 @@ namespace WeChatWASM
             this.setData("customNodePath", config.CompileOptions.CustomNodePath);
             this.setData("webgl2", config.CompileOptions.Webgl2);
             this.setData("iOSPerformancePlus", config.CompileOptions.enableIOSPerformancePlus);
+            this.setData("iOSMetal", config.CompileOptions.enableiOSMetal);
             this.setData("fbslim", config.CompileOptions.fbslim);
             this.setData("useFriendRelation", config.SDKOptions.UseFriendRelation);
             this.setData("useMiniGameChat", config.SDKOptions.UseMiniGameChat);
@@ -513,8 +510,8 @@ namespace WeChatWASM
             config.ProjectConf.compressDataPackage = this.getDataCheckbox("compressDataPackage");
             config.ProjectConf.VideoUrl = this.getDataInput("videoUrl");
             config.ProjectConf.Orientation = (WXScreenOritation)this.getDataPop("orientation");
-            _dstCache = this.getDataInput("dst");
-            config.ProjectConf.DST = GetAbsolutePath(_dstCache);
+            config.ProjectConf.relativeDST = this.getDataInput("dst");
+            config.ProjectConf.DST = GetAbsolutePath(config.ProjectConf.relativeDST);
             config.ProjectConf.bundleHashLength = int.Parse(this.getDataInput("bundleHashLength"));
             config.ProjectConf.bundlePathIdentifier = this.getDataInput("bundlePathIdentifier");
             config.ProjectConf.bundleExcludeExtensions = this.getDataInput("bundleExcludeExtensions");
@@ -530,6 +527,7 @@ namespace WeChatWASM
             config.CompileOptions.CustomNodePath = this.getDataInput("customNodePath");
             config.CompileOptions.Webgl2 = this.getDataCheckbox("webgl2");
             config.CompileOptions.enableIOSPerformancePlus = this.getDataCheckbox("iOSPerformancePlus");
+            config.CompileOptions.enableiOSMetal = this.getDataCheckbox("iOSMetal");
             config.CompileOptions.fbslim = this.getDataCheckbox("fbslim");
             config.SDKOptions.UseFriendRelation = this.getDataCheckbox("useFriendRelation");
             config.SDKOptions.UseMiniGameChat = this.getDataCheckbox("useMiniGameChat");
