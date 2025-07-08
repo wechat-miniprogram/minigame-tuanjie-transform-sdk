@@ -1964,7 +1964,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.Webgl2 ? "2" : "1",
+                config.CompileOptions.enableiOSMetal ? "5" : (config.CompileOptions.Webgl2 ? "2" : "1"),
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
