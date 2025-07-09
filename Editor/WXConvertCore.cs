@@ -378,7 +378,7 @@ namespace WeChatWASM
             {
                 glLibs = new string[]
                 {
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libnative_command_buffer.a",
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx.a",
                 };
             }
             else
@@ -386,7 +386,7 @@ namespace WeChatWASM
                 string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
                 glLibs = new string[]
                 {
-                    $"{glLibRootDir}libnative_command_buffer.a",
+                    $"{glLibRootDir}libemscriptenglx.a",
                 };
             }
             for (int i = 0; i < glLibs.Length; i++)
@@ -397,10 +397,10 @@ namespace WeChatWASM
                 #else
                     importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
                 #endif
-                // importer.SaveAndReimport();
-                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
+                importer.SaveAndReimport();
+                // SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
             }
-            AssetDatabase.Refresh();
+            // AssetDatabase.Refresh();
         }
 
         /**
