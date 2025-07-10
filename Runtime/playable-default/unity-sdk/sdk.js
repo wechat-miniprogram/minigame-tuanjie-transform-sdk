@@ -409,14 +409,14 @@ export default {
         WX_ClassOneWayNoFunction(className, functionName, id, param1);
     },
     WX_ClassOneWayFunction(className, functionName, id, successType, failType, completeType, conf, callbackId, usePromise = false) {
-        console.log('!!! WX_ClassOneWayFunction', className, functionName, id, successType, failType, completeType, conf, callbackId);
+        
         const obj = getClassObject(className, id);
         if (!obj) {
             return;
         }
         const lowerFunctionName = functionName.replace(/^\w/, (a) => a.toLowerCase());
         const config = formatJsonStr(conf);
-        console.log('!!! WX_ClassOneWayFunction 1', `${className}${functionName}Callback`);
+        
         if (usePromise) {
             obj[lowerFunctionName]({
                 ...config,
