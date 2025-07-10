@@ -262,7 +262,7 @@ export default {
         formatResponse(returnType, res);
         return JSON.stringify(res);
     },
-    WX_ClassOneWayFunction(functionName, returnType, successType, failType, completeType, conf) {
+    WX_ClassConstructor(functionName, returnType, successType, failType, completeType, conf) {
         const config = formatJsonStr(conf);
         const callbackId = uid();
         const obj = wx[functionName.replace(/^\w/, a => a.toLowerCase())]({
@@ -398,5 +398,60 @@ export default {
     },
     WX_ClassOneWayNoFunction_vn(className, functionName, id, param1) {
         WX_ClassOneWayNoFunction(className, functionName, id, param1);
+    },
+    WX_ClassOneWayFunction(className, functionName, id, successType, failType, completeType, conf, callbackId, usePromise = false) {
+        console.log('!!! WX_ClassOneWayFunction', className, functionName, id, successType, failType, completeType, conf, callbackId);
+        const obj = getClassObject(className, id);
+        if (!obj) {
+            return;
+        }
+        const lowerFunctionName = functionName.replace(/^\w/, a => a.toLowerCase());
+        const config = formatJsonStr(conf);
+        console.log('!!! WX_ClassOneWayFunction 1', `${className}${functionName}Callback`);
+        if (usePromise) {
+            obj[lowerFunctionName]({
+                ...config,
+            }).then((res) => {
+                formatResponse(successType, res);
+                moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                    callbackId, type: 'success', res: JSON.stringify(res),
+                }));
+            })
+                .catch((res) => {
+                formatResponse(failType, res);
+                moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                    callbackId, type: 'fail', res: JSON.stringify(res),
+                }));
+            })
+                .finally((res) => {
+                formatResponse(completeType, res);
+                moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                    callbackId, type: 'complete', res: JSON.stringify(res),
+                }));
+            });
+        }
+        else {
+            obj[lowerFunctionName]({
+                ...config,
+                success(res) {
+                    formatResponse(successType, res);
+                    moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                        callbackId, type: 'success', res: JSON.stringify(res),
+                    }));
+                },
+                fail(res) {
+                    formatResponse(failType, res);
+                    moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                        callbackId, type: 'fail', res: JSON.stringify(res),
+                    }));
+                },
+                complete(res) {
+                    formatResponse(completeType, res);
+                    moduleHelper.send(`${className}${functionName}Callback`, JSON.stringify({
+                        callbackId, type: 'complete', res: JSON.stringify(res),
+                    }));
+                },
+            });
+        }
     },
 };

@@ -115,8 +115,8 @@ WX_SyncFunction_tnn: function(functionName, returnType, param1, param2){
     stringToUTF8((res || ''), buffer, bufferSize);
     return buffer;
 },
-WX_ClassOneWayFunction:function(functionName, returnType, successType, failType, completeType, conf) {
-    var res = window.WXWASMSDK.WX_ClassOneWayFunction(_WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(returnType), _WXPointer_stringify_adaptor(successType), _WXPointer_stringify_adaptor(failType), _WXPointer_stringify_adaptor(completeType), _WXPointer_stringify_adaptor(conf));
+WX_ClassConstructor:function(functionName, returnType, successType, failType, completeType, conf) {
+    var res = window.WXWASMSDK.WX_ClassConstructor(_WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(returnType), _WXPointer_stringify_adaptor(successType), _WXPointer_stringify_adaptor(failType), _WXPointer_stringify_adaptor(completeType), _WXPointer_stringify_adaptor(conf));
     var bufferSize = lengthBytesUTF8(res || '') + 1;
     var buffer = _malloc(bufferSize);
     stringToUTF8((res || ''), buffer, bufferSize);
@@ -156,5 +156,7 @@ WX_ClassOneWayNoFunction_vt: function(className, functionName, id, param1) {
 },
 WX_ClassOneWayNoFunction_vn: function(className, functionName, id, param1) {
     window.WXWASMSDK.WX_ClassOneWayNoFunction_vs(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(id), param1);
+},WX_ClassOneWayFunction: function(className, id, functionName, successType, failType, completeType, conf, callbackId, usePromise) {
+    window.WXWASMSDK.WX_ClassOneWayFunction(_WXPointer_stringify_adaptor(className), _WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(successType), _WXPointer_stringify_adaptor(failType), _WXPointer_stringify_adaptor(completeType), _WXPointer_stringify_adaptor(conf), _WXPointer_stringify_adaptor(callbackId), usePromise);
 },
 })
