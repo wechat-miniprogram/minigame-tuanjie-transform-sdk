@@ -414,19 +414,19 @@ export default {
             }).then((res) => {
                 formatResponse(successType, res);
                 moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                    callbackId, type: 'success', res: JSON.stringify(res),
+                    id, callbackId, type: 'success', res: JSON.stringify(res),
                 }));
             })
                 .catch((res) => {
                 formatResponse(failType, res);
                 moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                    callbackId, type: 'fail', res: JSON.stringify(res),
+                    id, callbackId, type: 'fail', res: JSON.stringify(res),
                 }));
             })
                 .finally((res) => {
                 formatResponse(completeType, res);
                 moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                    callbackId, type: 'complete', res: JSON.stringify(res),
+                    id, callbackId, type: 'complete', res: JSON.stringify(res),
                 }));
             });
         }
@@ -436,19 +436,19 @@ export default {
                 success(res) {
                     formatResponse(successType, res);
                     moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                        callbackId, type: 'success', res: JSON.stringify(res),
+                        id, callbackId, type: 'success', res: JSON.stringify(res),
                     }));
                 },
                 fail(res) {
                     formatResponse(failType, res);
                     moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                        callbackId, type: 'fail', res: JSON.stringify(res),
+                        id, callbackId, type: 'fail', res: JSON.stringify(res),
                     }));
                 },
                 complete(res) {
                     formatResponse(completeType, res);
                     moduleHelper.send(`_${className}${functionName}Callback`, JSON.stringify({
-                        callbackId, type: 'complete', res: JSON.stringify(res),
+                        id, callbackId, type: 'complete', res: JSON.stringify(res),
                     }));
                 },
             });
