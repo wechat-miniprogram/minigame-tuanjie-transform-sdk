@@ -94,4 +94,11 @@ export const ResTypeOther = {
         openlink: 'string',
         query: 'object',
     },
+    PageManagerLoadSuccessCallbackResult: {
+        user_status: 'number',
+    },
+    PageManagerFailCallbackResult: {
+        errCode: 'number',
+        errMsg: 'string',
+    },
 };
