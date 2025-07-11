@@ -18,11 +18,14 @@ export default {
         if (!obj) {
             return;
         }
-        if (key === 'x' || key === 'y' || key === 'width' || key === 'height') {
+        if (key === 'x' || key === 'y' || key === 'width' || key === 'height' || key === 'playbackRate' || key === 'initialTime') {
             obj[key] = +value;
         }
         else if (key === 'src' || key === 'poster') {
             obj[key] = value;
+        }
+        else if (key === 'loop' || key === 'muted') {
+            obj[key] = value === 'true';
         }
     },
     WXVideoPlay(id) {
@@ -40,10 +43,11 @@ export default {
         obj[key]((e) => {
             moduleHelper.send('OnVideoCallback', JSON.stringify({
                 callbackId: id,
-                errMsg: key,
+                type: key,
                 position: e && e.position,
                 buffered: e && e.buffered,
                 duration: e && e.duration,
+                errMsg: e && e.errMsg,
             }));
             if (key === 'onError') {
                 GameGlobal.enableTransparentCanvas = false;
@@ -51,13 +55,15 @@ export default {
             }
         });
     },
-    WXVideoDestroy(id) {
+    WXVideoDestroy(id, isLast) {
         const obj = getObject(id);
         if (!obj) {
             return;
         }
         obj.destroy();
-        GameGlobal.enableTransparentCanvas = false;
+        if (isLast) {
+            GameGlobal.enableTransparentCanvas = false;
+        }
     },
     WXVideoExitFullScreen(id) {
         const obj = getObject(id);

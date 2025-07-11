@@ -1699,26 +1699,6 @@
             如果返回的是字符串，则数据在这个字段
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXStatInfo.mode">
-            <summary>
-             文件的类型和存取的权限，对应 POSIX stat.st_mode
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.size">
-            <summary>
-            文件大小，单位：B，对应 POSIX stat.st_size
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.lastAccessedTime">
-            <summary>
-            文件最近一次被存取或被执行的时间，UNIX 时间戳，对应 POSIX stat.st_atime
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXStatInfo.lastModifiedTime">
-            <summary>
-            文件最后一次被修改的时间，UNIX 时间戳，对应 POSIX stat.st_mtime
-            </summary>
-        </member>
         <member name="F:WeChatWASM.WXStat.path">
             <summary>
              文件的路径
@@ -3129,19 +3109,98 @@
              是否结束
             </summary>
         </member>
-        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.complete">
+        <member name="F:WeChatWASM.VirtualPaymentError.errMsg">
+            错误信息
+            
+             | 错误码 | 错误信息 | 说明 |
+             | - | - | - |
+             | 1001 |  | 参数错误 |
+             | -1 |  | 支付失败 |
+             | -2 |  | 支付取消 |
+             | -4 |  | 风控拦截 |
+             | -5 |  | 开通签约结果未知 |
+             | -15001 |  | 参数错误,具体原因见err_msg |
+             | -15002 |  | outTradeNo重复使用,请换新单号重试 |
+             | -15003 |  | 系统错误 |
+             | -15004 |  | currencyType错误,目前只能填CNY |
+             | -15005 |  | 用户态签名signature错误 |
+             | -15006 |  | 支付签名paySig错误 |
+             | -15007 |  | session_key过期 |
+             | -15008 |  | 二级商户进件未完成 |
+             | -15009 |  | 代币未发布 |
+             | -15010 |  | 道具productId未发布 |
+             | -15011 |  | 现网版本的env只能是0,不能填1(沙盒环境) |
+             | -15012 |  | 调用米大师失败导致关单,请换新单号重试 |
+             | -15013 |  | goodsPrice道具价格错误 |
+             | -15014 |  | 道具/代币发布未生效，禁止下单，大概10分钟后生效 |
+             | -15016 |  | signData格式有问题 |
+             | -15017 |  | 此商家涉嫌违规，收款功能已被限制，暂无法支付。商家可以登录微信商户平台/微信支付商家助手小程序查看原因和解决方案 |
+             | -15018 |  | 代币或者道具productId审核不通过 |
+             | -15019 |  | 调微信报商户受限,商家可以登录微信商户平台/微信支付商家助手小程序查看原因和解决方案 |
+             | -15020 |  | 操作过快，请稍候再试 |
+             | -15021 |  | 小程序被限频交易 | 
+        </member>
+        <member name="F:WeChatWASM.VirtualPaymentError.errCode">
+            错误码
+            
+             | 错误码 | 错误信息 | 说明 |
+             | - | - | - |
+             | 1001 |  | 参数错误 |
+             | -1 |  | 支付失败 |
+             | -2 |  | 支付取消 |
+             | -4 |  | 风控拦截 |
+             | -5 |  | 开通签约结果未知 |
+             | -15001 |  | 参数错误,具体原因见err_msg |
+             | -15002 |  | outTradeNo重复使用,请换新单号重试 |
+             | -15003 |  | 系统错误 |
+             | -15004 |  | currencyType错误,目前只能填CNY |
+             | -15005 |  | 用户态签名signature错误 |
+             | -15006 |  | 支付签名paySig错误 |
+             | -15007 |  | session_key过期 |
+             | -15008 |  | 二级商户进件未完成 |
+             | -15009 |  | 代币未发布 |
+             | -15010 |  | 道具productId未发布 |
+             | -15011 |  | 现网版本的env只能是0,不能填1(沙盒环境) |
+             | -15012 |  | 调用米大师失败导致关单,请换新单号重试 |
+             | -15013 |  | goodsPrice道具价格错误 |
+             | -15014 |  | 道具/代币发布未生效，禁止下单，大概10分钟后生效 |
+             | -15016 |  | signData格式有问题 |
+             | -15017 |  | 此商家涉嫌违规，收款功能已被限制，暂无法支付。商家可以登录微信商户平台/微信支付商家助手小程序查看原因和解决方案 |
+             | -15018 |  | 代币或者道具productId审核不通过 |
+             | -15019 |  | 调微信报商户受限,商家可以登录微信商户平台/微信支付商家助手小程序查看原因和解决方案 |
+             | -15020 |  | 操作过快，请稍候再试 |
+             | -15021 |  | 小程序被限频交易 | 
+        </member>
+        <member name="F:WeChatWASM.RequestVirtualPaymentFailCallbackErr.errCode">
+            错误码 
+        </member>
+        <member name="F:WeChatWASM.RequestVirtualPaymentFailCallbackErr.errMsg">
+            错误信息 
+        </member>
+        <member name="F:WeChatWASM.RequestCommonPaymentSuccessCallbackResult.errMsg">
+            调用成功信息 
+        </member>
+        <member name="F:WeChatWASM.RequestVirtualPaymentOption.mode">
             <summary>
-            接口调用结束的回调函数（调用成功、失败都会执行）
+            支付的类型, 不同的支付类型有各自额外要传的附加参数
+            可选值：
+            - 'short_series_goods': 道具直购;
+            - 'short_series_coin': 代币充值;
             </summary>
         </member>
-        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.fail">
+        <member name="F:WeChatWASM.RequestVirtualPaymentOption.paySig">
             <summary>
-            接口调用失败的回调函数
+            支付签名, 详见[《签名详解》](https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/industry/virtual-payment.html)
             </summary>
         </member>
-        <member name="P:WeChatWASM.NotifyMiniProgramPlayableStatusOption.success">
+        <member name="F:WeChatWASM.RequestVirtualPaymentOption.signData">
             <summary>
-            接口调用成功的回调函数
+            具体支付参数见signData, 该参数需以string形式传递, 例如signData: '{"offerId":"123","buyQuantity":1,"env":0,"currencyType":"CNY","productId":"testproductId","goodsPrice":10,"outTradeNo":"xxxxxx","attach":"testdata"}'
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestVirtualPaymentOption.signature">
+            <summary>
+            用户态签名, 详见[《签名详解》](https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/industry/virtual-payment.html)
             </summary>
         </member>
         <member name="F:WeChatWASM.Gamepad.axes">
@@ -8610,12 +8669,12 @@
             取消监听视频播放到末尾事件
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OnError(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.OnError(System.Action{WeChatWASM.WXVideoError})">
             <summary>
             监听视频错误事件
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OffError(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.OffError(System.Action{WeChatWASM.WXVideoError})">
             <summary>
             取消监听视频错误事件,action 为空表示移除全部事件监听
             </summary>
