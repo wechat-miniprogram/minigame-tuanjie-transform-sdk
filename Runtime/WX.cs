@@ -4017,6 +4017,12 @@ namespace WeChatWASM
             return WXSDKManagerHandler.Instance.CreateFeedbackButton(option);
         }
 
+        /// <returns></returns>
+        public static WXMiniReportManager GetMiniReportManager(GetMiniReportManagerParam param)
+        {
+            return WXSDKManagerHandler.Instance.GetMiniReportManager(param);
+        }
+
         /// <summary>
         /// [[LogManager](https://developers.weixin.qq.com/minigame/dev/api/base/debug/LogManager.html) wx.getLogManager(Object object)](https://developers.weixin.qq.com/minigame/dev/api/base/debug/wx.getLogManager.html)
         /// 需要基础库： `2.1.0`
@@ -4034,32 +4040,6 @@ namespace WeChatWASM
         public static WXLogManager GetLogManager(GetLogManagerOption option)
         {
             return WXSDKManagerHandler.Instance.GetLogManager(option);
-        }
-
-        /// <summary>
-        /// [[PageManager](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/PageManager.html) wx.createPageManager()](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html)
-        /// 需要基础库： `3.6.7`
-        /// 小游戏开放页面管理器，用于启动微信内置的各种小游戏活动、功能页面。具体OPENLINK值由不同的能力渠道获得。
-        /// **示例代码**
-        /// ```js
-        /// const pageManager = wx.createPageManager();
-        /// pageManager.load({
-        /// openlink: 'xxxxxxx-xxxxxx', // 由不同渠道获得的OPENLINK值
-        /// }).then((res) => {
-        /// // 加载成功，res 可能携带不同活动、功能返回的特殊回包信息（具体请参阅渠道说明）
-        /// console.log(res);
-        /// // 加载成功后按需显示
-        /// pageManager.show();
-        /// }).catch((err) => {
-        /// // 加载失败，请查阅 err 给出的错误信息
-        /// console.error(err);
-        /// })
-        /// ```
-        /// </summary>
-        /// <returns></returns>
-        public static WXPageManager CreatePageManager()
-        {
-            return WXSDKManagerHandler.Instance.CreatePageManager();
         }
 
         /// <summary>
