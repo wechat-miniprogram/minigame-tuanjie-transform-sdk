@@ -148,7 +148,7 @@ namespace WeChatWASM
             return WXExportError.SUCCEED;
         }
         // 可以调用这个来集成
-        public static WXExportError DoExport(bool buildWebGL = true)
+        public static WXExportError DoExport(bool buildWebGL = true, BuildPlayerOptions buildPlayerOptions = default)
         {
             LifeCycleEvent.Init();
             Emit(LifeCycle.beforeExport);
@@ -183,7 +183,7 @@ namespace WeChatWASM
                     UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, webglDir + "/StreamingAssets"));
                 }
 
-                if (buildWebGL && Build() != 0)
+                if (buildWebGL && Build(buildPlayerOptions) != 0)
                 {
                     return WXExportError.BUILD_WEBGL_FAILED;
                 }
@@ -824,7 +824,7 @@ namespace WeChatWASM
             UnityEngine.Debug.LogFormat("[Converter]  adapt framework done! ");
         }
 
-        private static int Build()
+        private static int Build(BuildPlayerOptions buildPlayerOptions)
         {
 #if PLATFORM_WEIXINMINIGAME
             PlayerSettings.WeixinMiniGame.emscriptenArgs = string.Empty;
@@ -965,8 +965,16 @@ namespace WeChatWASM
             }
 
             var projDir = Path.Combine(config.ProjectConf.DST, webglDir);
-
-            var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.WeixinMiniGame, option);
+            // BuildPlayerOptions 
+            {
+                buildPlayerOptions.scenes = GetScenePaths();
+                buildPlayerOptions.locationPathName = projDir;
+                buildPlayerOptions.options = option;
+                buildPlayerOptions.target = BuildTarget.WebGL;
+                buildPlayerOptions.targetGroup = BuildPipeline.GetBuildTargetGroup(buildPlayerOptions.target);
+            }
+            var result = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            //var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.WeixinMiniGame, option);
             if (result.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
             {
                 UnityEngine.Debug.LogFormat("[Builder] BuildPlayer failed. emscriptenArgs:{0}", PlayerSettings.WeixinMiniGame.emscriptenArgs);
@@ -984,8 +992,16 @@ namespace WeChatWASM
             }
 
             var projDir = Path.Combine(config.ProjectConf.DST, webglDir);
-
-            var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.WebGL, option);
+            // BuildPlayerOptions 
+            {
+                buildPlayerOptions.scenes = GetScenePaths();
+                buildPlayerOptions.locationPathName = projDir;
+                buildPlayerOptions.options = option;
+                buildPlayerOptions.target = BuildTarget.WebGL;
+                buildPlayerOptions.targetGroup = BuildPipeline.GetBuildTargetGroup(buildPlayerOptions.target);
+            }
+            var result = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            //var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.WebGL, option);
             if (result.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
             {
                 UnityEngine.Debug.LogFormat("[Builder] BuildPlayer failed. emscriptenArgs:{0}", PlayerSettings.WebGL.emscriptenArgs);
