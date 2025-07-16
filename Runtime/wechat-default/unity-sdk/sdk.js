@@ -1,7 +1,6 @@
 
 import moduleHelper from './module-helper';
 import { uid, formatResponse, formatJsonStr, stringifyRes } from './utils';
-import { needParseJson } from './specialApi';
 const onEventLists = {};
 let wxOnAddToFavoritesResolveConf;
 let wxOnCopyUrlResolveConf;
@@ -32,6 +31,8 @@ const onlyReadyResponse = [
     'getSystemSetting',
     'getAppAuthorizeSetting',
 ];
+
+const needParseJson = ['WXMiniReportManagerReport'];
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_SyncFunction(functionName, ...params) {
     return wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
