@@ -1519,7 +1519,7 @@ namespace WeChatWASM
             var shortFilename = filename.Substring(filename.IndexOf('.') + 1);
 
             // 如果code没有发生过变化，且压缩方式不变，则不再进行br压缩
-            if (File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
+            if (cachePath.Contains("wasm.code") && File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
             {
                 File.Copy(cachePath, targetPath, true);
                 return 0;
