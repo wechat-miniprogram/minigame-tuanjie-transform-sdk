@@ -1755,114 +1755,109 @@
             视频的总时长，单位为秒
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.x">
-            <summary>
-            视频的左上角横坐标
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.y">
-            <summary>
-            视频的左上角纵坐标
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.width">
-            <summary>
-            视频的宽度
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.height">
-            <summary>
-            视频的高度
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.src">
+        <member name="F:WeChatWASM.CreateVideoOption.src">
             <summary>
             视频的资源地址
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.poster">
-            <summary>
-            视频的封面
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.initialTime">
-            <summary>
-            视频的初始播放位置，单位为 s 秒
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.playbackRate">
-            <summary>
-            视频的播放速率，有效值有 0.5、0.8、1.0、1.25、1.5
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.live">
-            <summary>
-            视频是否为直播
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.objectFit">
-            <summary>
-            视频的缩放模式
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.controls">
-            <summary>
-            视频是否显示控件
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.showProgress">
-            <summary>
-            是否显示视频底部进度条
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.showProgressInControlMode">
-            <summary>
-            是否显示控制栏的进度条
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.backgroundColor">
-            <summary>
-            视频背景颜色
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.autoplay">
+        <member name="F:WeChatWASM.CreateVideoOption.autoplay">
             <summary>
             视频是否自动播放
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.loop">
+        <member name="F:WeChatWASM.CreateVideoOption.backgroundColor">
             <summary>
-            视频是否是否循环播放
+            视频背景颜色
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.muted">
+        <member name="F:WeChatWASM.CreateVideoOption.controls">
             <summary>
-            视频是否禁音播放
+            视频是否显示控件
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.obeyMuteSwitch">
-            <summary>
-            视频是否遵循系统静音开关设置（仅iOS）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.enableProgressGesture">
-            <summary>
-            是否启用手势控制播放进度
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.enablePlayGesture">
+        <member name="F:WeChatWASM.CreateVideoOption.enablePlayGesture">
             <summary>
             是否开启双击播放的手势
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.showCenterPlayBtn">
+        <member name="F:WeChatWASM.CreateVideoOption.enableProgressGesture">
+            <summary>
+            是否启用手势控制播放进度
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.height">
+            <summary>
+            视频的高度
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.initialTime">
+            <summary>
+            视频的初始播放位置，单位为 s 秒
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.live">
+            <summary>
+            视频是否为直播
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.loop">
+            <summary>
+            视频是否是否循环播放
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.muted">
+            <summary>
+            视频是否禁音播放
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.obeyMuteSwitch">
+            <summary>
+            视频是否遵循系统静音开关设置（仅iOS）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.objectFit">
+            <summary>
+            视频的缩放模式
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.playbackRate">
+            <summary>
+            视频的播放速率，有效值有 0.5、0.8、1.0、1.25、1.5
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.poster">
+            <summary>
+            视频的封面
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.showCenterPlayBtn">
             <summary>
             是否显示视频中央的播放按钮
             </summary>
         </member>
-        <member name="F:WeChatWASM.WXCreateVideoParam.underGameView">
+        <member name="F:WeChatWASM.CreateVideoOption.showProgress">
             <summary>
-            视频是否显示在游戏画布之下
+            是否显示视频底部进度条
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.showProgressInControlMode">
+            <summary>
+            是否显示控制栏的进度条
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.width">
+            <summary>
+            视频的宽度
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.x">
+            <summary>
+            视频的左上角横坐标
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.y">
+            <summary>
+            视频的左上角纵坐标
             </summary>
         </member>
         <member name="F:WeChatWASM.EnvVersion.develop">
@@ -8609,21 +8604,43 @@
             显示用户信息按钮
             </summary>
         </member>
+        <member name="T:WeChatWASM.WXVideo">
+            <summary>
+            微信小游戏视频组件
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXVideo._Dict">
+            <summary>
+            视频实例字典 (内部使用，请不要访问)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXVideo.instanceId">
+            <summary>
+            视频实例ID
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXVideo.param">
+            <summary>
+            视频创建参数
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXVideo.#ctor(System.String,WeChatWASM.CreateVideoOption)">
+            <summary>
+            创建视频实例
+            </summary>
+            <param name="id">实例ID</param>
+            <param name="param">创建参数</param>
+        </member>
+        <member name="M:WeChatWASM.WXVideo.InitializeProperties">
+            <summary>
+            初始化属性
+            </summary>
+        </member>
         <member name="M:WeChatWASM.WXVideo._HandleCallBack(WeChatWASM.WXVideoCallback)">
             <summary>
             内部函数,请不要调用
             </summary>
             <param name="key"></param>
-        </member>
-        <member name="P:WeChatWASM.WXVideo.src">
-            <summary>
-            视频的资源地址
-            </summary>
-        </member>
-        <member name="P:WeChatWASM.WXVideo.poster">
-            <summary>
-            视频的封面
-            </summary>
         </member>
         <member name="P:WeChatWASM.WXVideo.x">
             <summary>
@@ -8645,9 +8662,69 @@
             视频的高度
             </summary>
         </member>
-        <member name="P:WeChatWASM.WXVideo.isPlaying">
+        <member name="P:WeChatWASM.WXVideo.src">
             <summary>
-            Gets a value indicating whether 是否正在播放
+            视频的资源地址
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.poster">
+            <summary>
+            视频的封面
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.live">
+            <summary>
+            是否为直播
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.objectFit">
+            <summary>
+            当视频大小与 video 容器大小不一致时，视频的表现形式
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.controls">
+            <summary>
+            是否显示默认播放控件（播放/暂停按钮、播放进度、时间）
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.showProgress">
+            <summary>
+            是否显示播放进度
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.showProgressInControlMode">
+            <summary>
+            在非全屏模式下，是否开启亮度和音量调节手势
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.backgroundColor">
+            <summary>
+            视频的背景色
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.obeyMuteSwitch">
+            <summary>
+            是否遵循系统静音开关
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.enableProgressGesture">
+            <summary>
+            是否开启控制进度的手势
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.enablePlayGesture">
+            <summary>
+            是否开启播放手势
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.WXVideo.showCenterPlayBtn">
+            <summary>
+            是否显示视频中间的播放按钮
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXVideo.Destroy">
+            <summary>
+            销毁当前实例
             </summary>
         </member>
         <member name="M:WeChatWASM.WXVideo.Play">
@@ -8655,44 +8732,31 @@
             播放视频
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OnPlay(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.Pause">
             <summary>
-            监听视频播放事件
+            暂停
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OffPlay(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.Stop">
             <summary>
-            取消监听视频播放事件,action 为空表示移除全部事件监听
+            停止视频
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OnEnded(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.Seek(System.Int32)">
             <summary>
-            监听视频播放到末尾事件
+            视频跳转
             </summary>
+            <param name="time">视频跳转到指定位置，单位为 s 秒</param>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OffEnded(System.Action)">
+        <member name="M:WeChatWASM.WXVideo.RequestFullScreen(System.Int32)">
             <summary>
-            取消监听视频播放到末尾事件
+            视频全屏
             </summary>
+            <param name="direction">设置全屏时视频的方向 0: 正常竖向, 90: 屏幕逆时针90度 . -90: 屏幕顺时针90度</param>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OnError(System.Action{WeChatWASM.WXVideoError})">
+        <member name="M:WeChatWASM.WXVideo.ExitFullScreen">
             <summary>
-            监听视频错误事件
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXVideo.OffError(System.Action{WeChatWASM.WXVideoError})">
-            <summary>
-            取消监听视频错误事件,action 为空表示移除全部事件监听
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXVideo.OnPause(System.Action)">
-            <summary>
-            监听视频暂停事件
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXVideo.OffPause(System.Action)">
-            <summary>
-            取消监听视频暂停事件,action 为空表示移除全部事件监听
+            视频退出全屏
             </summary>
         </member>
         <member name="M:WeChatWASM.WXVideo.OnWaiting(System.Action)">
@@ -8705,36 +8769,45 @@
             取消监听视频由于需要缓冲下一帧而停止时触发,action 为空表示移除全部事件监听
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.Destroy">
+        <member name="M:WeChatWASM.WXVideo.OnProgress(System.Action{WeChatWASM.WXVideoProgress})">
             <summary>
-            销毁当前实例
+            监听视频下载（缓冲）事件
+            </summary>
+            <param name="action"></param>
+        </member>
+        <member name="M:WeChatWASM.WXVideo.OffProgress(System.Action{WeChatWASM.WXVideoProgress})">
+            <summary>
+            取消监听视频下载（缓冲）事件 ,action 为空表示移除全部事件监听
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.ExitFullScreen">
+        <member name="M:WeChatWASM.WXVideo.OnPlay(System.Action)">
             <summary>
-            视频退出全屏
+            监听视频播放事件
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.Pause">
+        <member name="M:WeChatWASM.WXVideo.OffPlay(System.Action)">
             <summary>
-            暂停
+            取消监听视频播放事件,action 为空表示移除全部事件监听
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.RequestFullScreen(System.Int32)">
+        <member name="M:WeChatWASM.WXVideo.OnPause(System.Action)">
             <summary>
-            视频全屏
+            监听视频暂停事件
             </summary>
-            <param name="direction">设置全屏时视频的方向 0: 正常竖向, 90: 屏幕逆时针90度 . -90: 屏幕顺时针90度</param>
         </member>
-        <member name="M:WeChatWASM.WXVideo.Seek(System.Int32)">
+        <member name="M:WeChatWASM.WXVideo.OffPause(System.Action)">
             <summary>
-            视频跳转
+            取消监听视频暂停事件,action 为空表示移除全部事件监听
             </summary>
-            <param name="time">视频跳转到指定位置，单位为 s 秒</param>
         </member>
-        <member name="M:WeChatWASM.WXVideo.Stop">
+        <member name="M:WeChatWASM.WXVideo.OnEnded(System.Action)">
             <summary>
-            停止视频
+            监听视频播放到末尾事件
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXVideo.OffEnded(System.Action)">
+            <summary>
+            取消监听视频播放到末尾事件
             </summary>
         </member>
         <member name="M:WeChatWASM.WXVideo.OnTimeUpdate(System.Action{WeChatWASM.WXVideoTimeUpdate})">
@@ -8748,15 +8821,14 @@
             取消监听视频播放进度更新事件,action 为空表示移除全部事件监听
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OnProgress(System.Action{WeChatWASM.WXVideoProgress})">
+        <member name="M:WeChatWASM.WXVideo.OnError(System.Action{WeChatWASM.WXVideoError})">
             <summary>
-            监听视频下载（缓冲）事件
+            监听视频错误事件
             </summary>
-            <param name="action"></param>
         </member>
-        <member name="M:WeChatWASM.WXVideo.OffProgress(System.Action{WeChatWASM.WXVideoProgress})">
+        <member name="M:WeChatWASM.WXVideo.OffError(System.Action{WeChatWASM.WXVideoError})">
             <summary>
-            取消监听视频下载（缓冲）事件 ,action 为空表示移除全部事件监听
+            取消监听视频错误事件,action 为空表示移除全部事件监听
             </summary>
         </member>
         <member name="M:WeChatWASM.WXVideoDecoder.GetFrameData">
