@@ -7,98 +7,72 @@ export default {
         const id = uid();
         const params = formatJsonStr(conf);
         
-        if (params.underGameView) {
-            GameGlobal.enableTransparentCanvas = true;
-        }
+        
+        
+        
         videoList[id] = wx.createVideo(params);
         return id;
     },
     WXVideoSetProperty(id, key, value) {
+        console.log('WXVideoSetProperty', id, key, value);
         const obj = getObject(id);
+        console.log('obj', obj);
         if (!obj) {
             return;
         }
-        if (key === 'x' || key === 'y' || key === 'width' || key === 'height') {
+        if (key === 'x' || key === 'y' || key === 'width' || key === 'height' || key === 'initialTime' || key === 'playbackRate') {
             obj[key] = +value;
         }
-        else if (key === 'src' || key === 'poster') {
+        else if (key === 'src' || key === 'poster' || key === 'objectFit' || key === 'backgroundColor') {
             obj[key] = value;
         }
-    },
-    WXVideoPlay(id) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
+        else if (key === 'live' || key === 'controls' || key === 'showProgress' || key === 'showProgressInControlMode'
+            || key === 'autoplay' || key === 'loop' || key === 'muted' || key === 'obeyMuteSwitch'
+            || key === 'enableProgressGesture' || key === 'enablePlayGesture' || key === 'showCenterPlayBtn') {
+            obj[key] = value === 'true';
         }
-        obj.play();
     },
     WXVideoAddListener(id, key) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj[key]((e) => {
+        getObject(id)?.[key]((e) => {
             moduleHelper.send('OnVideoCallback', JSON.stringify({
                 callbackId: id,
-                errMsg: key,
+                type: key,
                 position: e && e.position,
                 buffered: e && e.buffered,
                 duration: e && e.duration,
+                errMsg: e && e.errMsg,
             }));
             if (key === 'onError') {
-                GameGlobal.enableTransparentCanvas = false;
+                
                 console.error(e);
             }
         });
     },
-    WXVideoDestroy(id) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.destroy();
-        GameGlobal.enableTransparentCanvas = false;
+    WXVideoRemoveListener(id, key) {
+        getObject(id)?.[key]();
     },
-    WXVideoExitFullScreen(id) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.exitFullScreen();
+    WXVideoDestroy(id) {
+        getObject(id)?.destroy();
+        
+        
+        
+    },
+    WXVideoPlay(id) {
+        getObject(id)?.play();
     },
     WXVideoPause(id) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.pause();
-    },
-    WXVideoRequestFullScreen(id, direction) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.requestFullScreen(direction);
-    },
-    WXVideoSeek(id, time) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.seek(time);
+        getObject(id)?.pause();
     },
     WXVideoStop(id) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj.stop();
+        getObject(id)?.stop();
     },
-    WXVideoRemoveListener(id, key) {
-        const obj = getObject(id);
-        if (!obj) {
-            return;
-        }
-        obj[key]();
+    WXVideoSeek(id, time) {
+        getObject(id)?.seek(time);
+    },
+    WXVideoRequestFullScreen(id, direction) {
+        getObject(id)?.requestFullScreen(direction);
+    },
+    WXVideoExitFullScreen(id) {
+        getObject(id)?.exitFullScreen();
     },
 };

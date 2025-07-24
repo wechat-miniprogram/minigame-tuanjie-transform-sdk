@@ -47,10 +47,6 @@
       {
         "type": "suffix",
         "value": ".symbols.unityweb"
-      },
-      {
-        "type": "suffix",
-        "value": ".symbols.unityweb.br"
       }
     ]
   },

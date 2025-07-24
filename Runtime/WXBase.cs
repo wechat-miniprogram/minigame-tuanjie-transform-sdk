@@ -535,7 +535,7 @@ namespace WeChatWASM
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        public static WXVideo CreateVideo(WXCreateVideoParam param)
+        public static WXVideo CreateVideo(CreateVideoOption param)
         {
             return WXSDKManagerHandler.Instance.CreateVideo(param);
         }
@@ -1125,6 +1125,15 @@ namespace WeChatWASM
         public static void NotifyMiniProgramPlayableStatus(NotifyMiniProgramPlayableStatusOption option)
         {
             WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
+        }
+#endregion
+#region 虚拟支付
+        /// <summary>
+        /// 请求虚拟支付
+        /// </summary>
+        public static void RequestVirtualPayment(RequestVirtualPaymentOption option)
+        {
+            WXSDKManagerHandler.Instance.RequestVirtualPayment(option);
         }
 #endregion
     }

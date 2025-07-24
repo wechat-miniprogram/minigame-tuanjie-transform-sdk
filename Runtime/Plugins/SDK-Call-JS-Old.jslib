@@ -416,7 +416,7 @@ mergeInto(LibraryManager.library, {
     WXVideoPlay: function(id) {
         window.WXWASMSDK.WXVideoPlay(_WXPointer_stringify_adaptor(id));
     },
-    WXVideoAddListener: function(id,key) {
+    WXVideoAddListener: function(id, key) {
         window.WXWASMSDK.WXVideoAddListener(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(key));
     },
     WXVideoDestroy: function(id) {
