@@ -7,9 +7,9 @@ export default {
         const id = uid();
         const params = formatJsonStr(conf);
         
-        
-        
-        
+        if (params.underGameView) {
+            GameGlobal.enableTransparentCanvas = true;
+        }
         videoList[id] = wx.createVideo(params);
         return id;
     },
@@ -43,7 +43,7 @@ export default {
                 errMsg: e && e.errMsg,
             }));
             if (key === 'onError') {
-                
+                GameGlobal.enableTransparentCanvas = false;
                 console.error(e);
             }
         });
@@ -51,11 +51,11 @@ export default {
     WXVideoRemoveListener(id, key) {
         getObject(id)?.[key]();
     },
-    WXVideoDestroy(id) {
+    WXVideoDestroy(id, isLast) {
         getObject(id)?.destroy();
-        
-        
-        
+        if (isLast) {
+            GameGlobal.enableTransparentCanvas = false;
+        }
     },
     WXVideoPlay(id) {
         getObject(id)?.play();

@@ -1860,6 +1860,21 @@
             视频的左上角纵坐标
             </summary>
         </member>
+        <member name="F:WeChatWASM.CreateVideoOption.underGameView">
+            <summary>
+            视频是否显示在游戏画布之下
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.autoPauseIfNavigate">
+            <summary>
+            视频跳转后自动暂停播放
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CreateVideoOption.autoPauseIfOpenNative">
+            <summary>
+            视频跳转原生页后自动暂停播放
+            </summary>
+        </member>
         <member name="F:WeChatWASM.EnvVersion.develop">
             <summary>
             开发版

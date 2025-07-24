@@ -419,8 +419,8 @@ mergeInto(LibraryManager.library, {
     WXVideoAddListener: function(id, key) {
         window.WXWASMSDK.WXVideoAddListener(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(key));
     },
-    WXVideoDestroy: function(id) {
-        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id));
+    WXVideoDestroy: function(id, isLast) {
+        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id), isLast);
     },
     WXVideoExitFullScreen: function(id) {
         window.WXWASMSDK.WXVideoExitFullScreen(_WXPointer_stringify_adaptor(id));
