@@ -648,6 +648,11 @@
             是否使用iOS高性能Plus
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enableiOSMetal">
+            <summary>
+            是否使用iOS metal指令流
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
             <summary>
             是否使用brotli多线程压缩

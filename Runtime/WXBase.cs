@@ -1127,6 +1127,15 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
         }
 #endregion
+#region 虚拟支付
+        /// <summary>
+        /// 请求虚拟支付
+        /// </summary>
+        public static void RequestVirtualPayment(RequestVirtualPaymentOption option)
+        {
+            WXSDKManagerHandler.Instance.RequestVirtualPayment(option);
+        }
+#endregion
     }
 }
 #endif
