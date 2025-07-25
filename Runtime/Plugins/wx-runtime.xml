@@ -3125,6 +3125,26 @@
              是否结束
             </summary>
         </member>
+        <member name="F:WeChatWASM.LoadOption.openlink">
+            <summary>
+            从不同渠道获得的OPENLINK字符串
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.LoadOption.query">
+            <summary>
+            选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShowOption.openlink">
+            <summary>
+            从不同渠道获得的OPENLINK字符串
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShowOption.query">
+            <summary>
+            选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
+            </summary>
+        </member>
         <member name="F:WeChatWASM.VirtualPaymentError.errMsg">
             错误信息
             
@@ -4211,26 +4231,6 @@
             <summary>
             需要基础库： `2.3.2`
             取值为0/1，取值为0表示会把 `App`、`Page` 的生命周期函数和 `wx` 命名空间下的函数调用写入日志，取值为1则不会。默认值是 0
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.LoadOption.openlink">
-            <summary>
-            从不同渠道获得的OPENLINK字符串
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.LoadOption.query">
-            <summary>
-            选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.ShowOption.openlink">
-            <summary>
-            从不同渠道获得的OPENLINK字符串
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.ShowOption.query">
-            <summary>
-            选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
             </summary>
         </member>
         <member name="F:WeChatWASM.OnCheckForUpdateListenerResult.hasUpdate">

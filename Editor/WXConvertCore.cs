@@ -1379,8 +1379,7 @@ namespace WeChatWASM
             var buildTemplate = new BuildTemplate(
                 Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir),
                 Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
-                Path.Combine(config.ProjectConf.DST, miniGameDir),
-                true
+                Path.Combine(config.ProjectConf.DST, miniGameDir)
                 );
             buildTemplate.start();
             // FIX: 2021.2版本生成symbol有bug，导出时生成symbol报错，有symbol才copy
@@ -1519,7 +1518,7 @@ namespace WeChatWASM
             var shortFilename = filename.Substring(filename.IndexOf('.') + 1);
 
             // 如果code没有发生过变化，且压缩方式不变，则不再进行br压缩
-            if (File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
+            if (cachePath.Contains("wasm.code") && File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
             {
                 File.Copy(cachePath, targetPath, true);
                 return 0;
@@ -2015,6 +2014,8 @@ namespace WeChatWASM
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
+                // Perfstream，暂时设为false
+                "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
