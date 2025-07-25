@@ -107,6 +107,14 @@ namespace WeChatWASM
                 return config.CompileOptions.enableiOSMetal;
             }
         }
+        // 用于replaceRules判断是否需要注入相关的修改
+        public static bool UseEmscriptenGLX
+        {
+            get
+            {
+                return config.CompileOptions.enableEmscriptenGLX;
+            }
+        }
         // public static void SetPlayableEnabled(bool enabled)
         // {
         //     isPlayableBuild = enabled;
@@ -126,6 +134,8 @@ namespace WeChatWASM
             }
             // iOS metal 的相关特性
             ProcessWxiOSMetalBinaries();
+            // emscriptenglx的相关特性
+            ProcessWxEmscriptenGLXBinaries();
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -369,6 +379,39 @@ namespace WeChatWASM
                 SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
             }
             AssetDatabase.Refresh();
+        }
+
+        private static void ProcessWxEmscriptenGLXBinaries()
+        {
+            string[] glLibs;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                glLibs = new string[]
+                {
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx.a",
+                };
+            }
+            else
+            {
+                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                glLibs = new string[]
+                {
+                    $"{glLibRootDir}libemscriptenglx.a",
+                };
+            }
+            for (int i = 0; i < glLibs.Length; i++)
+            {
+                var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableEmscriptenGLX);
+                #else
+                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
+                #endif
+                importer.SaveAndReimport();
+                // SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
+            }
+            // AssetDatabase.Refresh();
         }
 
         /**
@@ -1518,7 +1561,7 @@ namespace WeChatWASM
             var shortFilename = filename.Substring(filename.IndexOf('.') + 1);
 
             // 如果code没有发生过变化，且压缩方式不变，则不再进行br压缩
-            if (File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
+            if (cachePath.Contains("wasm.code") && File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
             {
                 File.Copy(cachePath, targetPath, true);
                 return 0;
@@ -1966,7 +2009,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.enableiOSMetal ? "5" : (config.CompileOptions.Webgl2 ? "2" : "1"),
+                config.CompileOptions.Webgl2 ? "2" : "1",
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
@@ -2015,7 +2058,9 @@ namespace WeChatWASM
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
                 // Perfstream，暂时设为false
-                "false"
+                "false",
+                config.CompileOptions.enableEmscriptenGLX ? "true" : "false",
+                config.CompileOptions.enableiOSMetal ? "true" : "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
