@@ -408,10 +408,10 @@ namespace WeChatWASM
                 #else
                     importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
                 #endif
-                importer.SaveAndReimport();
-                // SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
+                // importer.SaveAndReimport();
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
             }
-            // AssetDatabase.Refresh();
+            AssetDatabase.Refresh();
         }
 
         /**
