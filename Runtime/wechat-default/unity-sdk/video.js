@@ -37,10 +37,10 @@ export default {
             moduleHelper.send('OnVideoCallback', JSON.stringify({
                 callbackId: id,
                 type: key,
-                position: e && e.position,
-                buffered: e && e.buffered,
-                duration: e && e.duration,
-                errMsg: e && e.errMsg,
+                position: e?.position,
+                buffered: e?.buffered ? Number(e.buffered) : undefined,
+                duration: e?.duration,
+                errMsg: e?.errMsg,
             }));
             if (key === 'onError') {
                 GameGlobal.enableTransparentCanvas = false;
