@@ -2015,6 +2015,8 @@ namespace WeChatWASM
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
+                // Perfstream，暂时设为false
+                "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
