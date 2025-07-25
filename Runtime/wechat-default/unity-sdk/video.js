@@ -14,9 +14,7 @@ export default {
         return id;
     },
     WXVideoSetProperty(id, key, value) {
-        console.log('WXVideoSetProperty', id, key, value);
         const obj = getObject(id);
-        console.log('obj', obj);
         if (!obj) {
             return;
         }
@@ -29,7 +27,7 @@ export default {
         else if (key === 'live' || key === 'controls' || key === 'showProgress' || key === 'showProgressInControlMode'
             || key === 'autoplay' || key === 'loop' || key === 'muted' || key === 'obeyMuteSwitch'
             || key === 'enableProgressGesture' || key === 'enablePlayGesture' || key === 'showCenterPlayBtn') {
-            obj[key] = value === 'true';
+            obj[key] = value === 'True';
         }
     },
     WXVideoAddListener(id, key) {
