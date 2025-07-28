@@ -7,19 +7,14 @@ mergeInto(LibraryManager.library, {
         const targetBuffer =
             binaryData.buffer.slice(binaryData.byteOffset, binaryData.byteOffset + binaryData.byteLength);
         //console.log("processBinaryData invoke");
-        const extBuffer = new ArrayBuffer(1);   
-        const headerBuffer = new ArrayBuffer(8);
-        const headerBufferView = new DataView(headerBuffer);    
-        headerBufferView.setUint32(0, 0xDEC0DE, true);
-        headerBufferView.setUint32(4, mtl.ctx.__uid(), true);   
-        const merged = new Uint8Array(headerBuffer.byteLength + targetBuffer.byteLength);   
-        merged.set(new Uint8Array(headerBuffer), 0);
-        merged.set(new Uint8Array(targetBuffer), headerBuffer.byteLength);  
+        const extBuffer = new ArrayBuffer(1); 
+
+
         if(!isSync){
-            mtl.batchRenderAsync(merged.buffer, extBuffer); 
+            mtl.batchRenderAsync(targetBuffer.buffer, extBuffer); 
             return null;
         }
-        const result = mtl.batchRender(merged.buffer, extBuffer).buffer;
+        const result = mtl.batchRender(targetBuffer.buffer, extBuffer).buffer;
         if(result.byteLength == 0){
             return null;;
         }
