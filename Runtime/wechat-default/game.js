@@ -52,8 +52,7 @@ checkVersion().then((enable) => {
                     canvas,
                     events: GameGlobal.events,
                     WXWASMSDK: GameGlobal.WXWASMSDK,
-                    isSupportEmscriptenGLX: wx.env.isSuppportEmscriptenGLX || wx.env.isSupportEmscriptenGLX || false,
-                    isSupportMetal: wx.env.isSupportMetal || false,
+                    wxEnv: wx.env ?? {},
                 },
             }).default;
         }
