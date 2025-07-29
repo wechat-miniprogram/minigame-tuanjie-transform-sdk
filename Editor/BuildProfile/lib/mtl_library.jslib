@@ -9,12 +9,11 @@ mergeInto(LibraryManager.library, {
         //console.log("processBinaryData invoke");
         const extBuffer = new ArrayBuffer(1); 
 
-
         if(!isSync){
-            mtl.batchRenderAsync(targetBuffer.buffer, extBuffer); 
+            mtl.batchRenderAsync(targetBuffer, extBuffer); 
             return null;
         }
-        const result = mtl.batchRender(targetBuffer.buffer, extBuffer).buffer;
+        const result = mtl.batchRender(targetBuffer, extBuffer).buffer;
         if(result.byteLength == 0){
             return null;;
         }
