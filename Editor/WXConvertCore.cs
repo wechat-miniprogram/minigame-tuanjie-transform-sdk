@@ -120,7 +120,8 @@ namespace WeChatWASM
             CheckBuildTarget();
             Init();
             // 可能有顺序要求？如果没要求，可挪到此函数外
-            if (!isPlayableBuild) {
+            if (!isPlayableBuild)
+            {
                 ProcessWxPerfBinaries();
             }
             // iOS metal 的相关特性
@@ -410,7 +411,7 @@ namespace WeChatWASM
             return true;
         }
 
-        private static void ProcessWxiOSMetalBinaries() 
+        private static void ProcessWxiOSMetalBinaries()
         {
             string[] glLibs;
             string DS = WXAssetsTextTools.DS;
@@ -434,11 +435,11 @@ namespace WeChatWASM
             for (int i = 0; i < glLibs.Length; i++)
             {
                 var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
-                #if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                     importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableiOSMetal);
-                #else
-                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableiOSMetal);
-                #endif
+#else
+                importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableiOSMetal);
+#endif
                 // importer.SaveAndReimport();
                 SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableiOSMetal);
             }
@@ -577,7 +578,7 @@ namespace WeChatWASM
                 }
                 else
                 {
-                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal });
+                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES2 });
                 }
             }
             else 
@@ -1254,7 +1255,8 @@ namespace WeChatWASM
 
         public static void convertDataPackageJS()
         {
-            if (!isPlayableBuild) {
+            if (!isPlayableBuild)
+            {
                 checkNeedRmovePackageParallelPreload();
             }
 
@@ -1377,8 +1379,7 @@ namespace WeChatWASM
             var buildTemplate = new BuildTemplate(
                 Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir),
                 Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
-                Path.Combine(config.ProjectConf.DST, miniGameDir),
-                true
+                Path.Combine(config.ProjectConf.DST, miniGameDir)
                 );
             buildTemplate.start();
             // FIX: 2021.2版本生成symbol有bug，导出时生成symbol报错，有symbol才copy
@@ -1517,7 +1518,7 @@ namespace WeChatWASM
             var shortFilename = filename.Substring(filename.IndexOf('.') + 1);
 
             // 如果code没有发生过变化，且压缩方式不变，则不再进行br压缩
-            if (File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
+            if (cachePath.Contains("wasm.code") && File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
             {
                 File.Copy(cachePath, targetPath, true);
                 return 0;
@@ -1710,7 +1711,8 @@ namespace WeChatWASM
             content = content.Replace("$unityVersion$", Application.unityVersion);
             File.WriteAllText(Path.Combine(dst, "unity-sdk", "index.js"), content, Encoding.UTF8);
             // content = File.ReadAllText(Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "storage.js"), Encoding.UTF8);
-            if (!isPlayableBuild) {
+            if (!isPlayableBuild)
+            {
                 content = File.ReadAllText(Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir, "unity-sdk", "storage.js"), Encoding.UTF8);
                 var PreLoadKeys = config.PlayerPrefsKeys.Count > 0 ? JsonMapper.ToJson(config.PlayerPrefsKeys) : "[]";
                 content = content.Replace("'$PreLoadKeys'", PreLoadKeys);
@@ -2012,11 +2014,14 @@ namespace WeChatWASM
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
+                // Perfstream，暂时设为false
+                "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
             List<string> files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js", "unity-sdk/font/index.js" };
-            if (isPlayableBuild) {
+            if (isPlayableBuild)
+            {
                 files = new List<string> { "game.js", "game.json", "project.config.json", "unity-namespace.js", "check-version.js" };
             }
 

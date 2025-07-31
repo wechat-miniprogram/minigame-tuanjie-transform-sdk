@@ -21,6 +21,9 @@ function getOpenDataContext(mode) {
     }
     
     if (!isSupportSharedCanvasMode) {
+        if (mode === 'ScreenCanvas') {
+            console.warn('[unity-sdk]: 当前环境不支持 ScreenCanvas 模式');
+        }
         sharedCanvasMode = SharedCanvasMode.OffScreenCanvas;
     }
     
@@ -32,6 +35,7 @@ function getOpenDataContext(mode) {
             sharedCanvasMode = SharedCanvasMode.OffScreenCanvas;
         }
     }
+    console.log(`[unity-sdk]: 当前开放数据域为 ${sharedCanvasMode} 模式`);
     // @ts-ignore
     cachedOpenDataContext = wx.getOpenDataContext({
         sharedCanvasMode,
@@ -121,6 +125,10 @@ export default {
             console.error('[unity-sdk]: WXShowOpenData要求 width 和 height 参数必须大于0');
         }
         
+        if (!cachedOpenDataContext) {
+            console.warn('[unity-sdk]: 请先调用 WXGetOpenDataContext');
+        }
+        
         const openDataContext = getOpenDataContext();
         const sharedCanvas = openDataContext.canvas;
         sharedCanvas.width = width;
@@ -146,6 +154,10 @@ export default {
     },
     WXHideOpenData() {
         debugLog('WXHideOpenData');
+        if (!cachedOpenDataContext) {
+            console.warn('[unity-sdk]: 请先调用 WXGetOpenDataContext');
+            return;
+        }
         getOpenDataContext().postMessage({
             type: 'WXDestroy',
         });
