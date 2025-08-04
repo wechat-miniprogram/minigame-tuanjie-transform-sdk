@@ -1,4 +1,4 @@
-
+/* eslint-disable indent */
 import moduleHelper from './module-helper';
 import { uid, formatResponse, formatJsonStr, stringifyRes } from './utils';
 const onEventLists = {};
@@ -58,15 +58,29 @@ export default {
         const lowerFunctionName = functionName.replace(/^\w/, (a) => a.toLowerCase());
         const config = formatJsonStr(conf);
         // specialJS
-        if (lowerFunctionName === 'login') {
-            if (!config.timeout) {
-                delete config.timeout;
-            }
-        }
-        else if (lowerFunctionName === 'reportScene') {
-            if (GameGlobal.manager && GameGlobal.manager.setGameStage) {
-                GameGlobal.manager.setGameStage(config.sceneId);
-            }
+        switch (lowerFunctionName) {
+            case 'login':
+                if (!config.timeout) {
+                    delete config.timeout;
+                }
+                break;
+            case 'reportScene':
+                if (GameGlobal.manager && GameGlobal.manager.setGameStage) {
+                    GameGlobal.manager.setGameStage(config.sceneId);
+                }
+                break;
+            case 'requestMidasPayment':
+                if (config.extraInfo) {
+                    try {
+                        config.extraInfo = JSON.parse(config.extraInfo);
+                    }
+                    catch (e) {
+                        console.error('requestMidasPayment parse extraInfo error: ', e);
+                    }
+                }
+                break;
+            default:
+                break;
         }
         wx[lowerFunctionName]({
             ...config,
