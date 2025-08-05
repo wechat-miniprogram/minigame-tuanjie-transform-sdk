@@ -2,10 +2,7 @@ mergeInto(LibraryManager.library, {
     // 定义供 C/C++ 调用的 JS 函数  
     js_batchRender_malloc: function(data, size, isSync) {
         // 直接从 WASM 内存创建视图（零拷贝）
-        const binaryData = new Uint8Array(Module.HEAPU8.buffer, data, size);
-        // 转换为标准 ArrayBuffer（如果需要复制）
-        const targetBuffer =
-            binaryData.buffer.slice(binaryData.byteOffset, binaryData.byteOffset + binaryData.byteLength);
+        const targetBuffer = new Uint8Array(Module.HEAPU8.buffer, data, size);
         //console.log("processBinaryData invoke");
         const extBuffer = new ArrayBuffer(1); 
 
@@ -13,9 +10,13 @@ mergeInto(LibraryManager.library, {
             mtl.batchRenderAsync(targetBuffer, extBuffer); 
             return null;
         }
-        const result = mtl.batchRender(targetBuffer, extBuffer).buffer;
-        if(result.byteLength == 0){
-            return null;;
+        const response = mtl.batchRender(targetBuffer, extBuffer);
+        if (!response) {
+          return null;
+        }
+        const result = response.buffer;
+        if(!result || result.byteLength == 0){
+            return null;
         }
         // 申请内存空间,后续在cpp wasm部分使用，记得释放
         const ptr = Module._malloc(result.byteLength);
