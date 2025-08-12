@@ -6,6 +6,15 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2025-8-12 v0.1.28 【重要更新】
+### Feature
+* 普通：PageManager.Show支持Promise
+* 普通：性能工具实时数据流支持
+* 普通：适配插件版本升至1.2.79
+### Fixed
+* 重要：修复Touch时进行IOS音频resume造成的卡顿问题
+* 重要：UnityWebRequest、AssetBundle、Addressables等加载已缓存资源时，读文件报错导致游戏异常
+
 ## 2025-7-10 v0.1.27 【普通更新】
 ### Feature
 * 普通：新增 JS_Sound_GetPosition 方法用于获取音频播放位置
