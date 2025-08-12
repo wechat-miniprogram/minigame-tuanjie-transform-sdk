@@ -880,6 +880,22 @@ namespace WeChatWASM
                 }
             }
 
+            {
+                Rule[] rules =
+                {
+                    new Rule()
+                    {
+                        old = "if (GameGlobal.unityNamespace.enableProfileStats)", 
+                        newStr = "if (GameGlobal.unityNamespace.enableProfileStats || (typeof GameGlobal.manager.getWXAppCheatMonitor === 'function' && GameGlobal.manager.getWXAppCheatMonitor().shouldForceShowPerfMonitor()))"
+                    }
+                };
+                foreach (var rule in rules)
+                {
+                    text = text.Replace(rule.old, rule.newStr);
+                }
+            }
+
+
             File.WriteAllText(targetPath, text, new UTF8Encoding(false));
 
             UnityEngine.Debug.LogFormat("[Converter]  adapt framework done! ");
