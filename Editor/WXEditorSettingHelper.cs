@@ -186,6 +186,7 @@ namespace WeChatWASM
                 this.formCheckbox("webgl2", "WebGL2.0(beta)");
                 this.formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
                 this.formCheckbox("EmscriptenGLX", "EmscriptenGLX(?)", "是否使用EmscriptenGLX渲染方案");
+                // this.formCheckbox("iOSMetal", "iOSMetal(?)", "是否使用iOSMetal渲染方案，需要开启iOS高性能+模式，有助于提升运行性能，降低iOS功耗");
                 this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
                 this.formCheckbox("cleanBuild", "Clean WebGL Build");
                 // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
@@ -448,6 +449,7 @@ namespace WeChatWASM
             this.setData("customNodePath", config.CompileOptions.CustomNodePath);
             this.setData("webgl2", config.CompileOptions.Webgl2);
             this.setData("iOSPerformancePlus", config.CompileOptions.enableIOSPerformancePlus);
+            this.setData("iOSMetal", config.CompileOptions.enableiOSMetal);
             this.setData("EmscriptenGLX", config.CompileOptions.enableEmscriptenGLX);
             this.setData("fbslim", config.CompileOptions.fbslim);
             this.setData("useFriendRelation", config.SDKOptions.UseFriendRelation);
@@ -527,6 +529,7 @@ namespace WeChatWASM
             config.CompileOptions.CustomNodePath = this.getDataInput("customNodePath");
             config.CompileOptions.Webgl2 = this.getDataCheckbox("webgl2");
             config.CompileOptions.enableIOSPerformancePlus = this.getDataCheckbox("iOSPerformancePlus");
+            config.CompileOptions.enableiOSMetal = this.getDataCheckbox("iOSMetal");
             config.CompileOptions.enableEmscriptenGLX = this.getDataCheckbox("EmscriptenGLX");
             config.CompileOptions.fbslim = this.getDataCheckbox("fbslim");
             config.SDKOptions.UseFriendRelation = this.getDataCheckbox("useFriendRelation");

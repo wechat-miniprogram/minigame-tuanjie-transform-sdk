@@ -27,7 +27,11 @@ const managerConfig = {
         '$PRELOAD_LIST',
     ],
     contextConfig: {
-        contextType: $WEBGL_VERSION, // 1: webgl1, 2: webgl2, 3: wxwebgl, 4: wxwebgl2, 5: wxmetal
+        contextType: $WEBGL_VERSION,
+        contextExt: {
+            enableGLX: $ENABLE_GLX,
+            enableMetal: $ENABLE_METAL,
+        }
     },
     PROFILER_UPLOAD_URL: '',
 };
@@ -48,7 +52,6 @@ checkVersion().then((enable) => {
                     canvas,
                     events: GameGlobal.events,
                     WXWASMSDK: GameGlobal.WXWASMSDK,
-                    isSupportEmscriptenGLX: wx.env.isSuppportEmscriptenGLX || wx.env.isSupportEmscriptenGLX || false,
                 },
             }).default;
         }
