@@ -879,7 +879,7 @@ namespace WeChatWASM
                     }
                 }
             }
-/*
+
             {
                 Rule[] rules =
                 {
@@ -894,7 +894,7 @@ namespace WeChatWASM
                     text = text.Replace(rule.old, rule.newStr);
                 }
             }
-*/
+
 
             File.WriteAllText(targetPath, text, new UTF8Encoding(false));
 
