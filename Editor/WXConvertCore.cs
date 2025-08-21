@@ -390,27 +390,47 @@ namespace WeChatWASM
                 glLibs = new string[]
                 {
                 $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx.a",
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx_2021.a",
                 };
             }
             else
             {
                 string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+
+                // 下方顺序不要变动
                 glLibs = new string[]
                 {
                     $"{glLibRootDir}libemscriptenglx.a",
+                    $"{glLibRootDir}libemscriptenglx_2021.a",
                 };
             }
-            for (int i = 0; i < glLibs.Length; i++)
+
             {
-                var importer = AssetImporter.GetAtPath(glLibs[i]) as PluginImporter;
+                // unity2022, tuanjie lib引入
+                bool showEnableGLX2022Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202203OrNewer();
+
+                var glx2022Importer = AssetImporter.GetAtPath(glLibs[0]) as PluginImporter;
                 #if PLATFORM_WEIXINMINIGAME
-                    importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enableEmscriptenGLX);
+                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2022Plugin);
                 #else
-                    importer.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enableEmscriptenGLX);
+                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
                 #endif
-                // importer.SaveAndReimport();
-                SetPluginCompatibilityByModifyingMetadataFile(glLibs[i], config.CompileOptions.enableEmscriptenGLX);
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[0], showEnableGLX2022Plugin);
             }
+            
+            {
+                // unity2021 lib引入
+                bool showEnableGLX2021Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202102To202203();
+
+                var glx2021Importer = AssetImporter.GetAtPath(glLibs[1]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2021Plugin);
+                #else
+                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
+                #endif
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[1], showEnableGLX2021Plugin);
+            }
+
             AssetDatabase.Refresh();
         }
 
