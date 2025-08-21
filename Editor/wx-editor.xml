@@ -653,6 +653,7 @@
             是否使用iOS metal指令流
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.CompileOptions.enableEmscriptenGLX" -->
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
             <summary>
             是否使用brotli多线程压缩
