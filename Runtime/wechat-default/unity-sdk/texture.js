@@ -34,19 +34,13 @@ wx.starDownloadTexture = function () {
         }
     }
 };
-const contextTypeMap = {
-    1: 'webgl',
-    2: 'webgl2',
-    3: 'wxwebgl',
-    4: 'wxwebgl2',
-};
 const mod = {
     getSupportedExtensions() {
         if (hasCheckSupportedExtensions) {
             return GameGlobal.TextureCompressedFormat;
         }
         const list = canvas
-            .getContext(contextTypeMap[GameGlobal.managerConfig.contextConfig.contextType])
+            .getContext(GameGlobal.managerConfig.contextConfig.contextType === 2 ? 'webgl2' : 'webgl')
             .getSupportedExtensions();
         const noneLimitSupportedTextures = ['']; // 兜底采用png
         GameGlobal.TextureCompressedFormat = '';

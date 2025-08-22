@@ -45,7 +45,7 @@ const isIOSWebgl2SystemVersionValid = compareVersion(systemVersion, '15.0') || G
 // Android客户端版本>=8.0.19支持webgl2
 const isAndroidWebGL2ClientVersionValid = compareVersion(version, '8.0.19');
 // 是否用了webgl2
-const isWebgl2 = () => GameGlobal.managerConfig.contextConfig.contextType === 2 || GameGlobal.managerConfig.contextConfig.contextType === 4;
+const isWebgl2 = () => GameGlobal.managerConfig.contextConfig.contextType === 2;
 // 是否支持BufferURL
 export const isSupportBufferURL = !isPc
     && (isH5Renderer

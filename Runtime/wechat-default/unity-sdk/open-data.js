@@ -56,7 +56,7 @@ function hookUnityRender() {
     const isLinearColorSpace = GameGlobal.unityNamespace.unityColorSpace === 'Linear';
     
     if (gl.emscriptenGLX) {
-        Module.ccall('showOpenData', null, ['number', 'number', 'bool'], [textureId, getSharedCanvas().__uid(), isLinearColorSpace]);
+        Module.ccall('glxShowOpenData', null, ['number', 'number', 'bool'], [textureId, getSharedCanvas().__uid(), isLinearColorSpace]);
     }
     else {
         
@@ -93,7 +93,7 @@ function stopHookUnityRender() {
     const gl = GL.currentContext.GLctx;
     
     if (gl.emscriptenGLX) {
-        Module.ccall('hideOpenData', null, [], []);
+        Module.ccall('glxHideOpenData', null, [], []);
     }
 }
 wx.onShow(() => {
