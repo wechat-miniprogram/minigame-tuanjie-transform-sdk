@@ -535,7 +535,7 @@ namespace WeChatWASM
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        public static WXVideo CreateVideo(CreateVideoOption param)
+        public static WXVideo CreateVideo(WXCreateVideoParam param)
         {
             return WXSDKManagerHandler.Instance.CreateVideo(param);
         }
@@ -1127,15 +1127,6 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
         }
 #endregion
-#region 虚拟支付
-        /// <summary>
-        /// 请求虚拟支付
-        /// </summary>
-        public static void RequestVirtualPayment(RequestVirtualPaymentOption option)
-        {
-            WXSDKManagerHandler.Instance.RequestVirtualPayment(option);
-        }
-#endregion
 
         /// <summary>
         /// [[PageManager](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/PageManager.html) wx.createPageManager()](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html)
@@ -1161,6 +1152,12 @@ namespace WeChatWASM
         public static WXPageManager CreatePageManager()
         {
             return WXSDKManagerHandler.Instance.CreatePageManager();
+        }
+
+        /// <returns></returns>
+        public static WXMiniReportManager GetMiniReportManager(GetMiniReportManagerParam param)
+        {
+            return WXSDKManagerHandler.Instance.GetMiniReportManager(param);
         }
     }
 }

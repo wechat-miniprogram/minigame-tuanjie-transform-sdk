@@ -1018,9 +1018,6 @@ export default {
         if (WEBAudio.audioWebSupport === 0 || WEBAudio.audioWebEnabled === 0) {
             return;
         }
-        if (WEBAudio.audioContext && WEBAudio.audioContext.state !== 'suspended') {
-            return;
-        }
         resumeWebAudio();
     },
     _JS_Sound_Set3D(channelInstance, threeD) {

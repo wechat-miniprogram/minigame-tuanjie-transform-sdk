@@ -31,6 +31,8 @@ const onlyReadyResponse = [
     'getSystemSetting',
     'getAppAuthorizeSetting',
 ];
+
+const needParseJson = ['WXMiniReportManagerReport'];
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_SyncFunction(functionName, ...params) {
     return wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
@@ -391,6 +393,10 @@ export default {
         WX_ClassOneWayNoFunction(className, functionName, id);
     },
     WX_ClassOneWayNoFunction_vs(className, functionName, id, param1) {
+        if (needParseJson.includes(className + functionName)) {
+            // eslint-disable-next-line no-param-reassign
+            param1 = JSON.parse(param1);
+        }
         WX_ClassOneWayNoFunction(className, functionName, id, param1);
     },
     WX_ClassOneWayNoFunction_t(className, functionName, returnType, id) {

@@ -880,22 +880,6 @@ namespace WeChatWASM
                 }
             }
 
-            {
-                Rule[] rules =
-                {
-                    new Rule()
-                    {
-                        old = "if (GameGlobal.unityNamespace.enableProfileStats)",
-                        newStr = "if (GameGlobal.unityNamespace.enableProfileStats || (typeof GameGlobal.manager.getWXAppCheatMonitor === 'function' && GameGlobal.manager.getWXAppCheatMonitor().shouldForceShowPerfMonitor()))"
-                    }
-                };
-                foreach (var rule in rules)
-                {
-                    text = text.Replace(rule.old, rule.newStr);
-                }
-            }
-
-
             File.WriteAllText(targetPath, text, new UTF8Encoding(false));
 
             UnityEngine.Debug.LogFormat("[Converter]  adapt framework done! ");
@@ -1395,7 +1379,8 @@ namespace WeChatWASM
             var buildTemplate = new BuildTemplate(
                 Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir),
                 Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
-                Path.Combine(config.ProjectConf.DST, miniGameDir)
+                Path.Combine(config.ProjectConf.DST, miniGameDir),
+                true
                 );
             buildTemplate.start();
             // FIX: 2021.2版本生成symbol有bug，导出时生成symbol报错，有symbol才copy
@@ -1534,7 +1519,7 @@ namespace WeChatWASM
             var shortFilename = filename.Substring(filename.IndexOf('.') + 1);
 
             // 如果code没有发生过变化，且压缩方式不变，则不再进行br压缩
-            if (cachePath.Contains("wasm.code") && File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
+            if (File.Exists(cachePath) && lastBrotliType == config.CompileOptions.brotliMT)
             {
                 File.Copy(cachePath, targetPath, true);
                 return 0;
@@ -2030,8 +2015,6 @@ namespace WeChatWASM
                 config.CompileOptions.enablePerfAnalysis ? "true" : "false",
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
-                // Perfstream，暂时设为false
-                "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
