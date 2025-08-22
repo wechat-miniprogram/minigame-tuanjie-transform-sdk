@@ -885,7 +885,7 @@ namespace WeChatWASM
                 {
                     new Rule()
                     {
-                        old = "if (GameGlobal.unityNamespace.enableProfileStats)", 
+                        old = "if (GameGlobal.unityNamespace.enableProfileStats)",
                         newStr = "if (GameGlobal.unityNamespace.enableProfileStats || (typeof GameGlobal.manager.getWXAppCheatMonitor === 'function' && GameGlobal.manager.getWXAppCheatMonitor().shouldForceShowPerfMonitor()))"
                     }
                 };
@@ -1395,8 +1395,7 @@ namespace WeChatWASM
             var buildTemplate = new BuildTemplate(
                 Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", defaultTemplateDir),
                 Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Editor", "template"),
-                Path.Combine(config.ProjectConf.DST, miniGameDir),
-                true
+                Path.Combine(config.ProjectConf.DST, miniGameDir)
                 );
             buildTemplate.start();
             // FIX: 2021.2版本生成symbol有bug，导出时生成symbol报错，有symbol才copy
