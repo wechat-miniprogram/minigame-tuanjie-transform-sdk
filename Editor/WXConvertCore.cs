@@ -107,6 +107,14 @@ namespace WeChatWASM
                 return config.CompileOptions.enableiOSMetal;
             }
         }
+        // 用于replaceRules判断是否需要注入相关的修改
+        public static bool UseEmscriptenGLX
+        {
+            get
+            {
+                return config.CompileOptions.enableEmscriptenGLX;
+            }
+        }
         // public static void SetPlayableEnabled(bool enabled)
         // {
         //     isPlayableBuild = enabled;
@@ -126,6 +134,8 @@ namespace WeChatWASM
             }
             // iOS metal 的相关特性
             ProcessWxiOSMetalBinaries();
+            // emscriptenglx的相关特性
+            ProcessWxEmscriptenGLXBinaries();
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
@@ -368,6 +378,59 @@ namespace WeChatWASM
 #endif
                 SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
             }
+            AssetDatabase.Refresh();
+        }
+
+        private static void ProcessWxEmscriptenGLXBinaries()
+        {
+            string[] glLibs;
+            string DS = WXAssetsTextTools.DS;
+            if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+            {
+                glLibs = new string[]
+                {
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx.a",
+                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx_2021.a",
+                };
+            }
+            else
+            {
+                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+
+                // 下方顺序不要变动
+                glLibs = new string[]
+                {
+                    $"{glLibRootDir}libemscriptenglx.a",
+                    $"{glLibRootDir}libemscriptenglx_2021.a",
+                };
+            }
+
+            {
+                // unity2022, tuanjie lib引入
+                bool showEnableGLX2022Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202203OrNewer();
+
+                var glx2022Importer = AssetImporter.GetAtPath(glLibs[0]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2022Plugin);
+                #else
+                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
+                #endif
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[0], showEnableGLX2022Plugin);
+            }
+            
+            {
+                // unity2021 lib引入
+                bool showEnableGLX2021Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202102To202203();
+
+                var glx2021Importer = AssetImporter.GetAtPath(glLibs[1]) as PluginImporter;
+                #if PLATFORM_WEIXINMINIGAME
+                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2021Plugin);
+                #else
+                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
+                #endif
+                SetPluginCompatibilityByModifyingMetadataFile(glLibs[1], showEnableGLX2021Plugin);
+            }
+
             AssetDatabase.Refresh();
         }
 
@@ -1982,7 +2045,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.enableiOSMetal ? "5" : (config.CompileOptions.Webgl2 ? "2" : "1"),
+                config.CompileOptions.Webgl2 ? "2" : "1",
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
@@ -2031,7 +2094,9 @@ namespace WeChatWASM
                 config.ProjectConf.MemorySize.ToString(),
                 config.SDKOptions.disableMultiTouch ? "true" : "false",
                 // Perfstream，暂时设为false
-                "false"
+                "false",
+                config.CompileOptions.enableEmscriptenGLX ? "true" : "false",
+                config.CompileOptions.enableiOSMetal ? "true" : "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
