@@ -3135,6 +3135,11 @@
             选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetGameExptInfoSuccessCallbackResult.list">
+            <summary>
+            结果对象的json字符串，各项为实验的相关信息
+            </summary>
+        </member>
         <member name="F:WeChatWASM.Gamepad.axes">
             <summary>
             一个表示控制器设备上存在的坐标轴的数组 (比如控制器摇杆)。
@@ -5588,11 +5593,6 @@
         <member name="F:WeChatWASM.GetGameExptInfoOption.keyList">
             <summary>
             实验参数数组，不填则获取所有实验参数
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.GetGameExptInfoSuccessCallbackResult.list">
-            <summary>
-            结果对象，各项为实验的相关信息
             </summary>
         </member>
         <member name="F:WeChatWASM.GetGroupEnterInfoOption.allowSingleChat">

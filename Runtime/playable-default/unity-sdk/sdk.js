@@ -27,7 +27,7 @@ function WX_OneWayNoFunction(functionName, ...params) {
 }
 
 
-const onlyReadyResponse = [
+const onlyReadResponse = [
     'getSystemSetting',
     'getAppAuthorizeSetting',
 ];
@@ -74,6 +74,10 @@ export default {
             ...config,
             success(res) {
                 formatResponse(successType, res);
+                
+                if (lowerFunctionName === 'getGameExptInfo') {
+                    res.list = JSON.stringify(res.list);
+                }
                 moduleHelper.send(`${functionName}Callback`, JSON.stringify({
                     callbackId, type: 'success', res: JSON.stringify(res),
                 }));
@@ -236,7 +240,7 @@ export default {
     },
     WX_SyncFunction_t(functionName, returnType) {
         const res = WX_SyncFunction(functionName);
-        if (onlyReadyResponse.includes(functionName.replace(/^\w/, (a) => a.toLowerCase()))) {
+        if (onlyReadResponse.includes(functionName.replace(/^\w/, (a) => a.toLowerCase()))) {
             formatResponse(returnType, JSON.parse(JSON.stringify(res)));
             return JSON.stringify(res);
         }
