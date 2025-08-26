@@ -65,8 +65,8 @@ const isMobileBrotliInvalid = isMobile && !compareVersion(SDKVersion, '2.21.1');
 const isBrotliInvalid = $COMPRESS_DATA_PACKAGE && (isPcBrotliInvalid || isMobileBrotliInvalid);
 // iOS系统版本>=17.5时，小游戏退后台会导致异常
 export const isIOS175 = compareVersion(systemVersion, '17.5') && isH5Renderer;
-// 是否支持开放数据域渲染模式，使用ScreenCanvas模式可以优化ToTempFilePath的使用，PC 上 ScreenCanvas 模式事件处理有问题，PC 先禁止这个模式
-export const isSupportSharedCanvasMode = compareVersion(SDKVersion, '3.6.6') && !isPc;
+// 是否支持开放数据域渲染模式，使用ScreenCanvas模式可以优化ToTempFilePath的使用
+export const isSupportSharedCanvasMode = compareVersion(SDKVersion, '3.6.6');
 // 是否能以iOS高性能模式运行
 // 请勿修改GameGlobal.canUseH5Renderer赋值！！！
 GameGlobal.canUseH5Renderer = isH5Renderer && isH5LibVersionValid;

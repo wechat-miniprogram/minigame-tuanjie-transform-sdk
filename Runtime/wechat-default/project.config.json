@@ -33,7 +33,7 @@
     "packNpmRelationList": []
   },
   "compileType": "game",
-  "libVersion": "latest",
+  "libVersion": "3.5.1",
   "appid": "$APP_ID",
   "projectname": "$PROJECT_NAME",
   "simulatorType": "wechat",
@@ -47,10 +47,6 @@
       {
         "type": "suffix",
         "value": ".symbols.unityweb"
-      },
-      {
-        "type": "suffix",
-        "value": ".symbols.unityweb.br"
       }
     ]
   },

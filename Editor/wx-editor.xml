@@ -9,17 +9,12 @@
             构建模板工具类
             </summary>
         </member>
-        <member name="F:WeChatWASM.BuildTemplate.ignoreUserTemplate">
-            <summary>
-            是否忽略用户自定义模板
-            </summary>
-        </member>
         <member name="F:WeChatWASM.BuildTemplate.IgnoreRules">
             <summary>
             复制覆盖时不参与覆盖的正则表达式，可在 beforeCoverTemplate（含）前动态修改
             </summary>
         </member>
-        <member name="M:WeChatWASM.BuildTemplate.CheckCustomCoverBaseConflict(System.String,System.String,System.String[],System.Boolean)">
+        <member name="M:WeChatWASM.BuildTemplate.CheckCustomCoverBaseConflict(System.String,System.String,System.String[])">
             <summary>
             防止自定义模板对覆盖基础模板有覆盖在新版本更新后有代码冲突需要做此检查
             </summary>
@@ -294,7 +289,7 @@
         <member name="T:WeChatWASM.UnityUtil">
             工具函数
         </member>
-        <member name="M:WeChatWASM.UnityUtil.WxSDKEnvInit(System.Boolean)">
+        <member name="M:WeChatWASM.UnityUtil.WxSDKEnvInit">
             <summary>
             微信SDK环境初始化
             </summary>
@@ -379,11 +374,6 @@
         <member name="F:WeChatWASM.WXProjectConf.VideoUrl">
             <summary>
             视频url
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXProjectConf.relativeDST">
-            <summary>
-            导出路径(相对路径)
             </summary>
         </member>
         <member name="F:WeChatWASM.WXProjectConf.DST">
@@ -653,6 +643,7 @@
             是否使用iOS metal指令流
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.CompileOptions.enableEmscriptenGLX" -->
         <member name="F:WeChatWASM.CompileOptions.brotliMT">
             <summary>
             是否使用brotli多线程压缩
@@ -771,67 +762,6 @@
         <member name="F:WeChatWASM.WXEditorScriptObject.FontOptions">
             <summary>
             字体配置
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.projectName">
-            <summary>
-            试玩项目名
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.Appid">
-            <summary>
-            试玩 appid
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.relativeDST">
-            <summary>
-            导出路径(相对路径)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.DST">
-            <summary>
-            导出路径(绝对路径)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.MemorySize">
-            <summary>
-            游戏内存大小(MB)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.Orientation">
-            <summary>
-            游戏方向
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WXPlayableProjectConf.IOSDevicePixelRatio">
-            <summary>
-            IOS限制固定的分辨率，以减少内存，但是会降低游戏画面品质
-            注意：不要随意修改，默认值为0，0表示不限制
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.PlayableCompileOptions.DevelopBuild">
-            <summary>
-            Development Build
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.PlayableCompileOptions.Il2CppOptimizeSize">
-            <summary>
-             Il2CppCodeGeneration.OptimizeSize
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.PlayableCompileOptions.profilingFuncs">
-            <summary>
-            Profiling Funcs
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.PlayableCompileOptions.Webgl2">
-            <summary>
-            WebGL2.0
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.PlayableCompileOptions.CustomNodePath">
-            <summary>
-            CustomNodePath
             </summary>
         </member>
     </members>

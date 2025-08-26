@@ -86,12 +86,4 @@ export const ResTypeOther = {
         status: 'number',
         errMsg: 'string',
     },
-    LoadOption: {
-        openlink: 'string',
-        query: 'object',
-    },
-    ShowOption: {
-        openlink: 'string',
-        query: 'object',
-    },
 };

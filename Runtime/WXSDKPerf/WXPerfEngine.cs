@@ -8,10 +8,6 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using System.IO;
 
-using Unity.Profiling;
-using UnityEngine.Profiling;
-using Debug = UnityEngine.Debug;
-
 
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 
@@ -24,17 +20,17 @@ namespace WXSDKPerf
 	public class WXPerfEngine
 	{
 #if !UNITY_EDITOR
-		static WXPerfEngine_Implementation m_PerfEngineImplementation = null;
+		static WXPerfEngine_Implementation m_PerfEngineImplementation = null; 
 #endif
 
         [RuntimeInitializeOnLoadMethod]
 		public static void StartWXPerfEngine()
 		{
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             m_PerfEngineImplementation = new WXPerfEngine_Implementation();
-            m_PerfEngineImplementation.StartPerfEngine();
+            m_PerfEngineImplementation.StartPerfEngine(); 
 #endif
 		}
 
@@ -49,7 +45,7 @@ namespace WXSDKPerf
         public static void Annotation(string InAnnotationString)
         {
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             // Don't record annotation if we are not recording.
             if (!IsRecording())
@@ -72,7 +68,7 @@ namespace WXSDKPerf
 #endif
         }
 
-
+        
         /// <summary>
         /// 检查是否正在录制性能数据
         /// </summary>
@@ -93,14 +89,14 @@ namespace WXSDKPerf
 #else
 			DateTime timestamp = DateTime.Now;
 			var dateString = timestamp.ToLocalTime().ToString("yyyy-MM-dd_HH-mm-ss", System.Globalization.CultureInfo.InvariantCulture);
-			var snapshotFileName = $"{dateString}.snap";
+			var snapshotFileName = $"{dateString}.snap"; 
 
 #if UNITY_2018_3_OR_NEWER && !UNITY_2022_2_OR_NEWER
-            UnityEngine.Profiling.Memory.Experimental.MemoryProfiler.TakeSnapshot(Path.Combine(Application.persistentDataPath, snapshotFileName),
+            UnityEngine.Profiling.Memory.Experimental.MemoryProfiler.TakeSnapshot(Path.Combine(Application.persistentDataPath, snapshotFileName), 
             WXPerfEngine_Implementation.CaptureSnapshotCallback, (UnityEngine.Profiling.Memory.Experimental.CaptureFlags)31);
-
+            
 #elif UNITY_2022_2_OR_NEWER
-            Unity.Profiling.Memory.MemoryProfiler.TakeSnapshot(Path.Combine(Application.persistentDataPath, snapshotFileName),
+            Unity.Profiling.Memory.MemoryProfiler.TakeSnapshot(Path.Combine(Application.persistentDataPath, snapshotFileName), 
             WXPerfEngine_Implementation.CaptureSnapshotCallback, (Unity.Profiling.Memory.CaptureFlags)31);
 #endif
 #endif
@@ -113,7 +109,7 @@ namespace WXSDKPerf
         public static void SetLuaState(IntPtr L)
         {
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {
@@ -124,7 +120,7 @@ namespace WXSDKPerf
             m_PerfEngineImplementation.SetLuaState(L);
 #endif
         }
-
+    
 		/// <summary>
 		/// 声明自定义性能指标
 		/// </summary>
@@ -134,7 +130,7 @@ namespace WXSDKPerf
 		public static void DeclareCustomStatInfo(string inStatName, string inStatCategory, int inStatInterpType = 1)
 		{
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {
@@ -155,7 +151,7 @@ namespace WXSDKPerf
 		public static void SetCustomStatValue(string inStatName, float inValue)
 		{
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {
@@ -175,7 +171,7 @@ namespace WXSDKPerf
 		public static void AddCustomStatInfoBy(string inStatName, float inValue)
 		{
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {
@@ -183,9 +179,9 @@ namespace WXSDKPerf
                 return;
             }
 
-            m_PerfEngineImplementation.AddCustomStatInfoBy(inStatName, inValue);
+            m_PerfEngineImplementation.AddCustomStatInfoBy(inStatName, inValue); 
 #endif
-
+			
 		}
 
 
@@ -199,11 +195,11 @@ namespace WXSDKPerf
         /// <param name="inEnableCaptureResource">是否启用资源捕获</param>
         /// <param name="inEnableLuaMemoryMonitor">是否启用Lua内存监控</param>
         /// <param name="inEnableLuaFunctionMemoryTracking">是否启用Lua函数内存跟踪</param>
-        public static void StartRecordManually(bool inEnableStackTrace, bool inEnableStatInfo, bool inFrequentScreenShot, bool inEnablebRenderInst,
+        public static void StartRecordManually(bool inEnableStackTrace, bool inEnableStatInfo, bool inFrequentScreenShot, bool inEnablebRenderInst, 
             bool inEnableCaptureResource, bool inEnableLuaMemoryMonitor, bool inEnableLuaFunctionMemoryTracking)
         {
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {
@@ -211,7 +207,7 @@ namespace WXSDKPerf
                 return;
             }
 
-            m_PerfEngineImplementation.StartRecordManually(inEnableStackTrace, inEnableStatInfo, inFrequentScreenShot, inEnablebRenderInst,
+            m_PerfEngineImplementation.StartRecordManually(inEnableStackTrace, inEnableStatInfo, inFrequentScreenShot, inEnablebRenderInst, 
                 inEnableCaptureResource, inEnableLuaMemoryMonitor, inEnableLuaFunctionMemoryTracking);
 #endif
         }
@@ -222,7 +218,7 @@ namespace WXSDKPerf
         public static void StopRecordManually()
 		{
 #if UNITY_EDITOR
-            return;
+            return; 
 #else
             if (m_PerfEngineImplementation == null)
             {

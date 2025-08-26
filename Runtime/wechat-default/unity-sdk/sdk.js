@@ -23,7 +23,7 @@ function getClassObject(className, id) {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_OneWayNoFunction(functionName, ...params) {
-    wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
+    wx[functionName.replace(/^\w/, a => a.toLowerCase())](...params);
 }
 
 
@@ -33,7 +33,7 @@ const onlyReadyResponse = [
 ];
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_SyncFunction(functionName, ...params) {
-    return wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
+    return wx[functionName.replace(/^\w/, a => a.toLowerCase())](...params);
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -42,22 +42,13 @@ function WX_ClassOneWayNoFunction(className, functionName, id, ...params) {
     if (!obj) {
         return;
     }
-    obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
-}
-function classFormatAndSend(id, callbackId, callbackName, callbackType, resType, res) {
-    formatResponse(resType, res);
-    moduleHelper.send(callbackName, classGetMsg(id, callbackId, callbackType, res));
-}
-function classGetMsg(id, callbackId, resType, res) {
-    return JSON.stringify({
-        id, callbackId, type: resType, res: JSON.stringify(res) || '',
-    });
+    obj[functionName.replace(/^\w/, a => a.toLowerCase())](...params);
 }
 export default {
     WX_OneWayFunction(functionName, successType, failType, completeType, conf, callbackId) {
-        const lowerFunctionName = functionName.replace(/^\w/, (a) => a.toLowerCase());
+        const lowerFunctionName = functionName.replace(/^\w/, a => a.toLowerCase());
         const config = formatJsonStr(conf);
-        // specialJS
+        
         if (lowerFunctionName === 'login') {
             if (!config.timeout) {
                 delete config.timeout;
@@ -120,7 +111,7 @@ export default {
             moduleHelper.send(`_${functionName}Callback`, resStr);
         };
         onEventLists[functionName].push(callback);
-        wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](callback);
+        wx[functionName.replace(/^\w/, a => a.toLowerCase())](callback);
     },
     WX_OffEventRegister(functionName) {
         (onEventLists[functionName] || []).forEach((v) => {
@@ -234,7 +225,7 @@ export default {
     },
     WX_SyncFunction_t(functionName, returnType) {
         const res = WX_SyncFunction(functionName);
-        if (onlyReadyResponse.includes(functionName.replace(/^\w/, (a) => a.toLowerCase()))) {
+        if (onlyReadyResponse.includes(functionName.replace(/^\w/, a => a.toLowerCase()))) {
             formatResponse(returnType, JSON.parse(JSON.stringify(res)));
             return JSON.stringify(res);
         }
@@ -271,10 +262,10 @@ export default {
         formatResponse(returnType, res);
         return JSON.stringify(res);
     },
-    WX_ClassConstructor(functionName, returnType, successType, failType, completeType, conf) {
+    WX_ClassOneWayFunction(functionName, returnType, successType, failType, completeType, conf) {
         const config = formatJsonStr(conf);
         const callbackId = uid();
-        const obj = wx[functionName.replace(/^\w/, (a) => a.toLowerCase())]({
+        const obj = wx[functionName.replace(/^\w/, a => a.toLowerCase())]({
             ...config,
             success(res) {
                 formatResponse(successType, res);
@@ -302,7 +293,7 @@ export default {
         return callbackId;
     },
     WX_ClassFunction(functionName, returnType, option) {
-        const obj = wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](formatJsonStr(option));
+        const obj = wx[functionName.replace(/^\w/, a => a.toLowerCase())](formatJsonStr(option));
         const id = uid();
         if (!ClassLists[returnType]) {
             ClassLists[returnType] = {};
@@ -356,10 +347,10 @@ export default {
         ClassOnEventLists[className + functionName][id + eventName].push(callback);
         // WXVideoDecoder OnEvent 不规范 特殊处理
         if (className === 'WXVideoDecoder') {
-            obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](eventName, callback);
+            obj[functionName.replace(/^\w/, a => a.toLowerCase())](eventName, callback);
         }
         else {
-            obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](callback);
+            obj[functionName.replace(/^\w/, a => a.toLowerCase())](callback);
         }
     },
     WX_ClassOffEventFunction(className, functionName, id, eventName) {
@@ -398,7 +389,7 @@ export default {
         if (!obj) {
             return JSON.stringify(formatResponse(returnType));
         }
-        const res = obj[functionName.replace(/^\w/, (a) => a.toLowerCase())]();
+        const res = obj[functionName.replace(/^\w/, a => a.toLowerCase())]();
         return JSON.stringify(formatResponse(returnType, res, id));
     },
     WX_ClassOneWayNoFunction_vt(className, functionName, id, param1) {
@@ -407,42 +398,5 @@ export default {
     },
     WX_ClassOneWayNoFunction_vn(className, functionName, id, param1) {
         WX_ClassOneWayNoFunction(className, functionName, id, param1);
-    },
-    WX_ClassOneWayFunction(className, functionName, id, successType, failType, completeType, conf, callbackId, usePromise = false) {
-        
-        const obj = getClassObject(className, id);
-        if (!obj) {
-            return;
-        }
-        const lowerFunctionName = functionName.replace(/^\w/, (a) => a.toLowerCase());
-        const config = formatJsonStr(conf);
-        
-        if (usePromise) {
-            obj[lowerFunctionName]({
-                ...config,
-            }).then((res) => {
-                classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'success', successType, res);
-            })
-                .catch((res) => {
-                classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'fail', failType, res);
-            })
-                .finally((res) => {
-                classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'complete', completeType, res);
-            });
-        }
-        else {
-            obj[lowerFunctionName]({
-                ...config,
-                success(res) {
-                    classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'success', successType, res);
-                },
-                fail(res) {
-                    classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'fail', failType, res);
-                },
-                complete(res) {
-                    classFormatAndSend(id, callbackId, `_${className}${functionName}Callback`, 'complete', completeType, res);
-                },
-            });
-        }
     },
 };

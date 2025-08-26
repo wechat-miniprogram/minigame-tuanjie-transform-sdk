@@ -57,8 +57,6 @@ const unityNamespace = {
     isProfilingBuild: $Is_Profiling_Build,
     // 预留的堆内存
     unityHeapReservedMemory: $UnityHeapReservedMemory,
-    // 是否向Perfstream上报数据
-    sendData2PerfStream: $SEND_DATA_TO_PERF_STREAM,
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {

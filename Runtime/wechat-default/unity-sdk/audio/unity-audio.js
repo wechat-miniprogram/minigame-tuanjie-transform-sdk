@@ -1050,9 +1050,6 @@ export default {
         if (WEBAudio.audioWebSupport === 0 || WEBAudio.audioWebEnabled === 0) {
             return;
         }
-        if (WEBAudio.audioContext && WEBAudio.audioContext.state !== 'suspended') {
-            return;
-        }
         resumeWebAudio();
     },
     _JS_Sound_Set3D(channelInstance, threeD) {
@@ -1267,19 +1264,5 @@ export default {
             return WEBAudio.FAKEMOD_SAMPLERATE;
         }
         return WEBAudio.audioContext.sampleRate;
-    },
-    _JS_Sound_GetPosition(channelInstance) {
-        if (WEBAudio.audioWebEnabled == 0) {
-            return 0;
-        }
-        const channel = WEBAudio.audioInstances[channelInstance];
-        if (!channel) {
-            return 0;
-        }
-        const { source } = channel;
-        if (!source) {
-            return 0;
-        }
-        return source.estimatePlaybackPosition ? source.estimatePlaybackPosition() : 0;
     },
 };
