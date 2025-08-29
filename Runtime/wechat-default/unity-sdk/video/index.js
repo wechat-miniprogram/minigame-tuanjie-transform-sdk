@@ -7,7 +7,7 @@ let FrameworkData = null;
 const isWebVideo = (isH5Renderer && !GameGlobal.isIOSHighPerformanceModePlus) || isPc || isDevtools;
 const needCache = true;
 const cacheVideoDecoder = [];
-const supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus;
+let supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus; 
 const videoInstances = {};
 function _JS_Video_CanPlayFormat(format, data) {
     
@@ -40,6 +40,9 @@ function _JS_Video_Create(url) {
         source = FrameworkData.UTF8ToString(url);
     }
     debugLog('_JS_Video_Create', source);
+    if (GameGlobal.mtl) {
+        supportVideoFrame = false;
+    }
     if (isWebVideo) {
         // @ts-ignore
         const video = GameGlobal.manager.createWKVideo(source, FrameworkData.GLctx);
@@ -112,7 +115,7 @@ function _JS_Video_Create(url) {
             // @ts-ignore
             videoInstance.currentTime = res.pts / 1000;
             
-            if (supportVideoFrame) {
+            if (supportVideoFrame || GameGlobal.mtl) {
                 
                 videoInstance.frameData?.close?.();
             }
@@ -177,8 +180,15 @@ function _JS_Video_Destroy(video) {
     const Module = GameGlobal.manager.gameInstance.Module;
     const { GL } = Module;
     const gl = GL.currentContext.GLctx;
-    if (!isWebVideo && gl.emscriptenGLX && Module._glxVideoDestroy) {
-        Module._glxVideoDestroy(video);
+    if (GameGlobal.mtl) {
+        if (!isWebVideo && Module._mtlVideoDestroy) {
+            Module._mtlVideoDestroy();
+        }
+    }
+    else {
+        if (!isWebVideo && gl.emscriptenGLX && Module._glxVideoDestroy) {
+            Module._glxVideoDestroy(video);
+        }
     }
     delete videoInstances[video];
 }
@@ -387,10 +397,21 @@ function _JS_Video_UpdateToTexture(video, tex) {
     const Module = GameGlobal.manager.gameInstance.Module;
     const { GL, GLctx } = FrameworkData;
     
-    if (GameGlobal.mtl) {
-        
-        
-        return;
+    if (!isWebVideo && GameGlobal.mtl) {
+        if (supportVideoFrame) {
+            
+        }
+        else {
+            const data = v.frameData?.data;
+            const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
+            const byteLength = supportVideoFrame ? 0 : source.byteLength;
+            const sourceIdOrPtr = Module._mtlGetVideoTempBuffer(video, byteLength);
+            if (sourceIdOrPtr) {
+                Module.HEAPU8.set(source, sourceIdOrPtr);
+            }
+            Module._mtlVideoUpdateToTexture(video, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
+        }
+        return true;
     }
     
     const gl = GL.currentContext.GLctx;
