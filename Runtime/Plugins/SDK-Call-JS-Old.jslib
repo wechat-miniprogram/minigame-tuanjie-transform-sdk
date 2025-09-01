@@ -416,11 +416,11 @@ mergeInto(LibraryManager.library, {
     WXVideoPlay: function(id) {
         window.WXWASMSDK.WXVideoPlay(_WXPointer_stringify_adaptor(id));
     },
-    WXVideoAddListener: function(id,key) {
+    WXVideoAddListener: function(id, key) {
         window.WXWASMSDK.WXVideoAddListener(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(key));
     },
-    WXVideoDestroy: function(id) {
-        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id));
+    WXVideoDestroy: function(id, isLast) {
+        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id), isLast);
     },
     WXVideoExitFullScreen: function(id) {
         window.WXWASMSDK.WXVideoExitFullScreen(_WXPointer_stringify_adaptor(id));
@@ -626,6 +626,9 @@ mergeInto(LibraryManager.library, {
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
+    },
+    WXSetSyncReadCacheEnabled: function(enabled) {
+        window.WXWASMSDK.WXSetSyncReadCacheEnabled(enabled);
     },
     WXGetPluginCachePath: function() {
         var returnStr = window.WXWASMSDK.WXGetPluginCachePath();

@@ -535,7 +535,7 @@ namespace WeChatWASM
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
-        public static WXVideo CreateVideo(WXCreateVideoParam param)
+        public static WXVideo CreateVideo(CreateVideoOption param)
         {
             return WXSDKManagerHandler.Instance.CreateVideo(param);
         }
@@ -764,6 +764,16 @@ namespace WeChatWASM
         public static string GetCachePath(string url)
         {
             return WXSDKManagerHandler.Instance.GetCachePath(url);
+        }
+
+        /// <summary>
+        /// 临时修复安卓在主线程繁忙时，异步读缓存耗时高，但需关注同步读文件可能导致掉帧
+        /// 仅在有需要的情况下主动开启，需要同步读的场景完成后再主动关闭
+        /// </summary>
+        /// <param name="enabled"></param>
+        public static void SetSyncReadCacheEnabled(bool enabled)
+        {
+            WXSDKManagerHandler.Instance.SetSyncReadCacheEnabled(enabled);
         }
 
 #endregion
@@ -1127,6 +1137,15 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
         }
 #endregion
+#region 虚拟支付
+        /// <summary>
+        /// 请求虚拟支付
+        /// </summary>
+        public static void RequestVirtualPayment(RequestVirtualPaymentOption option)
+        {
+            WXSDKManagerHandler.Instance.RequestVirtualPayment(option);
+        }
+#endregion
 
         /// <summary>
         /// [[PageManager](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/PageManager.html) wx.createPageManager()](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html)
@@ -1152,6 +1171,12 @@ namespace WeChatWASM
         public static WXPageManager CreatePageManager()
         {
             return WXSDKManagerHandler.Instance.CreatePageManager();
+        }
+
+        /// <returns></returns>
+        public static WXMiniReportManager GetMiniReportManager(GetMiniReportManagerParam param)
+        {
+            return WXSDKManagerHandler.Instance.GetMiniReportManager(param);
         }
     }
 }
