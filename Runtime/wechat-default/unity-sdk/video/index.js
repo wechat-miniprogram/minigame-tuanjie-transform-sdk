@@ -400,18 +400,16 @@ function _JS_Video_UpdateToTexture(video, tex) {
     if (!isWebVideo && GameGlobal.mtl) {
         if (supportVideoFrame) {
             
+            return false;
         }
-        else {
-            const data = v.frameData?.data;
-            const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-            const byteLength = supportVideoFrame ? 0 : source.byteLength;
-            const sourceIdOrPtr = Module._mtlGetVideoTempBuffer(video, byteLength);
-            if (sourceIdOrPtr) {
-                Module.HEAPU8.set(source, sourceIdOrPtr);
-            }
-            Module._mtlVideoUpdateToTexture(video, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
+        const data = v.frameData?.data;
+        const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
+        const byteLength = supportVideoFrame ? 0 : source.byteLength;
+        const sourceIdOrPtr = Module._mtlGetVideoTempBuffer(video, byteLength);
+        if (sourceIdOrPtr) {
+            Module.HEAPU8.set(source, sourceIdOrPtr);
         }
-        return true;
+        return Module._mtlVideoUpdateToTexture(video, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
     }
     
     const gl = GL.currentContext.GLctx;
