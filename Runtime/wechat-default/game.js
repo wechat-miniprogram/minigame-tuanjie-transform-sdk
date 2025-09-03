@@ -27,7 +27,11 @@ const managerConfig = {
         '$PRELOAD_LIST',
     ],
     contextConfig: {
-        contextType: $WEBGL_VERSION, // 1: webgl1  2: webgl2
+        contextType: $WEBGL_VERSION,
+        contextExt: {
+            enableGLX: $ENABLE_GLX,
+            enableMetal: $ENABLE_METAL,
+        }
     },
     PROFILER_UPLOAD_URL: '',
 };

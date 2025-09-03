@@ -98,18 +98,19 @@ var WXAssetBundleLibrary = {
         value: function get(key) {
           var temp = this.hash.get(key);
           if (temp !== undefined) {
-            if(temp.cleanable && unityNamespace.isAndroid && temp.time + this.ttl * 1000 < Date.now()){
-              try {
-                var check_path = WXFS.fd2wxStream.get(key).path
-                if(!GameGlobal.manager.getCachePath(check_path)){
-                  throw new Error("No such file in the wx cache system")
-                }
-                WXFS.fs.statSync(check_path)
-              } catch (e) {
-                GameGlobal.manager.reporter.wxAssetBundle.reportEmptyContent({stage: WXFS.WXABErrorSteps['kCacheGet'], path: check_path, error: !!e ? e.toString() : 'unknown'});
-                GameGlobal.manager.Logger.pluginLog('[WXAssetBundle]Android statSync path: ' + check_path + ' error: ' + (!!e ? e.toString() : 'unknown'));
-              }
-            }
+            // 忽略permission denied，屏蔽上报
+            // if(temp.cleanable && unityNamespace.isAndroid && temp.time + this.ttl * 1000 < Date.now()){
+            //   try {
+            //     var check_path = WXFS.fd2wxStream.get(key).path
+            //     if(!GameGlobal.manager.getCachePath(check_path)){
+            //       throw new Error("No such file in the wx cache system")
+            //     }
+            //     WXFS.fs.statSync(check_path)
+            //   } catch (e) {
+            //     GameGlobal.manager.reporter.wxAssetBundle.reportEmptyContent({stage: WXFS.WXABErrorSteps['kCacheGet'], path: check_path, error: !!e ? e.toString() : 'unknown'});
+            //     GameGlobal.manager.Logger.pluginLog('[WXAssetBundle]Android statSync path: ' + check_path + ' error: ' + (!!e ? e.toString() : 'unknown'));
+            //   }
+            // }
             this.hash.delete(key);
             temp.time = Date.now();
             this.hash.set(key, temp);
