@@ -9,6 +9,43 @@ const needCache = true;
 const cacheVideoDecoder = [];
 let supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus; 
 const videoInstances = {};
+class VideoBufferManager {
+    videoBuffers = new Map();
+    getTempBuffer(videoId, byteLength) {
+        console.warn("getTempBuffer ", videoId);
+        const Module = GameGlobal.manager.gameInstance.Module;
+        if (this.videoBuffers.has(videoId)) {
+            const bufferInfo = this.videoBuffers.get(videoId);
+            if (bufferInfo.byteLength >= byteLength) {
+                return bufferInfo.ptr;
+            }
+            if (bufferInfo.ptr !== null) {
+                Module._free(bufferInfo.ptr);
+            }
+        }
+        const newPtr = Module._malloc(byteLength);
+        console.warn("getTempBuffer ", newPtr);
+        if (newPtr === null) {
+            return null;
+        }
+        this.videoBuffers.set(videoId, { byteLength, ptr: newPtr });
+        return newPtr;
+    }
+    destroyTempBuffer(videoId) {
+        if (this.videoBuffers.has(videoId)) {
+            const Module = GameGlobal.manager.gameInstance.Module;
+            const bufferInfo = this.videoBuffers.get(videoId);
+            if (bufferInfo.ptr !== null) {
+                Module._free(bufferInfo.ptr);
+                console.warn("destroyTempBuffer ", bufferInfo.ptr);
+            }
+            this.videoBuffers.delete(videoId);
+        }
+    }
+}
+;
+let videoBufferManager;
+
 function _JS_Video_CanPlayFormat(format, data) {
     
     
@@ -42,6 +79,9 @@ function _JS_Video_Create(url) {
     debugLog('_JS_Video_Create', source);
     if (GameGlobal.mtl) {
         supportVideoFrame = false;
+        if (!videoBufferManager) {
+            videoBufferManager = new VideoBufferManager();
+        }
     }
     if (isWebVideo) {
         // @ts-ignore
@@ -181,8 +221,8 @@ function _JS_Video_Destroy(video) {
     const { GL } = Module;
     const gl = GL.currentContext.GLctx;
     if (GameGlobal.mtl) {
-        if (!isWebVideo && Module._mtlVideoDestroy) {
-            Module._mtlVideoDestroy();
+        if (!isWebVideo) {
+            videoBufferManager?.destroyTempBuffer(video);
         }
     }
     else {
@@ -405,7 +445,7 @@ function _JS_Video_UpdateToTexture(video, tex) {
         const data = v.frameData?.data;
         const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
         const byteLength = supportVideoFrame ? 0 : source.byteLength;
-        const sourceIdOrPtr = Module._mtlGetVideoTempBuffer(video, byteLength);
+        const sourceIdOrPtr = videoBufferManager?.getTempBuffer(video, byteLength);
         if (sourceIdOrPtr) {
             Module.HEAPU8.set(source, sourceIdOrPtr);
         }
