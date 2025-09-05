@@ -312,7 +312,8 @@ namespace WeChatWASM
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogError($"Failed to enable plugin asset: {ex.Message}");
+                // 避免 Error 日志阻塞打包流程
+                UnityEngine.Debug.LogWarning($"Failed to enable plugin asset: {ex.Message}");
             }
         }
 
