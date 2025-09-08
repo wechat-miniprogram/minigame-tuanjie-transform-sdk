@@ -7,43 +7,8 @@ let FrameworkData = null;
 const isWebVideo = (isH5Renderer && !GameGlobal.isIOSHighPerformanceModePlus) || isPc || isDevtools;
 const needCache = true;
 const cacheVideoDecoder = [];
-let supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus; 
+const supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus;
 const videoInstances = {};
-class VideoBufferManager {
-    videoBuffers = new Map();
-    getTempBuffer(videoId, byteLength) {
-        const Module = GameGlobal.manager.gameInstance.Module;
-        if (this.videoBuffers.has(videoId)) {
-            const bufferInfo = this.videoBuffers.get(videoId);
-            if (bufferInfo.byteLength >= byteLength) {
-                return bufferInfo.ptr;
-            }
-            if (bufferInfo.ptr !== null) {
-                Module._free(bufferInfo.ptr);
-            }
-        }
-        const newPtr = Module._malloc(byteLength);
-        if (newPtr === null) {
-            return null;
-        }
-        this.videoBuffers.set(videoId, { byteLength, ptr: newPtr });
-        return newPtr;
-    }
-    destroyTempBuffer(videoId) {
-        if (this.videoBuffers.has(videoId)) {
-            const Module = GameGlobal.manager.gameInstance.Module;
-            const bufferInfo = this.videoBuffers.get(videoId);
-            if (bufferInfo.ptr !== null) {
-                Module._free(bufferInfo.ptr);
-                
-            }
-            this.videoBuffers.delete(videoId);
-        }
-    }
-}
-;
-let videoBufferManager;
-
 function _JS_Video_CanPlayFormat(format, data) {
     
     
@@ -75,12 +40,6 @@ function _JS_Video_Create(url) {
         source = FrameworkData.UTF8ToString(url);
     }
     debugLog('_JS_Video_Create', source);
-    if (GameGlobal.mtl) {
-        supportVideoFrame = false;
-        if (!videoBufferManager) {
-            videoBufferManager = new VideoBufferManager();
-        }
-    }
     if (isWebVideo) {
         // @ts-ignore
         const video = GameGlobal.manager.createWKVideo(source, FrameworkData.GLctx);
@@ -153,7 +112,7 @@ function _JS_Video_Create(url) {
             // @ts-ignore
             videoInstance.currentTime = res.pts / 1000;
             
-            if (supportVideoFrame || GameGlobal.mtl) {
+            if (supportVideoFrame) {
                 
                 videoInstance.frameData?.close?.();
             }
@@ -215,19 +174,6 @@ function _JS_Video_Create(url) {
 function _JS_Video_Destroy(video) {
     debugLog('_JS_Video_Destroy', video);
     videoInstances[video].destroy();
-    const Module = GameGlobal.manager.gameInstance.Module;
-    const { GL } = Module;
-    if (GameGlobal.mtl) {
-        if (!isWebVideo) {
-            videoBufferManager?.destroyTempBuffer(video);
-        }
-    }
-    else {
-        const gl = GL.currentContext.GLctx;
-        if (!isWebVideo && gl.emscriptenGLX && Module._glxVideoDestroy) {
-            Module._glxVideoDestroy(video);
-        }
-    }
     delete videoInstances[video];
 }
 function _JS_Video_Duration(video) {
@@ -432,45 +378,7 @@ function _JS_Video_UpdateToTexture(video, tex) {
     if (!FrameworkData) {
         return false;
     }
-    const Module = GameGlobal.manager.gameInstance.Module;
     const { GL, GLctx } = FrameworkData;
-    
-    if (!isWebVideo && GameGlobal.mtl) {
-        if (supportVideoFrame) {
-            
-            return false;
-        }
-        const data = v.frameData?.data;
-        const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-        const byteLength = supportVideoFrame ? 0 : source.byteLength;
-        const sourceIdOrPtr = videoBufferManager?.getTempBuffer(video, byteLength);
-        if (sourceIdOrPtr) {
-            Module.HEAPU8.set(source, sourceIdOrPtr);
-        }
-        return Module._mtlVideoUpdateToTexture(video, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
-    }
-    
-    const gl = GL.currentContext.GLctx;
-    
-    if (!isWebVideo && Module._glxVideoUpdateToTexture && gl.emscriptenGLX) {
-        const data = v.frameData?.data;
-        const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-        const byteLength = supportVideoFrame ? 0 : source.byteLength;
-        let sourceIdOrPtr;
-        if (supportVideoFrame) {
-            sourceIdOrPtr = source.__uid;
-        }
-        else {
-            sourceIdOrPtr = Module._glxGetVideoTempBuffer(video, byteLength);
-            if (sourceIdOrPtr) {
-                Module.HEAPU8.set(source, sourceIdOrPtr);
-            }
-        }
-        
-        Module._glxVideoUpdateToTexture(v, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
-        return true;
-    }
-    
     GLctx.pixelStorei(GLctx.UNPACK_FLIP_Y_WEBGL, true);
     
     

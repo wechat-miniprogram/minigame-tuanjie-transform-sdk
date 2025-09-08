@@ -171,12 +171,6 @@ function _JS_Video_Create(url) {
 function _JS_Video_Destroy(video) {
     debugLog('_JS_Video_Destroy', video);
     videoInstances[video].destroy();
-    const Module = GameGlobal.manager.gameInstance.Module;
-    const { GL } = Module;
-    const gl = GL.currentContext.GLctx;
-    if (!isWebVideo && gl.emscriptenGLX && Module._glxVideoDestroy) {
-        Module._glxVideoDestroy(video);
-    }
     delete videoInstances[video];
 }
 function _JS_Video_Duration(video) {
@@ -381,29 +375,7 @@ function _JS_Video_UpdateToTexture(video, tex) {
     if (!FrameworkData) {
         return false;
     }
-    const Module = GameGlobal.manager.gameInstance.Module;
     const { GL, GLctx } = FrameworkData;
-    const gl = GL.currentContext.GLctx;
-    
-    if (!isWebVideo && Module._glxVideoUpdateToTexture && gl.emscriptenGLX) {
-        const data = v.frameData?.data;
-        const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-        const byteLength = supportVideoFrame ? 0 : source.byteLength;
-        let sourceIdOrPtr;
-        if (supportVideoFrame) {
-            sourceIdOrPtr = source.__uid;
-        }
-        else {
-            sourceIdOrPtr = Module._glxGetVideoTempBuffer(video, byteLength);
-            if (sourceIdOrPtr) {
-                Module.HEAPU8.set(source, sourceIdOrPtr);
-            }
-        }
-        
-        Module._glxVideoUpdateToTexture(v, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
-        return true;
-    }
-    
     GLctx.pixelStorei(GLctx.UNPACK_FLIP_Y_WEBGL, true);
     
     

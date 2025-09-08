@@ -2,21 +2,26 @@ mergeInto(LibraryManager.library, {
     // 定义供 C/C++ 调用的 JS 函数  
     js_batchRender_malloc: function(data, size, isSync) {
         // 直接从 WASM 内存创建视图（零拷贝）
-        const targetBuffer = new Uint8Array(Module.HEAPU8.buffer, data, size);
+        const binaryData = new Uint8Array(Module.HEAPU8.buffer, data, size);
+        // 转换为标准 ArrayBuffer（如果需要复制）
+        const targetBuffer =
+            binaryData.buffer.slice(binaryData.byteOffset, binaryData.byteOffset + binaryData.byteLength);
         //console.log("processBinaryData invoke");
-        const extBuffer = new ArrayBuffer(1); 
-
+        const extBuffer = new ArrayBuffer(1);   
+        const headerBuffer = new ArrayBuffer(8);
+        const headerBufferView = new DataView(headerBuffer);    
+        headerBufferView.setUint32(0, 0xDEC0DE, true);
+        headerBufferView.setUint32(4, mtl.ctx.__uid(), true);   
+        const merged = new Uint8Array(headerBuffer.byteLength + targetBuffer.byteLength);   
+        merged.set(new Uint8Array(headerBuffer), 0);
+        merged.set(new Uint8Array(targetBuffer), headerBuffer.byteLength);  
         if(!isSync){
-            mtl.batchRenderAsync(targetBuffer, extBuffer); 
+            mtl.batchRenderAsync(merged.buffer, extBuffer); 
             return null;
         }
-        const response = mtl.batchRender(targetBuffer, extBuffer);
-        if (!response) {
-          return null;
-        }
-        const result = response.buffer;
-        if(!result || result.byteLength == 0){
-            return null;
+        const result = mtl.batchRender(merged.buffer, extBuffer).buffer;
+        if(result.byteLength == 0){
+            return null;;
         }
         // 申请内存空间,后续在cpp wasm部分使用，记得释放
         const ptr = Module._malloc(result.byteLength);

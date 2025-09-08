@@ -51,6 +51,7 @@ var WXAssetBundleLibrary = {
     WXFS.msg = "";
     WXFS.fd2wxStream = new Map;
     WXFS.path2fd = new Map;
+    WXFS.refRecord = new Map;
     WXFS.fs = wx.getFileSystemManager();
     WXFS.nowfd = FS.MAX_OPEN_FDS + 1;
     WXFS.isWXAssetBundle = function(url){
@@ -98,19 +99,18 @@ var WXAssetBundleLibrary = {
         value: function get(key) {
           var temp = this.hash.get(key);
           if (temp !== undefined) {
-            // 忽略permission denied，屏蔽上报
-            // if(temp.cleanable && unityNamespace.isAndroid && temp.time + this.ttl * 1000 < Date.now()){
-            //   try {
-            //     var check_path = WXFS.fd2wxStream.get(key).path
-            //     if(!GameGlobal.manager.getCachePath(check_path)){
-            //       throw new Error("No such file in the wx cache system")
-            //     }
-            //     WXFS.fs.statSync(check_path)
-            //   } catch (e) {
-            //     GameGlobal.manager.reporter.wxAssetBundle.reportEmptyContent({stage: WXFS.WXABErrorSteps['kCacheGet'], path: check_path, error: !!e ? e.toString() : 'unknown'});
-            //     GameGlobal.manager.Logger.pluginLog('[WXAssetBundle]Android statSync path: ' + check_path + ' error: ' + (!!e ? e.toString() : 'unknown'));
-            //   }
-            // }
+            if(temp.cleanable && unityNamespace.isAndroid && temp.time + this.ttl * 1000 < Date.now()){
+              try {
+                var check_path = WXFS.fd2wxStream.get(key).path
+                if(!GameGlobal.manager.getCachePath(check_path)){
+                  throw new Error("No such file in the wx cache system")
+                }
+                WXFS.fs.statSync(check_path)
+              } catch (e) {
+                GameGlobal.manager.reporter.wxAssetBundle.reportEmptyContent({stage: WXFS.WXABErrorSteps['kCacheGet'], path: check_path, error: !!e ? e.toString() : 'unknown'});
+                GameGlobal.manager.Logger.pluginLog('[WXAssetBundle]Android statSync path: ' + check_path + ' error: ' + (!!e ? e.toString() : 'unknown'));
+              }
+            }
             this.hash.delete(key);
             temp.time = Date.now();
             this.hash.set(key, temp);
@@ -321,6 +321,9 @@ var WXAssetBundleLibrary = {
     }
     if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
+      WXFS.refRecord.set(path, 0);
+    } else {
+      WXFS.refRecord.set(path, WXFS.refRecord.get(path) + 1);
     }
     return true;
   },
@@ -328,11 +331,16 @@ var WXAssetBundleLibrary = {
   UnloadbyPath: function (ptr) {
     var path = WXFS.url2path(UTF8ToString(ptr));
     var fd = WXFS.path2fd.get(path);
-    if(WXFS.cache.has(fd)){
-      WXFS.cache.delete(fd);
-    }
-    if(WXFS.disk.has(path)){
-      WXFS.disk.delete(path);
+    var refCount = WXFS.refRecord.get(path);
+    if(!refCount){
+      if(WXFS.cache.has(fd)){
+        WXFS.cache.delete(fd);
+      }
+      if(WXFS.disk.has(path)){
+        WXFS.disk.delete(path);
+      }
+    }else{
+      WXFS.refRecord.set(path, refCount - 1);
     }
   },
 

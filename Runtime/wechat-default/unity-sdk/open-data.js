@@ -12,6 +12,7 @@ var SharedCanvasMode;
 })(SharedCanvasMode || (SharedCanvasMode = {}));
 let sharedCanvasMode;
 let timerId;
+let textureObject = null;
 let textureId;
 
 function getOpenDataContext(mode) {
@@ -50,25 +51,34 @@ function hookUnityRender() {
     if (!textureId) {
         return;
     }
-    const Module = GameGlobal.manager.gameInstance.Module;
-    const { GL } = Module;
+    const { GL } = GameGlobal.manager.gameInstance.Module;
     const gl = GL.currentContext.GLctx;
-    const isLinearColorSpace = GameGlobal.unityNamespace.unityColorSpace === 'Linear';
-    
-    if (gl.emscriptenGLX) {
-        Module.ccall('glxShowOpenData', null, ['number', 'number', 'bool'], [textureId, getSharedCanvas().__uid(), isLinearColorSpace]);
-    }
-    else {
-        
-        gl.bindTexture(gl.TEXTURE_2D, GL.textures[textureId]);
-        if (isLinearColorSpace) {
+    if (!textureObject) {
+        textureObject = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, textureObject);
+        if (GameGlobal.unityNamespace.unityColorSpace === 'Linear') {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
         }
         else {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
         }
-        timerId = requestAnimationFrame(hookUnityRender);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     }
+    else {
+        
+        gl.bindTexture(gl.TEXTURE_2D, textureObject);
+        if (GameGlobal.unityNamespace.unityColorSpace === 'Linear') {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+        }
+        else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+        }
+    }
+    GL.textures[textureId] = textureObject;
+    timerId = requestAnimationFrame(hookUnityRender);
 }
 
 function stopLastRenderLoop() {
@@ -88,13 +98,10 @@ function stopHookUnityRender() {
     sharedCanvas.width = 1;
     sharedCanvas.height = 1;
     
-    const Module = GameGlobal.manager.gameInstance.Module;
-    const { GL } = Module;
+    const { GL } = GameGlobal.manager.gameInstance.Module;
     const gl = GL.currentContext.GLctx;
-    
-    if (gl.emscriptenGLX) {
-        Module.ccall('glxHideOpenData', null, [], []);
-    }
+    gl.deleteTexture(textureObject);
+    textureObject = null;
 }
 wx.onShow(() => {
     if (cachedOpenDataContext) {
