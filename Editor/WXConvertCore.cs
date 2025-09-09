@@ -282,8 +282,7 @@ namespace WeChatWASM
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogError($"Failed to get enabled flag string index: {ex.Message}");
-                throw;
+                UnityEngine.Debug.LogWarning($"Failed to get enabled flag string index: {ex.Message}");
             }
         }
 
