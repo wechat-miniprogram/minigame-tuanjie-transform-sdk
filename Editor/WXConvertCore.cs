@@ -163,8 +163,16 @@ namespace WeChatWASM
             dynamic config = isPlayableBuild ? UnityUtil.GetPlayableEditorConf() : UnityUtil.GetEditorConf();
             if (config.ProjectConf.relativeDST == string.Empty)
             {
-                Debug.LogError("请先配置游戏导出路径");
-                return WXExportError.BUILD_WEBGL_FAILED;
+                if (config.ProjectConf.DST != string.Empty)
+                {
+                    string relativePath = Path.GetRelativePath(config.ProjectConf.DST, config.ProjectConf.DST);
+                    if (relativePath == string.Empty)
+                    {
+                        Debug.LogError("请先配置游戏导出路径");
+                        return WXExportError.BUILD_WEBGL_FAILED;
+                    }
+                    config.ProjectConf.relativeDST = relativePath;
+                }
             }
             return WXExportError.SUCCEED;
         }

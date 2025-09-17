@@ -51,6 +51,7 @@ var WXAssetBundleLibrary = {
     WXFS.msg = "";
     WXFS.fd2wxStream = new Map;
     WXFS.path2fd = new Map;
+    WXFS.refRecord = new Map;
     WXFS.fs = wx.getFileSystemManager();
     WXFS.nowfd = FS.MAX_OPEN_FDS + 1;
     WXFS.isWXAssetBundle = function(url){
@@ -308,6 +309,9 @@ var WXAssetBundleLibrary = {
     }
     if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
+      WXFS.refRecord.set(path, 1);
+    } else {
+      WXFS.refRecord.set(path, WXFS.refRecord.get(path) + 1);
     }
     return true;
   },
@@ -315,11 +319,17 @@ var WXAssetBundleLibrary = {
   UnloadbyPath: function (ptr) {
     var path = WXFS.url2path(UTF8ToString(ptr));
     var fd = WXFS.path2fd.get(path);
-    if(WXFS.cache.has(fd)){
-      WXFS.cache.delete(fd);
-    }
-    if(WXFS.disk.has(path)){
-      WXFS.disk.delete(path);
+    var refCount = WXFS.refRecord.get(path);
+    if(!refCount) return;
+    refCount -= 1;
+    WXFS.refRecord.set(path, refCount);
+    if(!refCount){
+      if(WXFS.cache.has(fd)){
+        WXFS.cache.delete(fd);
+      }
+      if(WXFS.disk.has(path)){
+        WXFS.disk.delete(path);
+      }
     }
   },
 
