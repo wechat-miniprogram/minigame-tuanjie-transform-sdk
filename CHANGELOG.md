@@ -6,7 +6,29 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## v0.1.26 【预发布】
+## 2025-9-8 v0.1.29 【重要更新】
+### Feature
+* 普通：本地缓存存在时，UnityWebRequest支持同步方式(API：wx.SetSyncReadCacheEnabled)以加快读取速度
+* 重要：Emscriptenglx相关能力支持，兼容unity2021/2022/tuanjie
+* 重要：新版本的Wasm分包能力支持：大幅度优化了iOS平台高性能（+）模式的分包性能表现，大幅度减少了开发者预处理操作耗时，优化了分包操作耗时
+* 普通：适配插件版本升至1.2.80
+
+## 2025-8-12 v0.1.28 【重要更新】
+### Feature
+* 普通：PageManager.Show支持Promise
+* 普通：性能工具实时数据流支持
+* 普通：适配插件版本升至1.2.79
+### Fixed
+* 重要：修复Touch时进行IOS音频resume造成的卡顿问题
+* 重要：UnityWebRequest、AssetBundle、Addressables等加载已缓存资源时，读文件报错导致游戏异常
+
+## 2025-7-10 v0.1.27 【普通更新】
+### Feature
+* 普通：新增 JS_Sound_GetPosition 方法用于获取音频播放位置
+* 普通：WebGL2变更为正式特性
+* 普通：支持小游戏试玩导出
+
+## 2025-5-8  v0.1.26 【普通更新】
 ### Feature
 * 普通：增加禁止多点触控的配置
 ### Fixed

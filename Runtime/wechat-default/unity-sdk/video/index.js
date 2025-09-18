@@ -12,7 +12,6 @@ const videoInstances = {};
 class VideoBufferManager {
     videoBuffers = new Map();
     getTempBuffer(videoId, byteLength) {
-        console.warn("getTempBuffer ", videoId);
         const Module = GameGlobal.manager.gameInstance.Module;
         if (this.videoBuffers.has(videoId)) {
             const bufferInfo = this.videoBuffers.get(videoId);
@@ -24,7 +23,6 @@ class VideoBufferManager {
             }
         }
         const newPtr = Module._malloc(byteLength);
-        console.warn("getTempBuffer ", newPtr);
         if (newPtr === null) {
             return null;
         }
@@ -37,7 +35,7 @@ class VideoBufferManager {
             const bufferInfo = this.videoBuffers.get(videoId);
             if (bufferInfo.ptr !== null) {
                 Module._free(bufferInfo.ptr);
-                console.warn("destroyTempBuffer ", bufferInfo.ptr);
+                
             }
             this.videoBuffers.delete(videoId);
         }
@@ -219,13 +217,13 @@ function _JS_Video_Destroy(video) {
     videoInstances[video].destroy();
     const Module = GameGlobal.manager.gameInstance.Module;
     const { GL } = Module;
-    const gl = GL.currentContext.GLctx;
     if (GameGlobal.mtl) {
         if (!isWebVideo) {
             videoBufferManager?.destroyTempBuffer(video);
         }
     }
     else {
+        const gl = GL.currentContext.GLctx;
         if (!isWebVideo && gl.emscriptenGLX && Module._glxVideoDestroy) {
             Module._glxVideoDestroy(video);
         }

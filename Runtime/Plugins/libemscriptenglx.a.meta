@@ -60,6 +60,11 @@ PluginImporter:
       settings:
         CPU: AnyCPU
   - first:
+      WebGL: WebGL
+    second:
+      enabled: 1
+      settings: {}
+  - first:
       WeixinMiniGame: WeixinMiniGame
     second:
       enabled: 1

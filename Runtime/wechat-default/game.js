@@ -52,7 +52,6 @@ checkVersion().then((enable) => {
                     canvas,
                     events: GameGlobal.events,
                     WXWASMSDK: GameGlobal.WXWASMSDK,
-                    wxEnv: wx.env ?? {},
                 },
             }).default;
         }
