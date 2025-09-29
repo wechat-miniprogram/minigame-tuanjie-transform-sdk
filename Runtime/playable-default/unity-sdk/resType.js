@@ -93,6 +93,14 @@ export const ResType = {
         top: 'number',
         width: 'number',
     },
+    OfficialComponentsInfo: {
+        notificationComponentInfo: 'OfficialComponentInfo',
+    },
+    OfficialComponentInfo: {
+        boundingClientRect: 'ClientRect',
+        isVisible: 'bool',
+        name: 'string',
+    },
     GetStorageInfoSyncOption: {
         currentSize: 'number',
         keys: 'string[]',
@@ -180,10 +188,15 @@ export const ResType = {
         downstreamThroughputKbpsEstimate: 'number',
         estimate_nettype: 'number',
         fetchStart: 'number',
+        httpDNSDomainLookUpEnd: 'number',
+        httpDNSDomainLookUpStart: 'number',
         httpRttEstimate: 'number',
+        invokeStart: 'number',
         peerIP: 'string',
         port: 'number',
         protocol: 'string',
+        queueEnd: 'number',
+        queueStart: 'number',
         receivedBytedCount: 'number',
         redirectEnd: 'number',
         redirectStart: 'number',
@@ -518,6 +531,12 @@ export const ResType = {
         status: 'number',
         errMsg: 'string',
     },
+    GetChatToolInfoSuccessCallbackResult: {
+        cloudID: 'string',
+        encryptedData: 'string',
+        errMsg: 'string',
+        iv: 'string',
+    },
     GetClipboardDataSuccessCallbackOption: {
         data: 'string',
         errMsg: 'string',
@@ -555,6 +574,10 @@ export const ResType = {
         signature: 'string',
         errMsg: 'string',
     },
+    GetGameExptInfoSuccessCallbackResult: {
+        list: 'object',
+        errMsg: 'string',
+    },
     GetGroupEnterInfoError: {
         errMsg: 'string',
         errCode: 'number',
@@ -564,6 +587,20 @@ export const ResType = {
         encryptedData: 'string',
         errMsg: 'string',
         iv: 'string',
+    },
+    GetGroupMembersInfoSuccessCallbackResult: {
+        membersInfo: 'ResultOpenDataContextUserInfo[]',
+        errMsg: 'string',
+    },
+    ResultOpenDataContextUserInfo: {
+        avatarUrl: 'string',
+        city: 'string',
+        country: 'string',
+        gender: 'number',
+        language: 'string',
+        nickName: 'string',
+        openId: 'string',
+        province: 'string',
     },
     GetInferenceEnvInfoSuccessCallbackResult: {
         ver: 'string',
@@ -667,7 +704,7 @@ export const ResType = {
         errMsg: 'string',
         openIdList: 'string[]',
     },
-    RequestFailCallbackErr: {
+    LoginFailCallbackErr: {
         errMsg: 'string',
         errno: 'number',
     },
@@ -736,9 +773,8 @@ export const ResType = {
     OnDeviceOrientationChangeListenerResult: {
         value: 'string',
     },
-    Error: {
+    ListenerError: {
         message: 'string',
-        stack: 'string',
     },
     OnGamepadConnectedListenerResult: {
         gamepad: 'string',
@@ -783,6 +819,9 @@ export const ResType = {
     OnNetworkWeakChangeListenerResult: {
         networkType: 'string',
         weakNet: 'bool',
+    },
+    OnOfficialComponentsInfoChangeListenerResult: {
+        OfficialComponentsInfo: 'OfficialComponentsInfo',
     },
     OnScreenRecordingStateChangedListenerResult: {
         state: 'string',
@@ -846,6 +885,9 @@ export const ResType = {
         windowHeight: 'number',
         windowWidth: 'number',
     },
+    OnWindowStateChangeListenerResult: {
+        state: 'string',
+    },
     OpenCardRequestInfo: {
         cardId: 'string',
         code: 'string',
@@ -888,12 +930,6 @@ export const ResType = {
     MidasFriendPaymentError: {
         errMsg: 'string',
         errCode: 'number',
-    },
-    RequestMidasFriendPaymentSuccessCallbackResult: {
-        cloudID: 'string',
-        encryptedData: 'string',
-        errMsg: 'string',
-        iv: 'string',
     },
     MidasPaymentError: {
         errMsg: 'string',
@@ -938,6 +974,10 @@ export const ResType = {
         rawData: 'string',
         result: 'string',
         scanType: 'string',
+        errMsg: 'string',
+    },
+    GroupMemberInfo: {
+        members: 'string[]',
         errMsg: 'string',
     },
     SetBLEMTUFailCallbackResult: {
