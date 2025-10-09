@@ -118,16 +118,16 @@ namespace WeChatWASM
 
                 if (returnValue)
                 {
-                    Debug.Log("×ª»»Íê³É²¢³É¹¦ÉÏ´«Ê×°ü×ÊÔ´");
+                    Debug.Log("è½¬æ¢å®Œæˆå¹¶æˆåŠŸä¸Šä¼ é¦–åŒ…èµ„æº");
                 }
                 else
                 {
-                    Debug.LogError("Ê×°ü×ÊÔ´ÉÏ´«Ê§°Ü£¬Çë¼ì²éÍøÂçÒÔ¼°Auto StreamingÅäÖÃÊÇ·ñÕıÈ·¡£");
+                    Debug.LogError("é¦–åŒ…èµ„æºä¸Šä¼ å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œä»¥åŠAuto Streamingé…ç½®æ˜¯å¦æ­£ç¡®ã€‚");
                 }
             }
             else
             {
-                Debug.LogError("×ª»»Ê§°Ü");
+                Debug.LogError("è½¬æ¢å¤±è´¥");
             }
         }
     

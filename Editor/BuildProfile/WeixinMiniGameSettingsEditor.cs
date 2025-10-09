@@ -115,16 +115,7 @@ namespace WeChatWASM
                 formCheckbox("profilingFuncs", "Profiling Funcs");
                 formCheckbox("profilingMemory", "Profiling Memory");
 
-                GUI.enabled = false;
-                // WebGL2.0
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(string.Empty, GUILayout.Width(10));
-                GUILayout.Label("WebGL2.0(beta)", GUILayout.Width(140));
-                EditorGUILayout.Toggle(false, GUILayout.Width(20));
-                GUILayout.Label("Set in PlayerSettings Override!", GUILayout.Width(200));
-                GUILayout.EndHorizontal();
-                GUI.enabled = true;
-
+                formCheckbox("webgl2", "WebGL2.0(beta)");
                 formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
                 formCheckbox("EmscriptenGLX", "EmscriptenGLX(?)", "是否使用EmscriptenGLX渲染方案");
                 formCheckbox("iOSMetal", "iOSMetal(?)", "是否使用iOSMetal渲染方案，需要开启iOS高性能+模式，有助于提升运行性能，降低iOS功耗");

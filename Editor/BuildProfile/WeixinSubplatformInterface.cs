@@ -22,10 +22,21 @@ namespace WeChatWASM
 
     public class WeixinSubplatformInterface : MiniGameSubplatformInterface
     {
+        class CacheConfig
+        {
+            public WXProjectConf ProjectConf;
+            public SDKOptions SDKOptions;
+            public CompileOptions CompileOptions;
+            public CompressTexture CompressTexture;
+            public List<string> PlayerPrefsKeys = new List<string>();
+            public FontOptions FontOptions;
+        }
+
+        private CacheConfig cacheConfig = new CacheConfig();
 
         public override string GetSubplatformName()
         {
-            return "WeChat:΢��С��Ϸ";
+            return "WeChat:微信小游戏";
         }
 
         public override MiniGameSettings GetSubplatformSettings()
@@ -86,26 +97,11 @@ namespace WeChatWASM
                     }
                 }
             }
-
+            BuildPostProcess(buildProfile);
             return buildMiniGameError;
         }
 
-        private WXConvertCore.WXExportError CallDoExport(BuildProfile buildProfile)
-        {
-            WXEditorScriptObject config = UnityUtil.GetEditorConf();
-            WeixinMiniGameSettings weixinSettings = buildProfile.miniGameSettings as WeixinMiniGameSettings;
-            config.ProjectConf = weixinSettings.ProjectConf;
-            config.SDKOptions = weixinSettings.SDKOptions;
-            config.CompileOptions = weixinSettings.CompileOptions;
-            config.CompressTexture = weixinSettings.CompressTexture;
-            config.PlayerPrefsKeys = weixinSettings.PlayerPrefsKeys;
-            config.FontOptions = weixinSettings.FontOptions;
-            EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-            return WXConvertCore.DoExport();
-        }
-
-        private static bool WechatBuildPreprocess(BuildProfile buildProfile)
+        private bool WechatBuildPreprocess(BuildProfile buildProfile)
         {
             // Check GFX API and Color Space
             if (buildProfile != null)
@@ -144,6 +140,42 @@ namespace WeChatWASM
             {
                 throw new InvalidOperationException("Build profile has not been initialized.");
             }
+        }
+
+        private WXConvertCore.WXExportError CallDoExport(BuildProfile buildProfile)
+        {
+            WXEditorScriptObject config = UnityUtil.GetEditorConf();
+            cacheConfig.ProjectConf = config.ProjectConf;
+            cacheConfig.SDKOptions = config.SDKOptions;
+            cacheConfig.CompileOptions = config.CompileOptions;
+            cacheConfig.CompressTexture = config.CompressTexture;
+            cacheConfig.PlayerPrefsKeys = config.PlayerPrefsKeys;
+            cacheConfig.FontOptions = config.FontOptions;
+
+            WeixinMiniGameSettings weixinSettings = buildProfile.miniGameSettings as WeixinMiniGameSettings;
+            config.ProjectConf = weixinSettings.ProjectConf;
+            config.SDKOptions = weixinSettings.SDKOptions;
+            config.CompileOptions = weixinSettings.CompileOptions;
+            config.CompressTexture = weixinSettings.CompressTexture;
+            config.PlayerPrefsKeys = weixinSettings.PlayerPrefsKeys;
+            config.FontOptions = weixinSettings.FontOptions;
+            EditorUtility.SetDirty(config);
+            AssetDatabase.SaveAssets();
+            return WXConvertCore.DoExport();
+        }
+
+        private void BuildPostProcess(BuildProfile buildProfile)
+        {
+            // Restore the original settings
+            WXEditorScriptObject config = UnityUtil.GetEditorConf();
+            config.ProjectConf = cacheConfig.ProjectConf;
+            config.SDKOptions = cacheConfig.SDKOptions;
+            config.CompileOptions = cacheConfig.CompileOptions;
+            config.CompressTexture = cacheConfig.CompressTexture;
+            config.PlayerPrefsKeys = cacheConfig.PlayerPrefsKeys;
+            config.FontOptions = cacheConfig.FontOptions;
+            EditorUtility.SetDirty(config);
+            AssetDatabase.SaveAssets();
         }
 
     }
