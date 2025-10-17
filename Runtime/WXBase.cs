@@ -1137,6 +1137,7 @@ namespace WeChatWASM
         }
 #endregion
 
+#region PageManager
         /// <summary>
         /// [[PageManager](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/PageManager.html) wx.createPageManager()](https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html)
         /// 需要基础库： `3.6.7`
@@ -1162,12 +1163,22 @@ namespace WeChatWASM
         {
             return WXSDKManagerHandler.Instance.CreatePageManager();
         }
+#endregion
 
+#region 上报
         /// <returns></returns>
         public static WXMiniReportManager GetMiniReportManager(GetMiniReportManagerParam param)
         {
             return WXSDKManagerHandler.Instance.GetMiniReportManager(param);
         }
+#endregion
+
+#region 社交特色能力
+        public static WXRankManager GetRankManager() {
+            return WXSDKManagerHandler.Instance.GetRankManager();
+        }
     }
 }
+#endregion
+
 #endif

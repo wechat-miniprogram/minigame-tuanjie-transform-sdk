@@ -3125,6 +3125,17 @@
              是否结束
             </summary>
         </member>
+        <member name="F:WeChatWASM.PageManagerCallbackResult.errCode">
+            <summary>
+            错误码，文档可见 https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PageManagerCallbackResult.errMsg">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.PageManagerEventResult.isRecommended" -->
         <member name="F:WeChatWASM.LoadOption.openlink">
             <summary>
             从不同渠道获得的OPENLINK字符串
@@ -3150,6 +3161,7 @@
             结果对象的json字符串，各项为实验的相关信息
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.RankManagerStartEventResult.scoreKey" -->
         <member name="F:WeChatWASM.VirtualPaymentError.errMsg">
             错误信息
             
