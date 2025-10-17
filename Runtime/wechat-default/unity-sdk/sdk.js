@@ -361,7 +361,8 @@ export default {
         }
         ClassOnEventLists[className + functionName][id + eventName].push(callback);
         // WXVideoDecoder OnEvent 不规范 特殊处理
-        if (className === 'WXVideoDecoder') {
+        // update: 2025.9.27: 严重怀疑之前 WXPageManager 压根没有跑通过事件监听，跑到下面去了
+        if (className === 'WXVideoDecoder' || className === 'WXPageManager') {
             obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](eventName, callback);
         }
         else {
@@ -384,7 +385,8 @@ export default {
         }
         ClassOnEventLists[className + functionName][id + eventName].forEach((v) => {
             
-            if (className === 'WXVideoDecoder') {
+            
+            if (className === 'WXVideoDecoder' || className === 'WXPageManager') {
                 obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](eventName, v);
             }
             else {
