@@ -221,6 +221,9 @@ namespace WeChatWASM
                     {
                         var rootPath = Directory.GetParent(Application.dataPath).FullName;
                         string webglDir = WXExtEnvDef.GETDEF("WEIXINMINIGAME") ? "WeixinMiniGame" : "WebGL";
+#if PLATFORM_PLAYABLEADS
+                        webglDir = "PlayableAds";
+#endif
                         symFile1 = Path.Combine(rootPath, "Library", "Bee", "artifacts", webglDir, "build", "debug_WebGL_wasm", "build.js.symbols");
                     }
                     WeChatWASM.UnityUtil.preprocessSymbols(symFile1, GetWebGLSymbolPath());
@@ -346,7 +349,9 @@ namespace WeChatWASM
             {
                 // WxPerfJsBridge.jslib
                 var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+				wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, config.CompileOptions.enablePerfAnalysis);
+#elif PLATFORM_WEIXINMINIGAME
                 wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
 #else
                 wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
@@ -359,7 +364,10 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer();
 
                 var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
+
+#if PLATFORM_PLAYABLEADS
+				wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2022Plugin);
+#elif PLATFORM_WEIXINMINIGAME
                 wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
 #else
                 wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
@@ -372,7 +380,9 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202102To202203();
 
                 var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2021Plugin);
+#elif PLATFORM_WEIXINMINIGAME
                 wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
 #else
                 wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
@@ -572,7 +582,9 @@ namespace WeChatWASM
                     Debug.LogError("Lua Adaptor Importer Not Found: " + maybeBuildFile);
                     continue;
                 }
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, shouldBuild);
+#elif PLATFORM_WEIXINMINIGAME
                 wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, shouldBuild);
 #else
                 wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, shouldBuild);
@@ -622,7 +634,12 @@ namespace WeChatWASM
             else
             {
 #if TUANJIE_2022_3_OR_NEWER
-                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
+                if(EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame 
+#if PLATFORM_PLAYABLEADS
+                    && EditorUserBuildSettings.activeBuildTarget != BuildTarget.PlayableAds
+#endif
+                    )
+                    EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
 #endif
             }
             Emit(LifeCycle.afterSwitchActiveBuildTarget);
@@ -1095,7 +1112,11 @@ namespace WeChatWASM
             }
 #endif
 #if TUANJIE_2022_3_OR_NEWER
-            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame)
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame
+#if PLATFORM_PLAYABLEADS
+                && EditorUserBuildSettings.activeBuildTarget != BuildTarget.PlayableAds
+#endif
+                )
             {
                 UnityEngine.Debug.LogFormat("[Builder] Current target is: {0}, switching to: {1}", EditorUserBuildSettings.activeBuildTarget, BuildTarget.WeixinMiniGame);
                 if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame))
@@ -1106,8 +1127,11 @@ namespace WeChatWASM
             }
 
             var projDir = Path.Combine(config.ProjectConf.DST, webglDir);
-
+#if PLATFORM_PLAYABLEADS
+            var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.PlayableAds, option);
+#else
             var result = BuildPipeline.BuildPlayer(GetScenePaths(), projDir, BuildTarget.WeixinMiniGame, option);
+#endif
             if (result.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
             {
                 UnityEngine.Debug.LogFormat("[Builder] BuildPlayer failed. emscriptenArgs:{0}", PlayerSettings.WeixinMiniGame.emscriptenArgs);
@@ -2246,7 +2270,9 @@ namespace WeChatWASM
             {
                 var importer = AssetImporter.GetAtPath(jsLibs[i]) as PluginImporter;
                 bool value = i == index;
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+                importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, value);
+#elif PLATFORM_WEIXINMINIGAME
                 importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, value);
 #else
                 importer.SetCompatibleWithPlatform(BuildTarget.WebGL, value);

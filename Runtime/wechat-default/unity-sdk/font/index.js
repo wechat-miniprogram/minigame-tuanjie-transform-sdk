@@ -170,8 +170,8 @@ function WXGetFontRawData(conf, callbackId, forceFallback = false) {
         }
     })
         .catch((err) => {
-        if (err.errmsg === 'no support font' && forceFallback === false) {
-            
+        
+        if (!loadFromRemote && !!config && forceFallback === false) {
             WXGetFontRawData(conf, callbackId, true);
         }
         else {
