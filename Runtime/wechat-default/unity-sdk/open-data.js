@@ -12,6 +12,8 @@ var SharedCanvasMode;
 })(SharedCanvasMode || (SharedCanvasMode = {}));
 let sharedCanvasMode;
 let timerId;
+let textureObject = null;
+let unityTextureObject = null;
 let textureId;
 
 function getOpenDataContext(mode) {
@@ -60,12 +62,34 @@ function hookUnityRender() {
     }
     else {
         
-        gl.bindTexture(gl.TEXTURE_2D, GL.textures[textureId]);
-        if (isLinearColorSpace) {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+        const commonTexImage2DHandler = () => {
+            
+            if (textureId) {
+                gl.bindTexture(gl.TEXTURE_2D, GL.textures[textureId]);
+                if (isLinearColorSpace) {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+                }
+                else {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+                }
+            }
+        };
+                if (!textureObject) {
+            textureObject = gl.createTexture();
+            
+            unityTextureObject = GL.textures[textureId];
+            
+            GL.textures[textureId] = textureObject;
+            commonTexImage2DHandler();
+            
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         }
         else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, getSharedCanvas());
+            
+            commonTexImage2DHandler();
         }
         timerId = requestAnimationFrame(hookUnityRender);
     }
@@ -91,6 +115,12 @@ function stopHookUnityRender() {
     const Module = GameGlobal.manager.gameInstance.Module;
     const { GL } = Module;
     const gl = GL.currentContext.GLctx;
+        if (textureObject) {
+        gl.deleteTexture(textureObject);
+        GL.textures[textureId] = unityTextureObject;
+        textureObject = null;
+        unityTextureObject = null;
+    }
     
     if (gl.emscriptenGLX) {
         Module.ccall('glxHideOpenData', null, [], []);
