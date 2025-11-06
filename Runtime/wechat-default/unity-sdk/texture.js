@@ -39,8 +39,15 @@ const mod = {
         if (hasCheckSupportedExtensions) {
             return GameGlobal.TextureCompressedFormat;
         }
-        const list = canvas
-            .getContext(GameGlobal.managerConfig.contextConfig.contextType === 2 ? 'webgl2' : 'webgl')
+        
+        const isSupportEmscriptenGLX = wx.env.isSuppportEmscriptenGLX || wx.env.isSupportEmscriptenGLX;
+        const isWebGL2 = GameGlobal.managerConfig.contextConfig.contextType === 2;
+        let finalContextType = isWebGL2 ? 'webgl2' : 'webgl';
+        if (isSupportEmscriptenGLX) {
+            finalContextType = isWebGL2 ? 'wxwebgl2' : 'wxwebgl';
+        }
+                const list = canvas
+            .getContext(finalContextType)
             .getSupportedExtensions();
         const noneLimitSupportedTextures = ['']; // 兜底采用png
         GameGlobal.TextureCompressedFormat = '';
