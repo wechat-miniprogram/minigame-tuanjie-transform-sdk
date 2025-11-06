@@ -1,6 +1,6 @@
-# 微信小游戏Unity/团结引擎SDK
+# 微信小游戏团结引擎/UnitySDK
 
-有关微信SDK的最新特性与使用请阅读 [Unity WebGL 微信小游戏适配方案](https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/)。
+有关微信SDK的最新特性与使用请阅读 [Unity WebGL 微信小游戏适配方案](https://gitee.com/wechat-minigame/minigame-unity-webgl-transform)。
 
 ## 安装指南
 
