@@ -6,6 +6,18 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2025-11-6 v0.1.30 【重要更新】
+### Feature
+* 重要：EmscriptenGLX支持微信压缩纹理
+* 普通：EmscriptenGLX支持Android glReadpixels
+* 普通：EmscriptenGLX优化Android CPU与功耗
+* 普通：Metal高帧率下功耗优化
+* 普通：团结引擎buildprofile支持
+### Fixed
+* 重要：Metal编码库batch size修复
+* 普通：PageManager相关问题修复
+* 普通：iOS18的微信字体修复
+
 ## 2025-9-8 v0.1.29 【重要更新】
 ### Feature
 * 普通：本地缓存存在时，UnityWebRequest支持同步方式(API：wx.SetSyncReadCacheEnabled)以加快读取速度

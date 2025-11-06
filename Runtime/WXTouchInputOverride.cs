@@ -149,7 +149,9 @@ public class WXTouchInputOverride : BaseInput
             Text text = selectedObject.GetComponent<Text>();
             if (text != null) 
             {
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+                PlayableAdsInput.mobileKeyboardSupport = true;
+#elif PLATFORM_WEIXINMINIGAME
                 WeixinMiniGameInput.mobileKeyboardSupport = true;
 #elif PLATFORM_WEBGL
 #if UNITY_2022_1_OR_NEWER
@@ -159,7 +161,9 @@ public class WXTouchInputOverride : BaseInput
             }
             else 
             {
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+                PlayableAdsInput.mobileKeyboardSupport = false;
+#elif PLATFORM_WEIXINMINIGAME
                 WeixinMiniGameInput.mobileKeyboardSupport = false;
 #elif PLATFORM_WEBGL
 #if UNITY_2022_1_OR_NEWER
