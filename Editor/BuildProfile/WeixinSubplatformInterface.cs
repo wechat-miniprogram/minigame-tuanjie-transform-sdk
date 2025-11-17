@@ -52,12 +52,6 @@ namespace WeChatWASM
 
         public override BuildMiniGameError Build(BuildProfile buildProfile, BuildOptions options)
         {
-
-            var bcLibPath = Path.GetFullPath(Path.Combine("Packages", "com.qq.weixin.minigame", "Editor", "BuildProfile", "lib", "libwx-metal-cpp.bc"));
-            var jsLibPath = Path.GetFullPath(Path.Combine("Packages", "com.qq.weixin.minigame", "Editor", "BuildProfile", "lib", "mtl_library.jslib"));
-            string libPath = bcLibPath + ';' + jsLibPath;
-            EditorUtility.SetMiniGameGfxLibraryPath(libPath);
-
             WeixinMiniGameSettings settings = buildProfile.miniGameSettings as WeixinMiniGameSettings;
 
             BuildMiniGameError buildMiniGameError = BuildMiniGameError.Unknown;
