@@ -3119,6 +3119,36 @@
              是否结束
             </summary>
         </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.eventId">
+            <summary>
+            事件ID，开发者自行维护（必需）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.costTime">
+            <summary>
+            事件耗时，单位ms（可选）不填时为0
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.result">
+            <summary>
+            事件结果，默认成功（可选）不填时默认成功
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.ReportGameEventResult">
+            <summary>
+            reportGameEvent的事件类型
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventResult.Success">
+            <summary>
+            成功事件
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventResult.Fail">
+            <summary>
+            失败事件
+            </summary>
+        </member>
         <member name="F:WeChatWASM.PageManagerCallbackResult.errCode">
             <summary>
             错误码，文档可见 https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html
