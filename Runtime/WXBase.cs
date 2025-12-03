@@ -766,6 +766,16 @@ namespace WeChatWASM
             return WXSDKManagerHandler.Instance.GetCachePath(url);
         }
 
+        /// <summary>
+        /// 临时修复安卓在主线程繁忙时，异步读缓存耗时高，但需关注同步读文件可能导致掉帧
+        /// 仅在有需要的情况下主动开启，需要同步读的场景完成后再主动关闭
+        /// </summary>
+        /// <param name="enabled"></param>
+        public static void SetSyncReadCacheEnabled(bool enabled)
+        {
+            WXSDKManagerHandler.Instance.SetSyncReadCacheEnabled(enabled);
+        }
+
 #endregion
 
         /// <summary>
