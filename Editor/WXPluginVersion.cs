@@ -2,7 +2,7 @@ namespace WeChatWASM
 {
     public class WXPluginVersion
     {
-        public static string pluginVersion = "202511280256"; // 这一行不要改他，导出的时候会自动替换
+        public static string pluginVersion = "202512040727"; // 这一行不要改他，导出的时候会自动替换
     }
 
     public class WXPluginConf
