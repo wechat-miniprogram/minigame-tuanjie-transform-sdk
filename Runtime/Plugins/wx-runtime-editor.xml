@@ -3119,6 +3119,17 @@
              是否结束
             </summary>
         </member>
+        <member name="F:WeChatWASM.PageManagerCallbackResult.errCode">
+            <summary>
+            错误码，文档可见 https://developers.weixin.qq.com/minigame/dev/api/open-api/openlink/wx.createPageManager.html
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PageManagerCallbackResult.errMsg">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.PageManagerEventResult.isRecommended" -->
         <member name="F:WeChatWASM.LoadOption.openlink">
             <summary>
             从不同渠道获得的OPENLINK字符串
@@ -3139,6 +3150,12 @@
             选填，部分活动、功能允许接收自定义query参数，请参阅渠道说明，默认可不填
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetGameExptInfoSuccessCallbackResult.list">
+            <summary>
+            结果对象的json字符串，各项为实验的相关信息
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.RankManagerStartEventResult.scoreKey" -->
         <member name="F:WeChatWASM.VirtualPaymentError.errMsg">
             错误信息
             
@@ -3589,6 +3606,26 @@
             宽度，单位：px
             </summary>
         </member>
+        <member name="F:WeChatWASM.OfficialComponentsInfo.notificationComponentInfo">
+            <summary>
+            通知组件信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OfficialComponentInfo.boundingClientRect">
+            <summary>
+            组件的布局位置信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OfficialComponentInfo.isVisible">
+            <summary>
+            组件是否显示
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OfficialComponentInfo.name">
+            <summary>
+            组件的名称
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetStorageInfoSyncOption.currentSize">
             <summary>
             当前占用的空间大小, 单位 KB
@@ -3911,7 +3948,7 @@
         </member>
         <member name="F:WeChatWASM.DownloadFileOption.enableProfile">
             <summary>
-            是否开启 profile，默认开启。开启后可在接口回调的 res.profile 中查看性能调试信息。
+            是否开启 profile。iOS 和 Android 端默认开启，其他端暂不支持。开启后可在接口回调的 res.profile 中查看性能调试信息。
             </summary>
         </member>
         <member name="F:WeChatWASM.DownloadFileOption.enableQuic">
@@ -3937,12 +3974,6 @@
             超时时间，单位为毫秒，默认值为 60000 即一分钟。
             </summary>
         </member>
-        <member name="F:WeChatWASM.DownloadFileOption.useHighPerformanceMode">
-            <summary>
-            需要基础库： `3.4.1`
-            使用高性能模式，暂仅支持 Android，默认关闭。该模式下有更优的网络性能表现。
-            </summary>
-        </member>
         <member name="F:WeChatWASM.GeneralCallbackResult.errMsg">
             <summary>
             错误信息
@@ -3956,7 +3987,7 @@
         <member name="F:WeChatWASM.DownloadFileSuccessCallbackResult.profile">
             <summary>
             需要基础库： `2.10.4`
-            网络请求过程中一些调试信息，[查看详细说明](https://developers.weixin.qq.com/miniprogram/dev/framework/performance/network.html)
+            网络请求过程中一些调试信息，[查看详细说明](https://developers.weixin.qq.com/miniprogram/dev/framework/performance/network.html)。目前 iOS 和 Android 端支持。
             </summary>
         </member>
         <member name="F:WeChatWASM.DownloadFileSuccessCallbackResult.statusCode">
@@ -3991,12 +4022,12 @@
         </member>
         <member name="F:WeChatWASM.RequestProfile.domainLookUpEnd">
             <summary>
-            DNS 域名查询完成的时间，如果使用了本地缓存（即无 DNS 查询）或持久连接，则与 fetchStart 值相等
+            Local DNS 域名查询完成的时间，如果使用了本地缓存（即无 DNS 查询）或持久连接，则与 fetchStart 值相等
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestProfile.domainLookUpStart">
             <summary>
-            DNS 域名查询开始的时间，如果使用了本地缓存（即无 DNS 查询）或持久连接，则与 fetchStart 值相等
+            Local DNS 域名查询开始的时间，如果使用了本地缓存（即无 DNS 查询）或持久连接，则与 fetchStart 值相等
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestProfile.downstreamThroughputKbpsEstimate">
@@ -4014,9 +4045,27 @@
             组件准备好使用 HTTP 请求抓取资源的时间，这发生在检查本地缓存之前
             </summary>
         </member>
+        <member name="F:WeChatWASM.RequestProfile.httpDNSDomainLookUpEnd">
+            <summary>
+            需要基础库： `3.8.9`
+            httpDNS 完成查询的时间。仅当开启 httpDNS 功能时返回该字段。目前仅wx.request接口支持
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestProfile.httpDNSDomainLookUpStart">
+            <summary>
+            需要基础库： `3.8.9`
+            httpDNS 开始查询的时间。仅当开启 httpDNS 功能时返回该字段。目前仅wx.request接口支持
+            </summary>
+        </member>
         <member name="F:WeChatWASM.RequestProfile.httpRttEstimate">
             <summary>
             协议层根据多个请求评估当前网络的 rtt（仅供参考）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestProfile.invokeStart">
+            <summary>
+            需要基础库： `3.8.10`
+            调用接口的时间。
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestProfile.peerIP">
@@ -4032,6 +4081,18 @@
         <member name="F:WeChatWASM.RequestProfile.protocol">
             <summary>
             使用协议类型，有效值：http1.1, h2, quic, unknown
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestProfile.queueEnd">
+            <summary>
+            需要基础库： `3.8.10`
+            结束排队的时间。达到并行上限时才需要排队。如果未发生排队，则该字段和 queueStart 字段值相同
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestProfile.queueStart">
+            <summary>
+            需要基础库： `3.8.10`
+            开始排队的时间。达到并行上限时才需要排队。
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestProfile.receivedBytedCount">
@@ -5534,6 +5595,26 @@
             预告状态：0可用 1取消 2已用
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.cloudID">
+            <summary>
+            敏感数据对应的云 ID，开通[云开发](https://developers.weixin.qq.com/minigame/dev/wxcloud/basis/getting-started.html)的小程序才会返回，可通过云调用直接获取开放数据，详细见[云调用直接获取开放数据](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#method-cloud)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.encryptedData">
+            <summary>
+            包括敏感数据在内的完整转发信息的加密数据，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.errMsg">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.iv">
+            <summary>
+            加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetClipboardDataSuccessCallbackOption.data">
             <summary>
             剪贴板的内容
@@ -5619,6 +5700,11 @@
             使用 sha1( rawData + sessionkey ) 得到字符串，用于校验用户信息
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetGameExptInfoOption.keyList">
+            <summary>
+            实验参数数组，不填则获取所有实验参数
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetGroupEnterInfoOption.allowSingleChat">
             <summary>
             需要基础库： `3.7.8`
@@ -5668,6 +5754,56 @@
         <member name="F:WeChatWASM.GetGroupEnterInfoSuccessCallbackResult.iv">
             <summary>
             加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetGroupMembersInfoOption.members">
+            <summary>
+            需要获取的群用户的 groupOpenId 列表
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetGroupMembersInfoSuccessCallbackResult.membersInfo">
+            <summary>
+            所选用户的头像昵称列表
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.avatarUrl">
+            <summary>
+            用户头像图片 url
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.city">
+            <summary>
+            用户所在城市
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.country">
+            <summary>
+            用户所在国家
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.gender">
+            <summary>
+            用户性别
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.language">
+            <summary>
+            显示 country province city 所用的语言
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.nickName">
+            <summary>
+            用户昵称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.openId">
+            <summary>
+            用户 openId
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ResultOpenDataContextUserInfo.province">
+            <summary>
+            用户所在省份
             </summary>
         </member>
         <member name="F:WeChatWASM.GetInferenceEnvInfoSuccessCallbackResult.ver">
@@ -5803,17 +5939,6 @@
             每一项订阅消息的订阅状态。itemSettings对象的键为**一次性订阅消息的模板id**或**系统订阅消息的类型**，值为'accept'、'reject'、'ban'中的其中一种。'accept'表示用户同意订阅这条消息，'reject'表示用户拒绝订阅这条消息，'ban'表示已被后台封禁。一次性订阅消息使用方法详见 [wx.requestSubscribeMessage](https://developers.weixin.qq.com/minigame/dev/api/open-api/subscribe-message/wx.requestSubscribeMessage.html)，永久订阅消息（仅小游戏可用）使用方法详见[wx.requestSubscribeSystemMessage](https://developers.weixin.qq.com/minigame/dev/api/open-api/subscribe-message/wx.requestSubscribeSystemMessage.html)
             ## 注意事项
             - itemSettings 只返回用户勾选过订阅面板中的“总是保持以上选择，不再询问”的订阅消息。
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.GetShareInfoOption.shareTicket">
-            <summary>
-            shareTicket，详见[获取更多转发信息](#)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.GetShareInfoOption.timeout">
-            <summary>
-            需要基础库： `1.9.90`
-            超时时间，单位 ms
             </summary>
         </member>
         <member name="F:WeChatWASM.GetShowSplashAdStatusSuccessCallbackResult.code">
@@ -6103,12 +6228,12 @@
             超时时间，单位ms
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestFailCallbackErr.errMsg">
+        <member name="F:WeChatWASM.LoginFailCallbackErr.errMsg">
             <summary>
             错误信息
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestFailCallbackErr.errno">
+        <member name="F:WeChatWASM.LoginFailCallbackErr.errno">
             <summary>
             需要基础库： `2.24.0`
             errno 错误码，错误码的详细说明参考 [Errno错误码](https://developers.weixin.qq.com/minigame/dev/guide/runtime/debug/PublicErrno.html)
@@ -6155,7 +6280,7 @@
         </member>
         <member name="F:WeChatWASM.NavigateToMiniProgramOption.extraData">
             <summary>
-            需要传递给目标小程序的数据，目标小程序可在 `App.onLaunch`，`App.onShow` 中获取到这份数据。如果跳转的是小游戏，可以在 [wx.onShow](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.onShow.html)、[wx.getLaunchOptionsSync](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.getLaunchOptionsSync.html) 中可以获取到这份数据数据。
+            需要传递给目标小程序的数据，目标小程序可在 `App.onLaunch`，`App.onShow` 中获取到这份数据。如果跳转的是小游戏，可以在 [wx.onShow](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.onShow.html)、[wx.getLaunchOptionsSync](https://developers.weixin.qq.com/minigame/dev/api/base/app/life-cycle/wx.getLaunchOptionsSync.html) 中可以获取到这份数据。
             </summary>
         </member>
         <member name="F:WeChatWASM.NavigateToMiniProgramOption.noRelaunchIfPathUnchanged">
@@ -6199,6 +6324,25 @@
             <summary>
             需要基础库： `2.4.0`
             设置特征订阅类型，有效值有 `notification` 和 `indication`
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.NotifyGroupMembersOption.entrancePath" -->
+        <member name="F:WeChatWASM.NotifyGroupMembersOption.members">
+            <summary>
+            需要提醒的用户 group_openid 列表
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NotifyGroupMembersOption.title">
+            <summary>
+            文字链标题，发送的内容将由微信拼接为：@的成员列表+“请完成：”/"请参与："+打开小程序的文字链，如「@alex @cindy 请完成：团建报名统计」。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.NotifyGroupMembersOption.type">
+            <summary>
+            展示的动词
+            可选值：
+            - 'participate': 请参与;
+            - 'complete': 请完成;
             </summary>
         </member>
         <member name="F:WeChatWASM.OnAccelerometerChangeListenerResult.x">
@@ -6366,14 +6510,9 @@
             - 'landscapeReverse': 横屏反方向，以 HOME 键在屏幕左侧为反方向;
             </summary>
         </member>
-        <member name="F:WeChatWASM.Error.message">
+        <member name="F:WeChatWASM.ListenerError.message">
             <summary>
-            错误
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.Error.stack">
-            <summary>
-            错误调用堆栈
+            错误信息，包含堆栈
             </summary>
         </member>
         <member name="F:WeChatWASM.OnGamepadConnectedListenerResult.gamepad">
@@ -6496,6 +6635,11 @@
         <member name="F:WeChatWASM.OnNetworkWeakChangeListenerResult.weakNet">
             <summary>
             当前是否处于弱网状态
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnOfficialComponentsInfoChangeListenerResult.OfficialComponentsInfo">
+            <summary>
+            全部组件的信息
             </summary>
         </member>
         <member name="F:WeChatWASM.OnScreenRecordingStateChangedListenerResult.state">
@@ -6691,6 +6835,14 @@
             变化后的窗口宽度，单位 px
             </summary>
         </member>
+        <member name="F:WeChatWASM.OnWindowStateChangeListenerResult.state">
+            <summary>
+            改变的窗口状态，可能的值为：
+            - 'minimize'：窗口最小化
+            - 'normalize'：窗口恢复正常尺寸
+            - 'maximize'：窗口最大化
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OpenBluetoothAdapterOption.mode">
             <summary>
             需要基础库： `2.10.0`
@@ -6721,6 +6873,11 @@
             视频号 id，以“sph”开头的id，可在视频号助手获取
             </summary>
         </member>
+        <member name="F:WeChatWASM.OpenChannelsActivityOption.nonceId">
+            <summary>
+            视频号的Feed的nonceId，必填
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OpenChannelsEventOption.eventId">
             <summary>
             活动 id
@@ -6749,6 +6906,21 @@
         <member name="F:WeChatWASM.OpenChannelsUserProfileOption.finderUserName">
             <summary>
             视频号 id
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OpenChatToolOption.chatType">
+            <summary>
+            群聊类型
+            可选值：
+            - 1: 微信联系人单聊;
+            - 2: 企业微信联系人单聊;
+            - 3: 普通微信群聊;
+            - 4: 企业微信互通群聊;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OpenChatToolOption.roomid">
+            <summary>
+            聊天室 id，不传则拉起群选择框，可以传入多聊群的 opengid 值，或者单聊群的 open_single_roomid 值
             </summary>
         </member>
         <member name="F:WeChatWASM.OpenCustomerServiceChatOption.corpId">
@@ -7147,26 +7319,6 @@
             | -10073015 |  | 索要功能不可用 |
             </summary>
         </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.cloudID">
-            <summary>
-            敏感数据对应的云 ID，开通[云开发](https://developers.weixin.qq.com/minigame/dev/wxcloud/basis/getting-started.html)的小程序才会返回，可通过云调用直接获取开放数据，详细见[云调用直接获取开放数据](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#method-cloud)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.encryptedData">
-            <summary>
-            包括敏感数据在内的完整转发信息的加密数据，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.errMsg">
-            <summary>
-            错误信息
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.iv">
-            <summary>
-            加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
-            </summary>
-        </member>
         <member name="F:WeChatWASM.RequestMidasPaymentOption.currencyType">
             <summary>
             币种
@@ -7426,6 +7578,16 @@
             - 'CODE_25': 一维码;
             </summary>
         </member>
+        <member name="F:WeChatWASM.SelectGroupMembersOption.maxSelectCount">
+            <summary>
+            最多可选人数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GroupMemberInfo.members">
+            <summary>
+            所选用户在此聊天室下的唯一标识，同一个用户在不同的聊天室下id不同
+            </summary>
+        </member>
         <member name="F:WeChatWASM.SetBLEMTUOption.deviceId">
             <summary>
             蓝牙设备 id
@@ -7559,6 +7721,66 @@
             是否转发到当前群。该参数只对从群工具栏打开的场景下生效，默认转发到当前群，填入false时可转发到其他会话。
             </summary>
         </member>
+        <member name="F:WeChatWASM.ShareAppMessageToGroupOption.title">
+            <summary>
+            转发标题
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShareAppMessageToGroupOption.imageUrl">
+            <summary>
+            自定义图片路径，支持PNG及JPG，显示图片长宽比是 5:4，默认使用截图
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.ShareAppMessageToGroupOption.path" -->
+        <member name="F:WeChatWASM.ShareEmojiToGroupOption.imagePath">
+            <summary>
+            要分享的表情地址，必须为本地路径或临时路径
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.ShareEmojiToGroupOption.entrancePath" -->
+        <member name="F:WeChatWASM.ShareEmojiToGroupOption.needShowEntrance">
+            <summary>
+            分享的表情消息是否要带小程序入口
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShareImageToGroupOption.imagePath">
+            <summary>
+            要分享的图片地址，必须为本地路径或临时路径
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.ShareImageToGroupOption.entrancePath" -->
+        <member name="F:WeChatWASM.ShareImageToGroupOption.needShowEntrance">
+            <summary>
+            分享的图片消息是否要带小程序入口
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShareTextToGroupOption.content">
+            <summary>
+            要分享的文本内容
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.ShareTextToGroupOption.entrancePath" -->
+        <member name="F:WeChatWASM.ShareTextToGroupOption.needShowEntrance">
+            <summary>
+            分享的表情消息是否要带小程序入口
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShareVideoToGroupOption.videoPath">
+            <summary>
+            要分享的视频地址，必须为本地路径或临时路径
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.ShareVideoToGroupOption.entrancePath" -->
+        <member name="F:WeChatWASM.ShareVideoToGroupOption.needShowEntrance">
+            <summary>
+            分享的图片消息是否要带小程序入口
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShareVideoToGroupOption.thumbPath">
+            <summary>
+            缩略图路径，若留空则使用视频首帧
+            </summary>
+        </member>
         <member name="F:WeChatWASM.ShowActionSheetOption.itemList">
             <summary>
             按钮的文字数组，数组长度最大为 6
@@ -7599,6 +7821,14 @@
         <member name="F:WeChatWASM.ShowKeyboardOption.defaultValue">
             <summary>
             键盘输入框显示的默认值
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ShowKeyboardOption.keyboardType">
+            <summary>
+            键盘类型，默认为文本类型，客户端8.0.57以上支持数字键盘
+            可选值：
+            - 'text': 文本;
+            - 'number': 数字;
             </summary>
         </member>
         <member name="F:WeChatWASM.ShowKeyboardOption.maxLength">

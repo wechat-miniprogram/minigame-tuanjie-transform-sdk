@@ -10,7 +10,9 @@ internal class DisableKeyboardInput : MonoBehaviour
     private static void OnGameLaunch()
     {
 #if !UNITY_EDITOR
-#if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_PLAYABLEADS
+        PlayableAdsInput.mobileKeyboardSupport = false;
+#elif PLATFORM_WEIXINMINIGAME
         WeixinMiniGameInput.mobileKeyboardSupport = false;
 #elif PLATFORM_WEBGL
 #if UNITY_2022_1_OR_NEWER

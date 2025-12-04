@@ -174,4 +174,9 @@ export default {
     WX_SetPreferredFramesPerSecond(fps) {
         wx.setPreferredFramesPerSecond(fps);
     },
+        WXSetSyncReadCacheEnabled(enabled) {
+        if (GameGlobal.manager && GameGlobal.manager.fs.setSyncReadCacheEnabled) {
+            GameGlobal.manager.fs.setSyncReadCacheEnabled(!!enabled);
+        }
+    }
 };
