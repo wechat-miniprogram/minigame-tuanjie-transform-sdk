@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using WeChatWASM.GameProtect;
 
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 namespace WeChatWASM
@@ -112,6 +113,7 @@ namespace WeChatWASM
             WXRuntimeExtEnvDef.SETDEF("PLATFORM_WEBGL", false);
 #endif
             RegisterController();
+            RegisterSafeEnv();
         }
 
         private static void RegisterController()
@@ -138,6 +140,12 @@ namespace WeChatWASM
                 // unityObject.GetInstanceID() would never return 0. 
                 return 0;
             });
+        }
+
+        private static void RegisterSafeEnv()
+        {
+            WXBridge.InitSDK = WX.InitSDK;
+            WXBridge.CallJSFunction = WX.CallJSFunction;
         }
     }
 

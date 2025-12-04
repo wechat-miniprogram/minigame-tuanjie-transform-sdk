@@ -4,11 +4,1319 @@
         <name>wx-runtime</name>
     </assembly>
     <members>
-        <member name="T:PlayerPrefs">
+        <member name="T:WeChatWASM.GameProtect.CheatDetector">
             <summary>
-            覆盖unity的PlayerPrefs
-            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
+            Cheat Detector
             </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.CheatDetector.Start">
+            <summary>
+            初始化监听器
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.CheatDetector.OnDestroy">
+            <summary>
+            移除监听器
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.CheatDetector.OnCheatingDetected(WeChatWASM.GameProtect.Handlers.SecurityWarningHandler)">
+            <summary>
+            当检测到作弊时触发
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Constants.GlobalConstants">
+            <summary>
+            Global Pixel Security Toolkit Constants
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Constants.TextCodes">
+            <summary>
+            Security Toolkit Text Codes
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.AES">
+            <summary>
+            AES Encryption Class
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.AES.#ctor(WeChatWASM.GameProtect.Core.Encryption.AES.EncryptionOptions)">
+            <summary>
+            AES Encryption Provider
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.AES.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.AES.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.AES.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.AES.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="P:WeChatWASM.GameProtect.Core.Encryption.AES.SetupRijndaelManaged">
+            <summary>
+            Setup Manager
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.Base64">
+            <summary>
+            Base64 Data Encryption
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.Base64.#ctor">
+            <summary>
+            Base64 Constructor
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.Base64.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.Base64.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.Base64.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.Base64.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.DES">
+            <summary>
+            DES Encryption Class
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.DES.#ctor(WeChatWASM.GameProtect.Core.Encryption.DES.EncryptionOptions)">
+            <summary>
+            DES Encryption Provider
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.DES.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.DES.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.DES.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.DES.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.IDataEncryption">
+            <summary>
+            Base Data Encryption Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.IEncryptionOptions">
+            <summary>
+            Encryption Options Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.MD5">
+            <summary>
+            MD5 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.MD5.#ctor">
+            <summary>
+            Base64 Constructor
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.MD5.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.MD5.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.MD5.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.MD5.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.RSA">
+            <summary>
+            RSA Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.#ctor(WeChatWASM.GameProtect.Core.Encryption.RSA.EncryptionOptions)">
+            <summary>
+            RSA Encryption Provider
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.RSA.GenrateKeyPair(System.Int32)">
+            <summary>
+            Generate Key Pair
+            </summary>
+            <param name="keySize"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.SHA1">
+            <summary>
+            SHA1 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA1.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA1.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA1.#ctor">
+            <summary>
+            SHA1 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA1.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA1.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.SHA256">
+            <summary>
+            SHA256 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA256.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA256.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA256.#ctor">
+            <summary>
+            SHA256 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA256.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA256.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.SHA512">
+            <summary>
+            SHA512 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA512.#ctor">
+            <summary>
+            SHA512 Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA512.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA512.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA512.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.SHA512.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.XOR">
+            <summary>
+            XOR Encryption Class
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.#ctor(WeChatWASM.GameProtect.Core.Encryption.XOR.EncryptionOptions)">
+            <summary>
+            XOR Encryption Provider
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.XOR.EncryptOrDecrypt(System.String,System.String)">
+            <summary>
+            Encrypt / Decrypt XOR
+            </summary>
+            <param name="text"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Encryption.xxHash">
+            <summary>
+            xxHash Encryption Provider
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.xxHash.#ctor(WeChatWASM.GameProtect.Core.Encryption.xxHash.EncryptionOptions)">
+            <summary>
+            AES Encryption Provider
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.xxHash.EncodeString(System.String)">
+            <summary>
+            Encode String Data
+            </summary>
+            <param name="plane"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.xxHash.EncodeBinary(System.Byte[])">
+            <summary>
+            Encrypt Data Bytes
+            </summary>
+            <param name="buf"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.xxHash.DecodeString(System.String)">
+            <summary>
+            Decrypt String
+            </summary>
+            <param name="encrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Encryption.xxHash.DecodeBinary(System.Byte[])">
+            <summary>
+            Decrypt Binary Data
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.GameEvent">
+            <summary>
+            Base Game Event
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent.AddListener(System.Action)">
+            <summary>
+            Add Event Listener
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent.RemoveListener(System.Action)">
+            <summary>
+            Remove Event Listener
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent.RemoveAllListeners">
+            <summary>
+            Remove All Listeners
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent.Invoke(System.Boolean)">
+            <summary>
+            Invoke Listeners
+            </summary>
+            <param name="inverted"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent.CleanupListeners">
+            <summary>
+            Remove All Empty Listeners
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent`1.AddListener(System.Action{`0})">
+            <summary>
+            Add Listener
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent`1.RemoveListener(System.Action{`0})">
+            <summary>
+            Remove listener
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent`1.RemoveAllListeners">
+            <summary>
+            Remove All Listeners
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent`1.Invoke(`0,System.Boolean)">
+            <summary>
+            Invoke Event
+            </summary>
+            <param name="arguments"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.GameEvent`1.CleanupListeners">
+            <summary>
+            Cleanup All Listeners
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IEvent">
+            <summary>
+            Base Event Interface
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.IEvent.RemoveAllListeners">
+            <summary>
+            Remove All Listeners
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IGameEvent">
+            <summary>
+            Base Game Event Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IGameEvent`1">
+            <summary>
+            Base Game Event Interface with Arguments
+            </summary>
+            <typeparam name="TArgs"></typeparam>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IInvoker">
+            <summary>
+            Base Invoker Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IInvoker`1">
+            <summary>
+            Base Invoker Interface with Arguments
+            </summary>
+            <typeparam name="TArgs"></typeparam>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IListener">
+            <summary>
+            Base Listener Interface
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.IListener.Invoke(System.Boolean)">
+            <summary>
+            Invoke Listener
+            </summary>
+            <param name="inverted"></param>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Events.IListener`1">
+            <summary>
+            Listener Interface with Args
+            </summary>
+            <typeparam name="TArgs"></typeparam>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Events.IListener`1.Invoke(`0,System.Boolean)">
+            <summary>
+            Invoke Listener
+            </summary>
+            <param name="arguments"></param>
+            <param name="inverted"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.#ctor(System.Byte[])">
+            <summary>
+            Secured Double Constructor
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.SetCryptoKey(System.Int64)">
+            <summary>
+            Allows to change default crypto key of this type instances. All new instances will use specified key.<br/>
+            All current instances will use previous key unless you call ApplyNewCryptoKey() on them explicitly.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.ApplyNewCryptoKey">
+            <summary>
+            Use it after SetNewCryptoKey() to re-encrypt current instance using new crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Encrypt(System.Double)">
+            <summary>
+            Use this simple encryption method to encrypt any double value, uses default crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Encrypt(System.Double,System.Int64)">
+            <summary>
+            Use this simple encryption method to encrypt any double value, uses passed crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.InternalEncrypt(System.Double)">
+            <summary>
+            Internal Encrypt
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.InternalEncrypt(System.Double,System.Int64)">
+            <summary>
+            Internal Encrypt using key
+            </summary>
+            <param name="value"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Decrypt(System.Int64)">
+            <summary>
+            Use it to decrypt long you got
+            from Encrypt(double) back to double, uses default crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Decrypt(System.Int64,System.Int64)">
+            <summary>
+            Use it to decrypt long you got
+            from Encrypt(double) back to double, uses passed crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.GetEncrypted">
+            <summary>
+            Allows to pick current obscured value as is.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.SetEncrypted(System.Int64)">
+            <summary>
+            Allows to explicitly set current obscured value.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.InternalDecrypt">
+            <summary>
+            Internal Decrypt
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.DoubleLongBytesUnion">
+            <summary>
+            Double Long Bytes Union
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.op_Increment(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble)">
+            <summary>
+            Increment Operator
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.op_Decrement(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble)">
+            <summary>
+            Decrement Operator
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.ToString">
+            <summary>
+            Converts the numeric value of this instance to its
+            equivalent string representation.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.ToString(System.String)">
+            <summary>
+            Converts the numeric value of this instance to its equivalent
+            string representation, using the specified format.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.ToString(System.IFormatProvider)">
+            <summary>
+            Converts the numeric value of this instance to its
+            equivalent string representation using the specified
+            culture-specific format information.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.ToString(System.String,System.IFormatProvider)">
+            <summary>
+            Converts the numeric value of this
+            instance to its equivalent string r
+            epresentation using the specified format and
+            culture-specific format information.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Equals(System.Object)">
+            <summary>
+            Check Equals
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.Equals(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble)">
+            <summary>
+            Check Equals
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredDouble.GetHashCode">
+            <summary>
+            Returns the hash code for this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.#ctor(System.Byte[])">
+            <summary>
+            Secured Float Constructor
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.SetCryptoKey(System.Int32)">
+            <summary>
+            Allows to change default crypto key of this type instances. All new instances will use specified key.<br/>
+            All current instances will use previous key unless you call ApplyNewCryptoKey() on them explicitly.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.ApplyNewCryptoKey">
+            <summary>
+            Use it after SetNewCryptoKey() to re-encrypt current instance using new crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Encrypt(System.Single)">
+            <summary>
+            Use this simple encryption method to encrypt any float value, uses default crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Encrypt(System.Single,System.Int32)">
+            <summary>
+            Use this simple encryption method to encrypt any float value, uses passed crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.InternalEncrypt(System.Single)">
+            <summary>
+            Internal Encrypt
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.InternalEncrypt(System.Single,System.Int32)">
+            <summary>
+            Internal Encrypt by Key
+            </summary>
+            <param name="value"></param>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Decrypt(System.Int32)">
+            <summary>
+            Use it to decrypt int you got
+            from Encrypt(float) back to float, uses default crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Decrypt(System.Int32,System.Int32)">
+            <summary>
+            Use it to decrypt int you got
+            from Encrypt(float) back to float, uses passed crypto key.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.GetEncrypted">
+            <summary>
+            Allows to pick current obscured value as is.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.SetEncrypted(System.Int32)">
+            <summary>
+            Allows to explicitly set current obscured value.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.InternalDecrypt">
+            <summary>
+            Internal Decrypt
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.FloatIntBytesUnion">
+            <summary>
+            Float Int Bytes
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.op_Increment(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat)">
+            <summary>
+            Increment Operator
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.op_Decrement(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat)">
+            <summary>
+            Decrement Operator
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Equals(System.Object)">
+            <summary>
+            Returns a value indicating whether this instance is equal to a specified object.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.Equals(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat)">
+            <summary>
+            Returns a value indicating whether this instance and a specified SecuredFloat object represent the same value.
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.GetHashCode">
+            <summary>
+            Returns the hash code for this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.ToString">
+            <summary>
+            Converts the numeric value of this
+            instance to its equivalent string representation.
+            </summary>
+            <returns>
+            The string representation of the value of this instance.
+            </returns>
+            <filterpriority>1</filterpriority>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.ToString(System.String)">
+            <summary>
+            Converts the numeric value of this instance to its equivalent
+            string representation, using the specified format.
+            </summary>
+            <returns>
+            The string representation of the value of
+            this instance as specified by <paramref name="format"/>.
+            </returns>
+            <param name="format">A numeric format string (see Remarks).</param><exception cref="T:System.FormatException"><paramref name="format"/> is invalid. </exception><filterpriority>1</filterpriority>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.ToString(System.IFormatProvider)">
+            <summary>
+            Converts the numeric value of this instance to its equivalent
+            string representation using the specified culture-specific
+            format information.
+            </summary>
+            <returns>
+            The string representation of the value of
+            this instance as specified by <paramref name="provider"/>.
+            </returns>
+            <param name="provider">An <see cref="T:System.IFormatProvider"/> that supplies culture-specific formatting information. </param><filterpriority>1</filterpriority>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredFloat.ToString(System.String,System.IFormatProvider)">
+            <summary>
+            Converts the numeric value of this instance to its equivalent
+            string representation using the specified format and
+            culture-specific format information.
+            </summary>
+            <returns>
+            The string representation of the value of this instance
+            as specified by <paramref name="format"/> and <paramref name="provider"/>.
+            </returns>
+            <param name="format">A numeric format string (see Remarks).</param><param name="provider">An <see cref="T:System.IFormatProvider"/> that supplies culture-specific formatting information. </param><filterpriority>1</filterpriority>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.#ctor(System.Int32)">
+            <summary>
+            Secured Int Constructor
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.SetCryptoKey(System.Int32)">
+            <summary>
+            修改密钥，新的SecuredInt实例将使用指定的密钥<br/>
+            如果不显示调用ApplyNewCryptoKey，旧的实例还是使用旧的密钥
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.ApplyNewCryptoKey">
+            <summary>
+            如果设置了SetCryptoKey之后想更新之前的实例，则需调用ApplyNewCryptoKey
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Encrypt(System.Int32)">
+            <summary>
+            默认的简单异或加密，使用默认密钥
+            </summary>
+            <returns>Encrypted <c>int</c>.</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Encrypt(System.Int32,System.Int32)">
+            <summary>
+            简单异或加密，第二个参数是密钥，为0则使用默认密钥
+            </summary>
+            <returns>Encrypted <c>int</c>.</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Decrypt(System.Int32)">
+            <summary>
+            简单异或解密，使用默认密钥
+            </summary>
+            <returns>Decrypted <c>int</c>.</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Decrypt(System.Int32,System.Int32)">
+            <summary>
+            简单异或解密，第二个参数为密钥，为0则使用默认密钥
+            </summary>
+            <returns>Decrypted <c>int</c>.</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.GetEncrypted">
+            <summary>
+            获取当前隐藏值
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.SetEncrypted(System.Int32)">
+            <summary>
+            显示的设置加密值
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.InternalDecrypt">
+            <summary>
+            内部解密
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.op_Increment(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt)">
+            <summary>
+            ++重载
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.op_Decrement(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt)">
+            <summary>
+            --重载
+            </summary>
+            <param name="input"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Equals(System.Object)">
+            <summary>
+            判断是否相等
+            </summary>
+            <returns>true if <paramref name="obj"/> is an instance of SecuredInt and equals the value of this instance; otherwise, false.</returns>
+            <param name="obj">An object to compare with this instance. </param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.Equals(WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt)">
+            <summary>
+            判断两个SecuredInt值是否相等
+            </summary>
+            <returns>
+            true if <paramref name="obj"/> has the same value as this instance; otherwise, false.
+            </returns>
+            <param name="obj">An SecuredInt value to compare to this instance.</param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.GetHashCode">
+            <summary>
+            获取HashCode
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.ToString">
+            <summary>
+            ToString重载
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.ToString(System.String)">
+            <summary>
+            ToString 重载
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.ToString(System.IFormatProvider)">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.SecuredTypes.SecuredInt.ToString(System.String,System.IFormatProvider)">
+            <summary>
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.BinarySerializer`1">
+            <summary>
+            Binary Object Serializer
+            </summary>
+            <typeparam name="TObject"></typeparam>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.BinarySerializer`1.#ctor(WeChatWASM.GameProtect.Core.Serializer.BinarySerializer{`0}.SerializationOptions)">
+            <summary>
+            Serializer Constructor
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.BinarySerializer`1.SaveObject(`0)">
+            <summary>
+            Save Object to File
+            </summary>
+            <param name="dataToSave"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.BinarySerializer`1.LoadObject(`0)">
+            <summary>
+            Load Object from File
+            </summary>
+            <param name="inputObject"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.ISerializer`1">
+            <summary>
+            Base Serializer Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.ISerializerOptions">
+            <summary>
+            Base Serialization Options
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.JsonSerializer`1">
+            <summary>
+            JSON Object Serializer
+            </summary>
+            <typeparam name="TObject"></typeparam>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.JsonSerializer`1.#ctor(WeChatWASM.GameProtect.Core.Serializer.JsonSerializer{`0}.SerializationOptions)">
+            <summary>
+            Serializer Constructor
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.JsonSerializer`1.SaveObject(`0)">
+            <summary>
+            Save Object to File
+            </summary>
+            <param name="dataToSave"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.JsonSerializer`1.LoadObject(`0)">
+            <summary>
+            Load Object from File
+            </summary>
+            <param name="inputObject"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.PlayerPrefsSerializer`1">
+            <summary>
+            Player Prefs Object Serializer
+            </summary>
+            <typeparam name="TObject"></typeparam>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.PlayerPrefsSerializer`1.#ctor(WeChatWASM.GameProtect.Core.Serializer.PlayerPrefsSerializer{`0}.SerializationOptions)">
+            <summary>
+            Serializer Constructor
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.PlayerPrefsSerializer`1.SaveObject(`0)">
+            <summary>
+            Save Object to File
+            </summary>
+            <param name="dataToSave"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.PlayerPrefsSerializer`1.LoadObject(`0)">
+            <summary>
+            Load Object from File
+            </summary>
+            <param name="inputObject"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Core.Serializer.XMLSerializer`1">
+            <summary>
+            XML Object Serializer
+            </summary>
+            <typeparam name="TObject"></typeparam>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.XMLSerializer`1.#ctor(WeChatWASM.GameProtect.Core.Serializer.XMLSerializer{`0}.SerializationOptions)">
+            <summary>
+            Serializer Constructor
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.XMLSerializer`1.SaveObject(`0)">
+            <summary>
+            Save Object to File
+            </summary>
+            <param name="dataToSave"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Core.Serializer.XMLSerializer`1.LoadObject(`0)">
+            <summary>
+            Load Object from File
+            </summary>
+            <param name="inputObject"></param>
+            <returns></returns>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.GlobalConstants">
+            <summary>
+            常量
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Handlers.DeltaTimeHandler">
+            <summary>
+            Delta Time Handler
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Handlers.SecurityWarningHandler">
+            <summary>
+            Security Warning Message
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Modules.IModuleConfig">
+            <summary>
+            Module Config Interface
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Modules.ISecurityModule">
+            <summary>
+            Security Module
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Modules.SecuredMemory.SecuredMemory">
+            <summary>
+            Secured Memory Module
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Modules.SecuredMemory.SecuredMemory.#ctor(WeChatWASM.GameProtect.Modules.SecuredMemory.SecuredMemory.ModuleOptions)">
+            <summary>
+            Secured Memory Module
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.WXGuard">
+            <summary>
+            WXGuard安全实例
+            </summary>
+        </member>
+        <member name="P:WeChatWASM.GameProtect.WXGuard.HasInstance">
+            <summary>
+            判断 WXGuard 是否已经实例化
+            （不会触发 Instance 的创建）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.#ctor">
+            <summary>
+            添加一个Mono组件，用于监控游戏的声明周期
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.AutoInitialize">
+            <summary>
+            在场景加载前，确保 WXGuard 和必要模块初始化
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.PreloadToolkitSetup">
+            <summary>
+            Preload Toolkit Setup
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.SetupDetection">
+            <summary>
+            Setup Automatic Detection
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.CreateMonoWrapper">
+            <summary>
+            Mono组件
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.InvokeCoroutine(System.Collections.IEnumerator)">
+            <summary>
+            用于创建非阻塞的协程
+            </summary>
+            <param name="coroutine"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.SetupModule``1(WeChatWASM.GameProtect.Modules.ISecurityModule)">
+            <summary>
+            设置安全模块
+            </summary>
+            <param name="module"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.GetModule``1">
+            <summary>
+            获取安全模块
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.HasModule``1">
+            <summary>
+            检查安全模块是否设置
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.RemoveModule``1">
+            <summary>
+            移除安全模块
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.CreateSecurityWarning(System.String,WeChatWASM.GameProtect.Modules.ISecurityModule)">
+            <summary>
+            安全告警触发
+            </summary>
+            <param name="message"></param>
+            <param name="module"></param>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXGuard.CallGameLoop(System.Boolean,System.Single)">
+            <summary>
+            游戏循环
+            </summary>
+            <param name="isFixed"></param>
+            <param name="deltaTime"></param>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.WXGuardOptions">
+            <summary>
+            工具选项
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.WXMono">
+            <summary>
+            Mono组件
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXMono.Awake">
+            <summary>
+            On Awake
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXMono.Start">
+            <summary>
+            On Start
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXMono.Update">
+            <summary>
+            On Update
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXMono.FixedUpdate">
+            <summary>
+            On Fixed Update
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.WXMono.InvokeCoroutine(System.Collections.IEnumerator)">
+            <summary>
+            创建协程，用于执行阻塞的任务
+            </summary>
+            <param name="coroutine"></param>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Monitor.WXDataPluginExample">
+            <summary>
+            WX数据保护插件使用示例
+            演示如何使用数据保护功能来保护游戏中的重要数值
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example1_BasicUsage">
+            <summary>
+            示例1：基础用法 - 存储和读取数据
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example2_SafeGet">
+            <summary>
+            示例2：安全获取数据（推荐方式）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example3_ComplexObject">
+            <summary>
+            示例3：存储复杂对象
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example4_DataManagement">
+            <summary>
+            示例4：数据管理
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.OnDataTampered(System.Object,WeChatWASM.GameProtect.Monitor.WXDataProtectionEventArgs)">
+            <summary>
+            数据篡改事件处理
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.HandleTampering(WeChatWASM.GameProtect.Monitor.WXDataProtectionEventArgs)">
+            <summary>
+            处理数据篡改
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Monitor.PlayerStats">
+            <summary>
+            示例：玩家属性数据结构
+            注意：使用 JsonUtility 序列化时，必须使用公共字段
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Monitor.GameCurrencyManager">
+            <summary>
+            游戏货币管理器示例
+            封装常用的货币操作，简化调用
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.Init(System.Int32,System.Int32)">
+            <summary>
+            初始化货币数据
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.GetCoins">
+            <summary>
+            获取金币数量
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.AddCoins(System.Int32)">
+            <summary>
+            增加金币
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.SpendCoins(System.Int32)">
+            <summary>
+            消费金币
+            </summary>
+            <returns>是否消费成功</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.GetDiamonds">
+            <summary>
+            获取钻石数量
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.AddDiamonds(System.Int32)">
+            <summary>
+            增加钻石
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.SpendDiamonds(System.Int32)">
+            <summary>
+            消费钻石
+            </summary>
+            <returns>是否消费成功</returns>
         </member>
         <member name="T:WeChatWASM.WXBannerAd">
             <summary>
@@ -9123,6 +10431,12 @@
             [VideoDecoder.on(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.on.html)
             需要基础库： `2.11.1`
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
+            </summary>
+        </member>
+        <member name="T:PlayerPrefs">
+            <summary>
+            覆盖unity的PlayerPrefs
+            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
             </summary>
         </member>
     </members>
