@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using WeChatWASM.GameProtect;
 
 #if PLATFORM_WEIXINMINIGAME || PLATFORM_WEBGL || UNITY_EDITOR
 namespace WeChatWASM
@@ -140,7 +139,6 @@ namespace WeChatWASM
                 return 0;
             });
         }
-
     }
 
 }
