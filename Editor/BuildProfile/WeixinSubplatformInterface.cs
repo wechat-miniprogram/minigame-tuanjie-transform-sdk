@@ -1,4 +1,4 @@
-#if TUANJIE_1_4_OR_NEWER
+#if TUANJIE_1_6_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
