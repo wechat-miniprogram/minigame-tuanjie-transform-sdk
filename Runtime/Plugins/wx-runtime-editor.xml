@@ -4,6 +4,11 @@
         <name>wx-runtime-editor</name>
     </assembly>
     <members>
+        <member name="T:WeChatWASM.GameProtect.Monitor.FastSecureValue">
+            <summary>
+            高性能安全数据容器（基于 XOR 混淆 + 校验和）
+            </summary>
+        </member>
         <member name="T:WeChatWASM.GameProtect.Monitor.WXDataPluginExample">
             <summary>
             WX数据保护插件使用示例
