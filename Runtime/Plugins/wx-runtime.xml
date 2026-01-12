@@ -4,11 +4,90 @@
         <name>wx-runtime</name>
     </assembly>
     <members>
-        <member name="T:PlayerPrefs">
+        <member name="T:WeChatWASM.GameProtect.Monitor.WXDataPluginExample">
             <summary>
-            覆盖unity的PlayerPrefs
-            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
+            WX数据保护插件使用示例
+            演示如何使用数据保护功能来保护游戏中的重要数值
             </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example1_BasicUsage">
+            <summary>
+            示例1：基础用法 - 存储和读取数据
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example2_SafeGet">
+            <summary>
+            示例2：安全获取数据（推荐方式）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example3_ComplexObject">
+            <summary>
+            示例3：存储复杂对象
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.Example4_DataManagement">
+            <summary>
+            示例4：数据管理
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.OnDataTampered(System.Object,WeChatWASM.GameProtect.Monitor.WXDataProtectionEventArgs)">
+            <summary>
+            数据篡改事件处理
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.WXDataPluginExample.HandleTampering(WeChatWASM.GameProtect.Monitor.WXDataProtectionEventArgs)">
+            <summary>
+            处理数据篡改
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Monitor.PlayerStats">
+            <summary>
+            示例：玩家属性数据结构
+            注意：使用 JsonUtility 序列化时，必须使用公共字段
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.GameProtect.Monitor.GameCurrencyManager">
+            <summary>
+            游戏货币管理器示例
+            封装常用的货币操作，简化调用
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.Init(System.Int32,System.Int32)">
+            <summary>
+            初始化货币数据
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.GetCoins">
+            <summary>
+            获取金币数量
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.AddCoins(System.Int32)">
+            <summary>
+            增加金币
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.SpendCoins(System.Int32)">
+            <summary>
+            消费金币
+            </summary>
+            <returns>是否消费成功</returns>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.GetDiamonds">
+            <summary>
+            获取钻石数量
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.AddDiamonds(System.Int32)">
+            <summary>
+            增加钻石
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.GameProtect.Monitor.GameCurrencyManager.SpendDiamonds(System.Int32)">
+            <summary>
+            消费钻石
+            </summary>
+            <returns>是否消费成功</returns>
         </member>
         <member name="T:WeChatWASM.WXBannerAd">
             <summary>
@@ -3123,6 +3202,36 @@
         <member name="F:WeChatWASM.NotifyMiniProgramPlayableStatusOption.isEnd">
             <summary>
              是否结束
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.eventId">
+            <summary>
+            事件ID，开发者自行维护（必需）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.costTime">
+            <summary>
+            事件耗时，单位ms（可选）不填时为0
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventOption.result">
+            <summary>
+            事件结果，默认成功（可选）不填时默认成功
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.ReportGameEventResult">
+            <summary>
+            reportGameEvent的事件类型
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventResult.Success">
+            <summary>
+            成功事件
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReportGameEventResult.Fail">
+            <summary>
+            失败事件
             </summary>
         </member>
         <member name="F:WeChatWASM.PageManagerCallbackResult.errCode">
@@ -9123,6 +9232,12 @@
             [VideoDecoder.on(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.on.html)
             需要基础库： `2.11.1`
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
+            </summary>
+        </member>
+        <member name="T:PlayerPrefs">
+            <summary>
+            覆盖unity的PlayerPrefs
+            注意：调用均为同步调用， 容易阻塞游戏主线程造成卡顿，不建议频繁调用
             </summary>
         </member>
     </members>
