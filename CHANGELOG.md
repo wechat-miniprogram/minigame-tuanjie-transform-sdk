@@ -6,7 +6,7 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2025-11-6 v0.1.31 【普通更新】
+## 2026-1-16 v0.1.31 【普通更新】
 ### Fixed
 * 普通：修复glx模式下 createVideo underGameView为true 黑屏的问题
 * 普通：修复build profile在团结1.6之后的导出问题
