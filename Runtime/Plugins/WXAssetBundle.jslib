@@ -1,7 +1,7 @@
 var WXAssetBundleLibrary = {
   $WXFS: {},
 
-  WXFSInit: function (ttl, capacity) {
+  WXFSInit: function (ttl, capacity, prefetchSize) {
     function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
     function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
     function _classCallCheck(instance, Constructor) { if (!_instanceof(instance, Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -104,7 +104,7 @@ var WXAssetBundleLibrary = {
             this.hash.set(key, temp);
             return temp.ab;
           }
-          return -1;
+          return null;
         }
       }, {
         key: "put",
@@ -122,9 +122,9 @@ var WXAssetBundleLibrary = {
             this.hash.delete(key);
             this.hash.set(key, value);
           } else {
-            if (this.capacity !== undefined && this.size >= this.capacity) {
+            while (this.capacity !== undefined && this.size >= this.capacity) {
               var idx = this.hash.keys().next().value;
-              this.size -= idx.ab.byteLength;
+              this.size -= this.hash.get(idx).ab.byteLength;
               this.hash.delete(idx);
               this.hash.set(key, value);
             } else {
@@ -187,6 +187,7 @@ var WXAssetBundleLibrary = {
     }();
     
     WXFS.cache = new WXFileCache(ttl, capacity);
+    WXFS.prefetchSize = prefetchSize || 0; // iOS prefetch bytes, 0 means disabled
     if(unityNamespace.isIOS && unityNamespace.isH5Renderer) {
       WXFS.cache.RegularCleaning(1);
     }
@@ -278,17 +279,72 @@ var WXAssetBundleLibrary = {
       }
       return res;
     };
-    WXFS.read = function(stream, buffer, offset, length, position){
-      var contents = WXFS.cache.get(stream.fd);
-      if (contents === -1) {
-        var res = WXFS.LoadBundleFromFile(stream.path);
-        WXFS.cache.put(stream.fd, res);
-        contents = res;
+    // iOS: read partial file content on demand
+    WXFS.LoadPartialFromFile = function(path, position, length) {
+      var wxFd = WXFS.fs.openSync({ filePath: path, flag: 'r' });
+      var ab = new ArrayBuffer(length);
+      var res = WXFS.fs.readSync({ fd: wxFd, arrayBuffer: ab, offset: 0, length: length, position: position });
+      WXFS.fs.closeSync({ fd: wxFd });
+      return { ab: ab, bytesRead: res.bytesRead };
+    };
+    // Open file, construct wxStream and store in related maps
+    WXFS.open = function(pathname) {
+      var numberfd = WXFS.path2fd.get(pathname);
+      if (numberfd !== undefined) {
+        return numberfd;
       }
+      numberfd = WXFS.newfd();
+      var fileSize;
+      if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
+        // iOS: only get file size via fstatSync, do not read file content
+        fileSize = WXFS.fs.fstatSync({ filePath: pathname }).size;
+      } else {
+        // Non-iOS: read file and cache
+        var res = WXFS.LoadBundleFromFile(pathname);
+        fileSize = new Uint8Array(res).length;
+        WXFS.cache.put(numberfd, res);
+      }
+      var wxStream = {
+        fd: numberfd,
+        path: pathname,
+        seekable: true,
+        position: 0,
+        stream_ops: MEMFS.stream_ops,
+        ungotten: [],
+        node: { mode: 32768, usedBytes: fileSize },
+        error: false
+      };
+      wxStream.stream_ops.read = WXFS.read;
+      WXFS.path2fd.set(pathname, numberfd);
+      WXFS.fd2wxStream.set(numberfd, wxStream);
+      return numberfd;
+    };
+    WXFS.read = function(stream, buffer, offset, length, position){
       if (position >= stream.node.usedBytes) return 0;
       var size = Math.min(stream.node.usedBytes - position, length);
       assert(size >= 0);
-      buffer.set(new Uint8Array(contents.slice(position, position + size)), offset);
+      // Check cache first
+      var contents = WXFS.cache.get(stream.fd);
+      if (contents && position + size <= contents.byteLength) {
+        buffer.set(new Uint8Array(contents, position, size), offset);
+        return size;
+      }
+      // iOS: read on demand
+      if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
+        var readLen = position === 0 ? Math.max(size, Math.min(WXFS.prefetchSize, stream.node.usedBytes)) : size;
+        var res = WXFS.LoadPartialFromFile(stream.path, position, readLen);
+        if (position === 0) {
+          WXFS.cache.put(stream.fd, res.ab, true);
+        }
+        buffer.set(new Uint8Array(res.ab, 0, size), offset);
+        return size;
+      }
+      // Non-iOS: load full file
+      if (!contents) {
+        contents = WXFS.LoadBundleFromFile(stream.path);
+        WXFS.cache.put(stream.fd, contents);
+      }
+      buffer.set(new Uint8Array(contents, position, size), offset);
       return size;
     };
   },
