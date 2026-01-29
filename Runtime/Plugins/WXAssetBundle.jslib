@@ -126,10 +126,8 @@ var WXAssetBundleLibrary = {
               var idx = this.hash.keys().next().value;
               this.size -= this.hash.get(idx).ab.byteLength;
               this.hash.delete(idx);
-              this.hash.set(key, value);
-            } else {
-              this.hash.set(key, value);
             }
+            this.hash.set(key, value);
           }
           this.size += value.ab.byteLength;
           this.maxSize = Math.max(this.size, this.maxSize);
