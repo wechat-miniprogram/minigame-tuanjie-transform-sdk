@@ -185,7 +185,7 @@ var WXAssetBundleLibrary = {
     }();
     
     WXFS.cache = new WXFileCache(ttl, capacity);
-    WXFS.prefetchSize = prefetchSize || 0; // iOS prefetch bytes, 0 means disabled
+    WXFS.prefetchSize = prefetchSize || 1024; // iOS prefetch bytes, default 1024
     if(unityNamespace.isIOS && unityNamespace.isH5Renderer) {
       WXFS.cache.RegularCleaning(1);
     }
@@ -295,8 +295,8 @@ var WXAssetBundleLibrary = {
       numberfd = WXFS.newfd();
       var fileSize;
       if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
-        // iOS: only get file size via fstatSync, do not read file content
-        fileSize = WXFS.fs.fstatSync({ filePath: pathname }).size;
+        // iOS: only get file size via statSync, do not read file content
+        fileSize = WXFS.fs.statSync(pathname).size;
       } else {
         // Non-iOS: read file and cache
         var res = WXFS.LoadBundleFromFile(pathname);
