@@ -194,9 +194,10 @@ var WXAssetBundleLibrary = {
       try {
         var fd = WXFS.path2fd.get(path)
         if (fd !== undefined){
+          var wxStream = WXFS.fd2wxStream.get(fd);
           var stat = {
             mode: 33206,
-            size: WXFS.cache.get(fd).byteLength,
+            size: wxStream.node.usedBytes,
             dev: 1,
             ino: 1,
             nlink: 1,
