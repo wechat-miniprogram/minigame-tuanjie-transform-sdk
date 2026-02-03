@@ -37,6 +37,8 @@ const unityNamespace = {
     capacityAssetBundle: 0,
     // AssetBundle在内存中的缓存大小（字节）
     prefetchSizeAssetBundle: 1024,
+    // AssetBundle file fd在内存中的缓存数量（上限 10）
+    fdCacheCountAssetBundle: 1,
     // 是否显示性能面板
     enableProfileStats: $ENABLE_PROFILE_STATS,
     // 是否预载微信系统字体

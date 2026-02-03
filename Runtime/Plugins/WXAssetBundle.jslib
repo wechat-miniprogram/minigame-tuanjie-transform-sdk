@@ -1,7 +1,7 @@
 var WXAssetBundleLibrary = {
   $WXFS: {},
 
-  WXFSInit: function (ttl, capacity, prefetchSize) {
+  WXFSInit: function (ttl, capacity, prefetchSize, fdCacheCount) {
     function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
     function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
     function _classCallCheck(instance, Constructor) { if (!_instanceof(instance, Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -186,6 +186,29 @@ var WXAssetBundleLibrary = {
     
     WXFS.cache = new WXFileCache(ttl, capacity);
     WXFS.prefetchSize = prefetchSize || 1024; // iOS prefetch bytes, default 1024
+    // LRU cache for wx file descriptors, max 10, default 1
+    WXFS.fdCacheCount = Math.min(fdCacheCount || 1, 10);
+    WXFS.wxFdCache = new Map(); // path -> wxFd
+    WXFS.getWxFd = function(path) {
+      var wxFd = WXFS.wxFdCache.get(path);
+      if (wxFd !== undefined) {
+        // Move to end (most recently used)
+        WXFS.wxFdCache.delete(path);
+        WXFS.wxFdCache.set(path, wxFd);
+        return wxFd;
+      }
+      // Evict oldest if at capacity
+      if (WXFS.wxFdCache.size >= WXFS.fdCacheCount) {
+        var oldestPath = WXFS.wxFdCache.keys().next().value;
+        var oldestFd = WXFS.wxFdCache.get(oldestPath);
+        WXFS.fs.closeSync({ fd: oldestFd });
+        WXFS.wxFdCache.delete(oldestPath);
+      }
+      // Open new fd and cache
+      wxFd = WXFS.fs.openSync({ filePath: path, flag: 'r' });
+      WXFS.wxFdCache.set(path, wxFd);
+      return wxFd;
+    };
     if(unityNamespace.isIOS && unityNamespace.isH5Renderer) {
       WXFS.cache.RegularCleaning(1);
     }
@@ -280,10 +303,9 @@ var WXAssetBundleLibrary = {
     };
     // iOS: read partial file content on demand
     WXFS.LoadPartialFromFile = function(path, position, length) {
-      var wxFd = WXFS.fs.openSync({ filePath: path, flag: 'r' });
+      var wxFd = WXFS.getWxFd(path);
       var ab = new ArrayBuffer(length);
       var res = WXFS.fs.readSync({ fd: wxFd, arrayBuffer: ab, offset: 0, length: length, position: position });
-      WXFS.fs.closeSync({ fd: wxFd });
       return { ab: ab, bytesRead: res.bytesRead };
     };
     // Open file, construct wxStream and store in related maps
