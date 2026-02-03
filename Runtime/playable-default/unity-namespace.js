@@ -33,6 +33,10 @@ const unityNamespace = {
     needCacheTextures: $NEED_CACHE_TEXTURES,
     // AssetBundle在内存中的存活时间
     ttlAssetBundle: 5,
+    // AssetBundle在内存中的缓存上限（字节），0表示无限制
+    capacityAssetBundle: 0,
+    // AssetBundle在内存中的缓存大小（字节）
+    prefetchSizeAssetBundle: 1024,
     // 是否显示性能面板
     enableProfileStats: $ENABLE_PROFILE_STATS,
     // 是否预载微信系统字体
