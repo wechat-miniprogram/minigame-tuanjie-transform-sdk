@@ -231,6 +231,13 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         UpdateValue("NumberOnDisk", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleNumberOnDisk(), sb);
         UpdateValue("SizeInMemory", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleSizeInMemory() / toMB, sb);
         UpdateValue("SizeOnDisk", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleSizeOnDisk() / toMB, sb);
+        UpdateValue("ReadCount", WeChatWASM.WXSDKManagerHandler.Instance.GetReadCount(), sb);
+        UpdateValue("CacheMissCount", WeChatWASM.WXSDKManagerHandler.Instance.GetCacheMissCount(), sb);
+        UpdateValue("FdCacheMissCount", WeChatWASM.WXSDKManagerHandler.Instance.GetFdCacheMissCount(), sb);
+        UpdateValue("OpenSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetOpenSyncCount(), sb);
+        UpdateValue("StatSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetStatSyncCount(), sb);
+        UpdateValue("ReadSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetReadSyncCount(), sb);
+        WeChatWASM.WXSDKManagerHandler.Instance.ResetPerfCounters();
 
 #if UNITY_2021_2_OR_NEWER
         // sb.AppendLine("-------------MemoryRecorder-----");

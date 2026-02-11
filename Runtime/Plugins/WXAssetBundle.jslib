@@ -186,6 +186,13 @@ var WXAssetBundleLibrary = {
     
     WXFS.cache = new WXFileCache(ttl, capacity);
     WXFS.prefetchSize = prefetchSize || 1024; // iOS prefetch bytes, default 1024
+    // Per-frame perf counters
+    WXFS.perfReadCount = 0;        // WXFS.read call count per frame
+    WXFS.perfCacheMissCount = 0;   // LoadPartialFromFile / LoadBundleFromFile count per frame
+    WXFS.perfFdCacheMissCount = 0; // fd cache miss (close old + open new) count per frame
+    WXFS.perfOpenSyncCount = 0;    // fs.openSync call count per frame
+    WXFS.perfStatSyncCount = 0;    // fs.statSync call count per frame
+    WXFS.perfReadSyncCount = 0;    // fs.readSync call count per frame
     // LRU cache for wx file descriptors, max 10, default 1
     WXFS.fdCacheCount = Math.min(fdCacheCount || 1, 10);
     WXFS.wxFdCache = new Map(); // path -> wxFd
@@ -203,9 +210,11 @@ var WXAssetBundleLibrary = {
         var oldestFd = WXFS.wxFdCache.get(oldestPath);
         WXFS.fs.closeSync({ fd: oldestFd });
         WXFS.wxFdCache.delete(oldestPath);
+        WXFS.perfFdCacheMissCount++;
       }
       // Open new fd and cache
       wxFd = WXFS.fs.openSync({ filePath: path, flag: 'r' });
+      WXFS.perfOpenSyncCount++;
       WXFS.wxFdCache.set(path, wxFd);
       return wxFd;
     };
@@ -236,7 +245,7 @@ var WXAssetBundleLibrary = {
           return stat;
         }
         var stat = WXFS.fs.statSync(path);
-        // something not in wx.FileSystemManager, just fill in 0/1
+        WXFS.perfStatSyncCount++;
         stat.dev = 1;
         stat.ino = 1;
         stat.nlink = 1;
@@ -306,6 +315,7 @@ var WXAssetBundleLibrary = {
       var wxFd = WXFS.getWxFd(path);
       var ab = new ArrayBuffer(length);
       var res = WXFS.fs.readSync({ fd: wxFd, arrayBuffer: ab, offset: 0, length: length, position: position });
+      WXFS.perfReadSyncCount++;
       return { ab: ab, bytesRead: res.bytesRead };
     };
     // Open file, construct wxStream and store in related maps
@@ -319,6 +329,7 @@ var WXAssetBundleLibrary = {
       if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
         // iOS: only get file size via statSync, do not read file content
         fileSize = WXFS.fs.statSync(pathname).size;
+        WXFS.perfStatSyncCount++;
       } else {
         // Non-iOS: read file and cache
         var res = WXFS.LoadBundleFromFile(pathname);
@@ -344,12 +355,14 @@ var WXAssetBundleLibrary = {
       if (position >= stream.node.usedBytes) return 0;
       var size = Math.min(stream.node.usedBytes - position, length);
       assert(size >= 0);
+      WXFS.perfReadCount++;
       // Check cache first
       var contents = WXFS.cache.get(stream.fd);
       if (contents && position + size <= contents.byteLength) {
         buffer.set(new Uint8Array(contents, position, size), offset);
         return size;
       }
+      WXFS.perfCacheMissCount++;
       // iOS: read on demand
       if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
         var readLen = position === 0 ? Math.max(size, Math.min(WXFS.prefetchSize, stream.node.usedBytes)) : size;
@@ -516,6 +529,34 @@ var WXAssetBundleLibrary = {
   },
   WXGetBundleSizeOnDisk: function () { 
     return WXFS&&WXFS.disk&&WXFS.disk.size; 
+  },
+  WXGetReadCount: function () {
+    return WXFS ? WXFS.perfReadCount : 0;
+  },
+  WXGetCacheMissCount: function () {
+    return WXFS ? WXFS.perfCacheMissCount : 0;
+  },
+  WXGetFdCacheMissCount: function () {
+    return WXFS ? WXFS.perfFdCacheMissCount : 0;
+  },
+  WXGetOpenSyncCount: function () {
+    return WXFS ? WXFS.perfOpenSyncCount : 0;
+  },
+  WXGetStatSyncCount: function () {
+    return WXFS ? WXFS.perfStatSyncCount : 0;
+  },
+  WXGetReadSyncCount: function () {
+    return WXFS ? WXFS.perfReadSyncCount : 0;
+  },
+  WXResetPerfCounters: function () {
+    if (WXFS) {
+      WXFS.perfReadCount = 0;
+      WXFS.perfCacheMissCount = 0;
+      WXFS.perfFdCacheMissCount = 0;
+      WXFS.perfOpenSyncCount = 0;
+      WXFS.perfStatSyncCount = 0;
+      WXFS.perfReadSyncCount = 0;
+    }
   }
 };
 
