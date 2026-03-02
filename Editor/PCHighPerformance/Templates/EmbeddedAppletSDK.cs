@@ -88,14 +88,20 @@ public class EmbeddedAppletSDK : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("[EmbeddedAppletSDK] ========== Awake 被调用 ==========");
+        Debug.Log($"[EmbeddedAppletSDK] GameObject 名称: {gameObject.name}");
+        Debug.Log($"[EmbeddedAppletSDK] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+
         if (instance != null && instance != this)
         {
+            Debug.LogWarning("[EmbeddedAppletSDK] 检测到重复实例，销毁当前对象");
             Destroy(gameObject);
             return;
         }
 
         instance = this;
         DontDestroyOnLoad(gameObject);
+        Debug.Log("[EmbeddedAppletSDK] 单例创建成功，已设置 DontDestroyOnLoad");
 
         // 初始化SDK
         Initialize();
@@ -130,10 +136,16 @@ public class EmbeddedAppletSDK : MonoBehaviour
             return;
         }
 
+        Debug.Log("[EmbeddedAppletSDK] ========== 开始初始化 ==========");
+        Debug.Log($"[EmbeddedAppletSDK] 当前工作目录: {System.IO.Directory.GetCurrentDirectory()}");
+        Debug.Log($"[EmbeddedAppletSDK] DLL 搜索路径: {DLL_NAME}");
+
         try
         {
             // 1. 初始化SDK
+            Debug.Log("[EmbeddedAppletSDK] Step 1: 调用 InitEmbeddedGameSDK");
             ShowInfo("开始调用 InitEmbeddedGameSDK...");
+            
             if (!InitEmbeddedGameSDK())
             {
                 ShowError("InitEmbeddedGameSDK 返回 false");
@@ -145,17 +157,22 @@ public class EmbeddedAppletSDK : MonoBehaviour
             // asyncMsgHandler = HandleAsyncMessage;
             // RegisterAsyncMsgHandler(asyncMsgHandler);
             // ShowInfo("RegisterAsyncMsgHandler 成功");
+            Debug.Log("[EmbeddedAppletSDK] Step 2: RegisterAsyncMsgHandler 已跳过");
             ShowInfo("RegisterAsyncMsgHandler 已跳过");
 
-            // 3. 建立连接 (暂时屏蔽)
+            // 3. 建立连接
+            Debug.Log("[EmbeddedAppletSDK] Step 3: 调用 EstablishConnection");
             if (!EstablishConnection())
             {
                 ShowError("EstablishConnection 返回 false");
-                IsConnected = true;
+                IsConnected = false;
                 return;
             }
+            IsConnected = true;
+            ShowInfo("EstablishConnection 成功");
 
             // 4. 获取窗口句柄并初始化游戏窗口
+            Debug.Log("[EmbeddedAppletSDK] Step 4: 获取窗口句柄");
             WindowHandle = GetActiveWindow();
             if (WindowHandle == IntPtr.Zero)
             {
@@ -164,6 +181,7 @@ public class EmbeddedAppletSDK : MonoBehaviour
             }
             ShowInfo($"获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
 
+            Debug.Log("[EmbeddedAppletSDK] Step 5: 调用 InitGameWindow");
             if (!InitGameWindow((ulong)WindowHandle.ToInt64()))
             {
                 ShowError("InitGameWindow 返回 false");
@@ -173,18 +191,25 @@ public class EmbeddedAppletSDK : MonoBehaviour
 
             IsInitialized = true;
             ShowInfo("SDK 完全初始化成功!");
+            Debug.Log("[EmbeddedAppletSDK] ========== 初始化完成 ==========");
         }
         catch (DllNotFoundException e)
         {
             ShowError($"找不到DLL: {e.Message}");
+            Debug.LogError($"[EmbeddedAppletSDK] DLL 加载失败，请确保 {DLL_NAME} 在以下位置之一：");
+            Debug.LogError($"  - 与 .exe 同级目录");
+            Debug.LogError($"  - System32 目录");
+            Debug.LogError($"  - PATH 环境变量包含的路径");
         }
         catch (EntryPointNotFoundException e)
         {
             ShowError($"找不到函数入口: {e.Message}");
+            Debug.LogError($"[EmbeddedAppletSDK] 函数入口点错误，可能是 DLL 版本不匹配");
         }
         catch (Exception e)
         {
             ShowError($"初始化异常: {e.Message}\n{e.StackTrace}");
+            Debug.LogError($"[EmbeddedAppletSDK] 未知异常: {e}");
         }
     }
 

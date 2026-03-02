@@ -70,6 +70,12 @@ namespace WeChatWASM
             }
 
             EditorGUILayout.EndScrollView();
+
+            // 检测 GUI 变化并自动保存
+            if (GUI.changed)
+            {
+                SaveData();
+            }
         }
 
         public void OnBuildButtonGUI(EditorWindow window)
