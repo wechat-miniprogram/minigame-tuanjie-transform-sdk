@@ -34,7 +34,14 @@ namespace WeChatWASM
             if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
             {
                 var absolutePath = Path.GetFullPath("Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ");
-                PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+                if (!Directory.Exists(absolutePath))
+                {
+                    PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+                }
+                else
+                {
+                    PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+                }
             }
             else
             {
