@@ -661,15 +661,16 @@ namespace WeChatWASM
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>
-        /// PC高性能小游戏配置数据类
-        /// </summary>
-        [System.Serializable]
-        private class PCHPConfigData
-        {
-            public string appId;
-            public string projectName;
-            public string exportPath;
-        }
+    }
+
+    /// <summary>
+    /// PC高性能小游戏配置数据类
+    /// </summary>
+    [System.Serializable]
+    public class PCHPConfigData
+    {
+        public string appId;
+        public string projectName;
+        public string exportPath;
     }
 }
