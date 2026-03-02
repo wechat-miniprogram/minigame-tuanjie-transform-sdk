@@ -8,14 +8,6 @@
 ### 解决方案 ✅
 已修复：在 `OnSettingsGUI()` 中添加 `GUI.changed` 检测，每次输入时自动保存
 
-```csharp
-// OnSettingsGUI() 结尾
-if (GUI.changed)
-{
-    SaveData();  // 实时保存
-}
-```
-
 ---
 
 ## 🐛 问题2：ShowInfo 逻辑未执行
@@ -39,12 +31,12 @@ if (GUI.changed)
 - 确保 DLL 在运行时根目录
 - 查看 Unity Player.log：
   - Windows: `%APPDATA%\..\LocalLow\<CompanyName>\<ProductName>\Player.log`
-  - 搜索关键字: `[EmbeddedAppletSDK]` 或 `DllNotFoundException`
+  - 搜索关键字: `[WXPCHPInitScript]` 或 `DllNotFoundException`
 
 ---
 
 #### 2. GameObject 未注入 (10%)
-**症状**：构建后场景中没有 `EmbeddedAppletSDK` 对象
+**症状**：构建后场景中没有 `WXPCHPInitScript` 对象
 
 **验证**：使用调试工具
 ```
@@ -54,34 +46,15 @@ Unity 菜单 → 微信小游戏 → PC高性能调试 → 检查SDK注入状态
 **可能的问题**：
 - ❌ Build Settings 中没有启用场景
 - ❌ 构建前 `PCHPBuildPreProcessor` 未执行
-- ❌ 脚本编译错误导致组件未挂载
+- ❌ SDK 未正确安装
 
 **解决**：
 1. 确保 Build Settings 有至少一个启用场景
 2. 查看 Console 日志：
    ```
    [PC高性能小游戏] 开始预处理构建...
-   [PC高性能小游戏] 已在 XXX 中创建 SDK 对象并添加组件
+   [PC高性能小游戏] ✅ 已在 XXX 中创建 WXPCHPInitScript 并添加组件
    ```
-
----
-
-#### 3. MessageBox 被禁用 (少见 <5%)
-**症状**：有日志输出但没有弹窗
-
-**验证**：
-- 查看 Unity Editor Console 是否有 `[EmbeddedAppletSDK]` 日志
-- 运行 .exe 时查看 Player.log
-
-**临时禁用弹窗**（调试用）：
-```csharp
-// 修改 Templates/EmbeddedAppletSDK.cs
-private void ShowInfo(string message)
-{
-    Debug.Log($"[EmbeddedAppletSDK] {message}");
-    // MessageBox(IntPtr.Zero, message, "Info", 0x40);  // 注释掉
-}
-```
 
 ---
 
@@ -96,14 +69,12 @@ Unity 菜单 → 微信小游戏 → PC高性能调试 → 检查SDK注入状态
 ```
 [构建场景] 启用的场景数: 1
   ✅ 首场景: Assets/Scenes/Main.unity
-  ✅ 找到 SDK GameObject: EmbeddedAppletSDK
-  ✅ 挂载的脚本: EmbeddedAppletSDK
-
-[脚本文件检查]
-  ✅ 用户项目中存在 EmbeddedAppletSDK.cs
+  ✅ 找到 SDK GameObject: WXPCHPInitScript
+  ✅ 挂载的脚本: WeChatWASM.WXPCHPInitScript
 
 [类型加载检查]
-  ✅ EmbeddedAppletSDK 类型已加载
+  ✅ WXPCHPInitScript 类型已加载
+  程序集: WxWasmSDKRuntime
 ```
 
 ---
@@ -129,19 +100,18 @@ Mac: ~/Library/Logs/Company Name/Product Name/Player.log
 
 **搜索关键字**：
 ```
-[EmbeddedAppletSDK]
+[WXPCHPInitScript]
 DllNotFoundException
 InitEmbeddedGameSDK
 ```
 
 **正常日志**：
 ```
-[EmbeddedAppletSDK] ========== Awake 被调用 ==========
-[EmbeddedAppletSDK] GameObject 名称: EmbeddedAppletSDK
-[EmbeddedAppletSDK] ========== 开始初始化 ==========
-[EmbeddedAppletSDK] 当前工作目录: C:\...\YourBuild
-[EmbeddedAppletSDK] Step 1: 调用 InitEmbeddedGameSDK
-[EmbeddedAppletSDK] InitEmbeddedGameSDK 成功
+[WXPCHPInitScript] ========== Awake 被调用 ==========
+[WXPCHPInitScript] GameObject 名称: WXPCHPInitScript
+[WXPCHPInitScript] ========== 开始初始化 ==========
+[WXPCHPInitScript] Step 1: 调用 InitEmbeddedGameSDK
+[WXPCHPInitScript] InitEmbeddedGameSDK 成功
 ...
 ```
 
@@ -178,19 +148,5 @@ DllNotFoundException: Unable to load DLL 'direct_applet_sdk.dll'
 |----------|------|----------|
 | `DllNotFoundException` | DLL 未找到 | 复制 DLL 到 .exe 同级目录 |
 | `EntryPointNotFoundException` | 函数不存在 | 检查 DLL 版本是否匹配 |
-| `找不到 EmbeddedAppletSDK 类型` | 脚本未编译 | 检查编译错误或重新导入 |
+| `找不到 WXPCHPInitScript 类型` | SDK 未安装 | 重新导入 WX-WASM-SDK-V2 |
 | `GetActiveWindow 返回空句柄` | 窗口未创建 | 延迟初始化或检查 Unity Player 设置 |
-
----
-
-## 🚀 最小验证示例
-
-创建一个最简单的测试场景：
-
-1. **创建新场景** `TestSDK.unity`
-2. **添加到 Build Settings** 并设为首场景
-3. **构建一次** → 应该自动注入 SDK
-4. **检查场景** → 应该有 `EmbeddedAppletSDK` GameObject
-5. **运行 .exe**（确保 DLL 存在）→ 应该有弹窗
-
-如果这个流程失败，提供 Console 和 Player.log 完整日志。
