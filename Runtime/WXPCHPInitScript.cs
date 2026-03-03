@@ -146,21 +146,16 @@ namespace WeChatWASM
             {
                 // 1. 初始化SDK
                 Debug.Log("[WXPCHPInitScript] Step 1: 调用 InitEmbeddedGameSDK");
-                ShowInfo("开始调用 InitEmbeddedGameSDK...");
-                
                 if (!InitEmbeddedGameSDK())
                 {
                     ShowError("InitEmbeddedGameSDK 返回 false");
                     return;
                 }
-                ShowInfo("InitEmbeddedGameSDK 成功");
 
-                // 2. 注册消息处理器 (暂时屏蔽)
-                // asyncMsgHandler = HandleAsyncMessage;
-                // RegisterAsyncMsgHandler(asyncMsgHandler);
-                // ShowInfo("RegisterAsyncMsgHandler 成功");
-                Debug.Log("[WXPCHPInitScript] Step 2: RegisterAsyncMsgHandler 已跳过");
-                ShowInfo("RegisterAsyncMsgHandler 已跳过");
+                // 2. 注册消息处理器 
+                Debug.Log("[WXPCHPInitScript] Step 2: 调用 RegisterAsyncMsgHandler");
+                asyncMsgHandler = HandleAsyncMessage;
+                RegisterAsyncMsgHandler(asyncMsgHandler);
 
                 // 3. 建立连接
                 Debug.Log("[WXPCHPInitScript] Step 3: 调用 EstablishConnection");
@@ -170,8 +165,7 @@ namespace WeChatWASM
                     IsConnected = false;
                     return;
                 }
-                IsConnected = true;
-                ShowInfo("EstablishConnection 成功");
+                IsConnected = true; 
 
                 // 4. 获取窗口句柄并初始化游戏窗口
                 Debug.Log("[WXPCHPInitScript] Step 4: 获取窗口句柄");
@@ -181,7 +175,7 @@ namespace WeChatWASM
                     ShowError("GetActiveWindow 返回空句柄");
                     return;
                 }
-                ShowInfo($"获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
+                Debug.Log($"获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
 
                 Debug.Log("[WXPCHPInitScript] Step 5: 调用 InitGameWindow");
                 if (!InitGameWindow((ulong)WindowHandle.ToInt64()))
@@ -189,10 +183,8 @@ namespace WeChatWASM
                     ShowError("InitGameWindow 返回 false");
                     return;
                 }
-                ShowInfo("InitGameWindow 成功");
 
                 IsInitialized = true;
-                ShowInfo("SDK 完全初始化成功!");
                 Debug.Log("[WXPCHPInitScript] ========== 初始化完成 ==========");
             }
             catch (DllNotFoundException e)
