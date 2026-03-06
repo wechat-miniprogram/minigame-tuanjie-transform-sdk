@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using LitJson;
 using UnityEditor.Build;
-using System.Linq;
+
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -34,7 +34,14 @@ namespace WeChatWASM
             if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
             {
                 var absolutePath = Path.GetFullPath("Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ");
-                PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+                if (!Directory.Exists(absolutePath))
+                {
+                    PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+                }
+                else
+                {
+                    PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+                }
             }
             else
             {
@@ -421,24 +428,24 @@ namespace WeChatWASM
                 bool showEnableGLX2022Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202203OrNewer();
 
                 var glx2022Importer = AssetImporter.GetAtPath(glLibs[0]) as PluginImporter;
-                #if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                     glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2022Plugin);
-                #else
-                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
-                #endif
+#else
+                glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
+#endif
                 SetPluginCompatibilityByModifyingMetadataFile(glLibs[0], showEnableGLX2022Plugin);
             }
-            
+
             {
                 // unity2021 lib引入
                 bool showEnableGLX2021Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202102To202203();
 
                 var glx2021Importer = AssetImporter.GetAtPath(glLibs[1]) as PluginImporter;
-                #if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                     glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2021Plugin);
-                #else
-                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
-                #endif
+#else
+                glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
+#endif
                 SetPluginCompatibilityByModifyingMetadataFile(glLibs[1], showEnableGLX2021Plugin);
             }
 
@@ -800,9 +807,12 @@ namespace WeChatWASM
             File.WriteAllText(Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkDir, Path.GetFileName(runtimePath)), dotnetJs, new UTF8Encoding(false));
         }
 
-        private static void CompressAssemblyBrotli()
+private static void CompressAssemblyBrotli()
         {
-            GetWeixinMiniGameFilePath("assembly").ToList().ForEach(assembly => UnityUtil.brotli(assembly, assembly + ".br", "8"));
+            foreach (var assembly in GetWeixinMiniGameFilePath("assembly"))
+            {
+                UnityUtil.brotli(assembly, assembly + ".br", "8");
+            }
         }
 
         private static void ConvertDotnetFrameworkCode()
@@ -966,7 +976,7 @@ namespace WeChatWASM
                 {
                     new Rule()
                     {
-                        old = "if (GameGlobal.unityNamespace.enableProfileStats)", 
+                        old = "if (GameGlobal.unityNamespace.enableProfileStats)",
                         newStr = "if (GameGlobal.unityNamespace.enableProfileStats || (typeof GameGlobal.manager.getWXAppCheatMonitor === 'function' && GameGlobal.manager.getWXAppCheatMonitor().shouldForceShowPerfMonitor()))"
                     }
                 };
@@ -1196,7 +1206,15 @@ namespace WeChatWASM
                 File.WriteAllText(bootJson, writer.TextWriter.ToString());
                 Debug.Log("Env INTERP_OPTS added to blazor.boot.json");
             }
-            return boot["resources"][key].Keys.Select(file => Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", file)).ToArray();
+var keys = boot["resources"][key].Keys;
+            var result = new string[keys.Count];
+            int index = 0;
+            foreach (var keyName in keys)
+            {
+                result[index] = Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", keyName);
+                index++;
+            }
+            return result;
         }
 
         [DllImport("newstatehooker.dll", EntryPoint = "add_lua_newstate_hook")]
@@ -2007,23 +2025,45 @@ namespace WeChatWASM
         {
             StringBuilder sb = new StringBuilder();
             // 添加player-connection-ip信息
-            try
+try
             {
-                var ips = Dns.GetHostEntry("").AddressList
-                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
-                    .Select(ip => ip.ToString())
-                    .ToList();
+                // 获取所有IPv4地址
+                var allAddresses = Dns.GetHostEntry("").AddressList;
+                var ips = new List<string>();
+                foreach (var ip in allAddresses)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ips.Add(ip.ToString());
+                    }
+                }
 
                 // 优先选择局域网IP（192.168.x.x, 10.x.x.x, 172.16.x.x）
-                var localNetworkIps = ips.Where(ip =>
-                    ip.StartsWith("192.168.") ||
-                    ip.StartsWith("10.") ||
-                    (ip.StartsWith("172.") && int.Parse(ip.Split('.')[1]) >= 16 && int.Parse(ip.Split('.')[1]) <= 31))
-                    .ToList();
+                var localNetworkIps = new List<string>();
+                foreach (var ip in ips)
+                {
+                    if (ip.StartsWith("192.168.") ||
+                        ip.StartsWith("10.") ||
+                        (ip.StartsWith("172.") && int.Parse(ip.Split('.')[1]) >= 16 && int.Parse(ip.Split('.')[1]) <= 31))
+                    {
+                        localNetworkIps.Add(ip);
+                    }
+                }
 
                 // 如果有局域网IP则使用，否则使用其他IP，最后回退到127.0.0.1
-                var selectedIp = localNetworkIps.Any() ? localNetworkIps.First() :
-                               ips.Any() ? ips.First() : "127.0.0.1";
+                string selectedIp;
+                if (localNetworkIps.Count > 0)
+                {
+                    selectedIp = localNetworkIps[0];
+                }
+                else if (ips.Count > 0)
+                {
+                    selectedIp = ips[0];
+                }
+                else
+                {
+                    selectedIp = "127.0.0.1";
+                }
 
                 sb.Append($"player-connection-ip={selectedIp}");
             }
