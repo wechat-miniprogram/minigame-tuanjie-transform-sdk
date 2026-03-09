@@ -186,7 +186,7 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         profValue.current = value;
         profValue.max = value > profValue.max ? value : profValue.max;
         profValue.min = value < profValue.min ? value : profValue.min;
-        sb.AppendLine($"{key}:[{profValue.current.ToString(format)}, {profValue.min.ToString(format)}, {profValue.max.ToString(format)}]");
+        sb.AppendLine(string.Format("{0}:[{1}, {2}, {3}]", key, profValue.current.ToString(format), profValue.min.ToString(format), profValue.max.ToString(format)));
         return profValue;
     }
 
@@ -195,14 +195,14 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         UpdateFps();
         const uint toMB = 1024 * 1024;
         var sb = new StringBuilder(500);
-        sb.AppendLine($"-------------FPS---------------");
-
+        sb.AppendLine(string.Format("-------------FPS---------------"));
+        
         // var key = "targetFrameRate";
         UpdateValue("TargetFramerate", Application.targetFrameRate, sb);
         UpdateValue("FPS", fps, sb);
         UpdateValue("FrameTime(ms)", WeChatWASM.WXSDKManagerHandler.Instance.GetEXFrameTime(), sb, "0.00");
 
-        sb.AppendLine($"-------------Profiler------------");
+        sb.AppendLine(string.Format("-------------Profiler------------"));
 
         UpdateValue("MonoHeapReserved", Profiler.GetMonoHeapSizeLong() / toMB, sb);
         UpdateValue("MonoHeapUsed", Profiler.GetMonoUsedSizeLong() / toMB, sb);

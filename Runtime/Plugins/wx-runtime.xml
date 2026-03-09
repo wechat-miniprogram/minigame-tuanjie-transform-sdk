@@ -8925,6 +8925,14 @@
             </summary>
             <returns>微信启动剧情交互句柄</returns>
         </member>
+        <member name="M:WeChatWASM.IntPtrExtensions.Add(System.IntPtr,System.Int32)">
+            <summary>
+            模拟IntPtr.Add，适配.NET 3.5
+            </summary>
+            <param name="pointer">基础指针</param>
+            <param name="offset">偏移量（int）</param>
+            <returns>偏移后的指针</returns>
+        </member>
         <member name="M:WeChatWASM.WXTCPSocket.BindWifi(WeChatWASM.TCPSocketBindWifiOption)">
             <summary>
             [TCPSocket.bindWifi(Object options)](https://developers.weixin.qq.com/minigame/dev/api/network/tcp/TCPSocket.bindWifi.html)

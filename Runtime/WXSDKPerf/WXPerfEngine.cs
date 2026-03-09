@@ -93,7 +93,7 @@ namespace WXSDKPerf
 #else
 			DateTime timestamp = DateTime.Now;
 			var dateString = timestamp.ToLocalTime().ToString("yyyy-MM-dd_HH-mm-ss", System.Globalization.CultureInfo.InvariantCulture);
-			var snapshotFileName = $"{dateString}.snap";
+			var snapshotFileName = string.Format("{0}.snap", dateString);
 
 #if UNITY_2018_3_OR_NEWER && !UNITY_2022_2_OR_NEWER
             UnityEngine.Profiling.Memory.Experimental.MemoryProfiler.TakeSnapshot(Path.Combine(Application.persistentDataPath, snapshotFileName),

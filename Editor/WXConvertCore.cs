@@ -36,16 +36,16 @@ namespace WeChatWASM
                 var absolutePath = Path.GetFullPath("Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ");
                 if (!Directory.Exists(absolutePath))
                 {
-                    PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+                    PlayerSettings.WeixinMiniGame.template = string.Format("{0}WXTemplate2022TJ", templateHeader);
                 }
                 else
                 {
-                    PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
+                    PlayerSettings.WeixinMiniGame.template = string.Format("PATH:{0}", absolutePath);
                 }
             }
             else
             {
-                PlayerSettings.WeixinMiniGame.template = $"{templateHeader}WXTemplate2022TJ";
+                PlayerSettings.WeixinMiniGame.template = string.Format("{0}WXTemplate2022TJ", templateHeader);
             }
             PlayerSettings.WeixinMiniGame.linkerTarget = WeixinMiniGameLinkerTarget.Wasm;
             PlayerSettings.WeixinMiniGame.dataCaching = false;
@@ -55,11 +55,11 @@ namespace WeChatWASM
             PlayerSettings.runInBackground = false;
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
 #if UNITY_2022_3_OR_NEWER
-        PlayerSettings.WebGL.template = $"{templateHeader}WXTemplate2022";
+        PlayerSettings.WebGL.template = string.Format("{0}WXTemplate2022", templateHeader);
 #elif UNITY_2020_1_OR_NEWER
-            PlayerSettings.WebGL.template = $"{templateHeader}WXTemplate2020";
+            PlayerSettings.WebGL.template = string.Format("{0}WXTemplate2020", templateHeader);
 #else
-            PlayerSettings.WebGL.template = $"{templateHeader}WXTemplate";
+            PlayerSettings.WebGL.template = string.Format("{0}WXTemplate", templateHeader);
 #endif
             PlayerSettings.WebGL.linkerTarget = WebGLLinkerTarget.Wasm;
             PlayerSettings.WebGL.dataCaching = false;
@@ -244,8 +244,8 @@ namespace WeChatWASM
                 }
                 string dataFilePath = GetWebGLDataPath();
                 string wxTextDataDir = WXAssetsTextTools.GetTextMinDataDir();
-                string dataFilePathBackupDir = $"{wxTextDataDir}{WXAssetsTextTools.DS}slim";
-                string dataFilePathBackupPath = $"{dataFilePathBackupDir}{WXAssetsTextTools.DS}backup.txt";
+                string dataFilePathBackupDir = string.Format("{0}{1}slim", wxTextDataDir, WXAssetsTextTools.DS);
+                string dataFilePathBackupPath = string.Format("{0}{1}backup.txt", dataFilePathBackupDir, WXAssetsTextTools.DS);
                 if (!Directory.Exists(dataFilePathBackupDir))
                 {
                     Directory.CreateDirectory(dataFilePathBackupDir);
@@ -281,7 +281,7 @@ namespace WeChatWASM
             try
             {
                 int tagStrIdx = inAllText.IndexOf(inTagStr);
-                if (tagStrIdx == -1) throw new Exception($"Tag string '{inTagStr}' not found.");
+                if (tagStrIdx == -1) throw new Exception(string.Format("Tag string '{0}' not found.", inTagStr));
 
                 int enabledStrIdx = inAllText.IndexOf("enabled: ", tagStrIdx);
                 if (enabledStrIdx == -1) throw new Exception("'enabled: ' string not found after tag.");
@@ -292,7 +292,7 @@ namespace WeChatWASM
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogWarning($"Failed to get enabled flag string index: {ex.Message}");
+                UnityEngine.Debug.LogWarning(string.Format("Failed to get enabled flag string index: {0}", ex.Message));
                 return -1; // -1 means failed
             }
         }
@@ -323,7 +323,7 @@ namespace WeChatWASM
             catch (Exception ex)
             {
                 // 避免 Error 日志阻塞打包流程
-                UnityEngine.Debug.LogWarning($"Failed to enable plugin asset: {ex.Message}");
+                UnityEngine.Debug.LogWarning(string.Format("Failed to enable plugin asset: {0}", ex.Message));
             }
         }
 
@@ -335,21 +335,21 @@ namespace WeChatWASM
             {
                 wxPerfPlugins = new string[]
                 {
-                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}WxPerfJsBridge.jslib",
-                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}wx_perf_2022.a",
-                    $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}wx_perf_2021.a",
+                    string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}WxPerfJsBridge.jslib", DS),
+                    string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}wx_perf_2022.a", DS),
+                    string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}wx_perf_2021.a", DS),
                 };
             }
-            else
+else
             {
-                string jsLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                string jsLibRootDir = string.Format("Assets{0}WX-WASM-SDK-V2{0}Runtime{0}Plugins{0}", DS);
 
                 // 下方顺序不可变动
                 wxPerfPlugins = new string[]
                 {
-                     $"{jsLibRootDir}WxPerfJsBridge.jslib",
-                     $"{jsLibRootDir}wx_perf_2022.a",
-                     $"{jsLibRootDir}wx_perf_2021.a",
+                     string.Format("{0}WxPerfJsBridge.jslib", jsLibRootDir),
+                     string.Format("{0}wx_perf_2022.a", jsLibRootDir),
+                     string.Format("{0}wx_perf_2021.a", jsLibRootDir),
                 };
             }
 
@@ -407,19 +407,19 @@ namespace WeChatWASM
             {
                 glLibs = new string[]
                 {
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx.a",
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}libemscriptenglx_2021.a",
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}libemscriptenglx.a", DS),
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}libemscriptenglx_2021.a", DS),
                 };
             }
             else
             {
-                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                string glLibRootDir = string.Format("Assets{0}WX-WASM-SDK-V2{0}Runtime{0}Plugins{0}", DS);
 
                 // 下方顺序不要变动
                 glLibs = new string[]
                 {
-                    $"{glLibRootDir}libemscriptenglx.a",
-                    $"{glLibRootDir}libemscriptenglx_2021.a",
+                string.Format("{0}libemscriptenglx.a", glLibRootDir),
+                string.Format("{0}libemscriptenglx_2021.a", glLibRootDir),
                 };
             }
 
@@ -500,17 +500,17 @@ namespace WeChatWASM
             {
                 glLibs = new string[]
                 {
-                $"Packages{DS}com.qq.weixin.minigame{DS}Editor{DS}BuildProfile{DS}lib{DS}libwx-metal-cpp.bc",
-                $"Packages{DS}com.qq.weixin.minigame{DS}Editor{DS}BuildProfile{DS}lib{DS}mtl_library.jslib",
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Editor{0}BuildProfile{0}lib{0}libwx-metal-cpp.bc", DS),
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Editor{0}BuildProfile{0}lib{0}mtl_library.jslib", DS),
                 };
             }
             else
             {
-                string glLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Editor{DS}BuildProfile{DS}lib{DS}";
+                string glLibRootDir = string.Format("Assets{0}WX-WASM-SDK-V2{0}Editor{0}BuildProfile{0}lib{0}", DS);
                 glLibs = new string[]
                 {
-                    $"{glLibRootDir}libwx-metal-cpp.bc",
-                    $"{glLibRootDir}mtl_library.jslib",
+                    string.Format("{0}libwx-metal-cpp.bc", glLibRootDir),
+                    string.Format("{0}mtl_library.jslib", glLibRootDir),
                 };
             }
             for (int i = 0; i < glLibs.Length; i++)
@@ -532,10 +532,10 @@ namespace WeChatWASM
             string DS = WXAssetsTextTools.DS;
             if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
             {
-                return $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}LuaAdaptor{DS}{filename}";
+                return string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}LuaAdaptor{0}{1}", DS, filename);
             }
 
-            return $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}LuaAdaptor{DS}{filename}";
+            return string.Format("Assets{0}WX-WASM-SDK-V2{0}Runtime{0}Plugins{0}LuaAdaptor{0}{1}", DS, filename);
         }
 
         private static void MakeLuaImport(Dictionary<string, string> luaPaths)
@@ -550,7 +550,7 @@ namespace WeChatWASM
             string includeLuaContent = "//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_START";
             foreach (var luaPath in luaPaths)
             {
-                includeLuaContent += $"\n#include \"{luaPath.Value.Replace("\\", "\\\\")}\"";
+                includeLuaContent += string.Format("\n#include \"{0}\"", luaPath.Value.Replace("\\", "\\\\"));
             }
             includeLuaContent += "\n//EMSCRIPTEN_ENV_LUA_IMPORT_LOGIC_END";
 
@@ -753,7 +753,7 @@ namespace WeChatWASM
                 Debug.LogError("系统发现自定义构建模板中存在以下文件对应的基础模板已被更新，为确保游戏导出正常工作请自行解决可能存在的冲突：");
                 for (int i = 0; i < res.Length; i++)
                 {
-                    Debug.LogError($"自定义模板文件 [{i}]: [ {res[i]} ]");
+                    Debug.LogError(string.Format("自定义模板文件 [{0}]: [ {1} ]", i, res[i]));
                 }
                 Debug.LogError("有关上述警告产生原因及处理办法请阅读：https://wechat-miniprogram.github.io/minigame-unity-webgl-transform/Design/BuildTemplate.html#%E6%96%B0%E7%89%88%E6%9C%ACsdk%E5%BC%95%E8%B5%B7%E7%9A%84%E5%86%B2%E7%AA%81%E6%8F%90%E9%86%92");
                 return false;
@@ -788,7 +788,7 @@ namespace WeChatWASM
                 new Rule()
                 {
                     old = "await *WebAssembly\\.instantiate\\(\\w*,",
-                    newStr = $"await WebAssembly.instantiate(Module[\"wasmPath\"],",
+                    newStr = string.Format("await WebAssembly.instantiate(Module[\"wasmPath\"],"),
                 },
                 new Rule()
                 {
@@ -864,7 +864,7 @@ private static void CompressAssemblyBrotli()
             {
                 var current = i + 1;
                 var total = ReplaceRules.rules.Length;
-                EditorUtility.DisplayProgressBar($"Converting...，{current}/{total}", "Replace holder...", current * 1.0f / total);
+                EditorUtility.DisplayProgressBar(string.Format("Converting...，{0}/{1}", current, total), "Replace holder...", current * 1.0f / total);
                 var rule = ReplaceRules.rules[i];
                 // text = Regex.Replace(text, rule.old, rule.newStr);
                 if (ShowMatchFailedWarning(text, rule.old, "WXReplaceRules") == false)
@@ -1026,17 +1026,17 @@ private static void CompressAssemblyBrotli()
             {
                 if (config.ProjectConf.MemorySize >= 1024)
                 {
-                    UnityEngine.Debug.LogErrorFormat($"UnityHeap必须小于1024，请查看GIT文档<a href=\"https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/OptimizationMemory.md\">优化Unity WebGL的内存</a>");
+                    UnityEngine.Debug.LogErrorFormat(string.Format("UnityHeap必须小于1024，请查看GIT文档<a href=\"{0}\">优化Unity WebGL的内存</a>", "https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/OptimizationMemory.md"));
                     return -1;
                 }
                 else if (config.ProjectConf.MemorySize >= 500)
                 {
-                    UnityEngine.Debug.LogWarningFormat($"UnityHeap大于500M时，32位Android与iOS普通模式较大概率启动失败，中轻度游戏建议小于该值。请查看GIT文档<a href=\"https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/OptimizationMemory.md\">优化Unity WebGL的内存</a>");
+                    UnityEngine.Debug.LogWarningFormat(string.Format("UnityHeap大于500M时，32位Android与iOS普通模式较大概率启动失败，中轻度游戏建议小于该值。请查看GIT文档<a href=\"{0}\">优化Unity WebGL的内存</a>", "https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/OptimizationMemory.md"));
                 }
 #if PLATFORM_WEIXINMINIGAME
-                PlayerSettings.WeixinMiniGame.emscriptenArgs += $" -s TOTAL_MEMORY={config.ProjectConf.MemorySize}MB";
+                PlayerSettings.WeixinMiniGame.emscriptenArgs += string.Format(" -s TOTAL_MEMORY={0}MB", config.ProjectConf.MemorySize);
 #else
-                PlayerSettings.WebGL.emscriptenArgs += $" -s TOTAL_MEMORY={config.ProjectConf.MemorySize}MB";
+                PlayerSettings.WebGL.emscriptenArgs += string.Format(" -s TOTAL_MEMORY={0}MB", config.ProjectConf.MemorySize);
 #endif
             }
 
@@ -1235,7 +1235,7 @@ var keys = boot["resources"][key].Keys;
                 return add_lua_newstate_hook_osx(filename);
             }
 
-            throw new System.NotSupportedException($"add_lua_newstate_hook not supported on: {RuntimeInformation.OSDescription}");
+            throw new System.NotSupportedException(string.Format("add_lua_newstate_hook not supported on: {0}", RuntimeInformation.OSDescription));
         }
 
         private static void MaybeInstallLuaNewStateHook()
@@ -1243,7 +1243,7 @@ var keys = boot["resources"][key].Keys;
             // 当前版本仅支持 win & mac, 不满足时直接跳过.
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                Debug.LogWarning($"MaybeInstallLuaNewStateHook:: Cannot install lua runtime on {RuntimeInformation.OSDescription}");
+                Debug.LogWarning(string.Format("MaybeInstallLuaNewStateHook:: Cannot install lua runtime on {0}", RuntimeInformation.OSDescription));
                 return;
             }
 
@@ -1259,12 +1259,12 @@ var keys = boot["resources"][key].Keys;
                 var ret = add_lua_newstate_hook(codePath);
                 if (ret != 0)
                 {
-                    Debug.LogWarning($"cannot add lua new state hook: {ret}");
+                    Debug.LogWarning(string.Format("cannot add lua new state hook: {0}", ret));
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"cannot add lua new state hook: {e}");
+                Debug.LogError(string.Format("cannot add lua new state hook: {0}", e));
             }
         }
 
@@ -1954,7 +1954,7 @@ var keys = boot["resources"][key].Keys;
             {
                 if (preloadFile.relativePath == string.Empty)
                 {
-                    UnityEngine.Debug.LogError($"并非所有预下载的文件都被找到，剩余：{preloadFile.fileName}");
+                    UnityEngine.Debug.LogError(string.Format("并非所有预下载的文件都被找到，剩余：{0}", preloadFile.fileName));
                     continue;
                 }
 
@@ -2065,7 +2065,7 @@ try
                     selectedIp = "127.0.0.1";
                 }
 
-                sb.Append($"player-connection-ip={selectedIp}");
+                sb.Append(string.Format("player-connection-ip={0}", selectedIp));
             }
             catch (Exception e)
             {
@@ -2276,21 +2276,21 @@ try
             {
                 jsLibs = new string[]
                 {
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}SDK-WX-TextureMin-JS-WEBGL1.jslib",
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}SDK-WX-TextureMin-JS-WEBGL2.jslib",
-                $"Packages{DS}com.qq.weixin.minigame{DS}Runtime{DS}Plugins{DS}SDK-WX-TextureMin-JS-WEBGL2-Linear.jslib",
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}SDK-WX-TextureMin-JS-WEBGL1.jslib", DS),
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}SDK-WX-TextureMin-JS-WEBGL2.jslib", DS),
+                string.Format("Packages{0}com.qq.weixin.minigame{0}Runtime{0}Plugins{0}SDK-WX-TextureMin-JS-WEBGL2-Linear.jslib", DS),
                 };
             }
             else
             {
-                string jsLibRootDir = $"Assets{DS}WX-WASM-SDK-V2{DS}Runtime{DS}Plugins{DS}";
+                string jsLibRootDir = string.Format("Assets{0}WX-WASM-SDK-V2{0}Runtime{0}Plugins{0}", DS);
 
                 // 下方顺序不可变动
                 jsLibs = new string[]
                 {
-                     $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL1.jslib",
-                     $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL2.jslib",
-                     $"{jsLibRootDir}SDK-WX-TextureMin-JS-WEBGL2-Linear.jslib",
+                     string.Format("{0}SDK-WX-TextureMin-JS-WEBGL1.jslib", jsLibRootDir),
+                     string.Format("{0}SDK-WX-TextureMin-JS-WEBGL2.jslib", jsLibRootDir),
+                     string.Format("{0}SDK-WX-TextureMin-JS-WEBGL2-Linear.jslib", jsLibRootDir),
                 };
             }
             int index = 0;
@@ -2354,7 +2354,7 @@ try
         {
             if (Regex.IsMatch(text, rule) == false)
             {
-                Debug.Log($"UnMatched {file} rule: {rule}");
+                Debug.Log(string.Format("UnMatched {0} rule: {1}", file, rule));
                 return true;
             }
             return false;

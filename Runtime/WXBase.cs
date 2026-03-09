@@ -887,31 +887,31 @@ namespace WeChatWASM
                             Font[] fonts = ab.LoadAllAssets<Font>();
                             if (fonts.Length != 0)
                             {
-                                WriteLog($"Load font from ab. abBytes:{abBytes.Length}");
+                                WriteLog(string.Format("Load font from ab. abBytes:{0}", abBytes.Length));
                                 callback.Invoke(fonts[0]);
                             }
                             else
                             {
-                                WriteWarn($"LoadAllAssets failed, abBytes:{abBytes.Length}, fonts: {fonts.Length}");
+                                WriteWarn(string.Format("LoadAllAssets failed, abBytes:{0}, fonts: {1}", abBytes.Length, fonts.Length));
                                 callback.Invoke(null);
                             }
                             ab.Unload(false);
                         }
                         else
                         {
-                            WriteWarn($"LoadFromMemory failed, Length: {abBytes.Length}");
+                            WriteWarn(string.Format("LoadFromMemory failed, Length: {0}", abBytes.Length));
                             callback.Invoke(null);
                         }
                     }
                     catch (Exception ex)
                     {
-                        WriteWarn($"GetWXFont Exception, ex:{ex.ToString()}");
+                        WriteWarn(string.Format("GetWXFont Exception, ex:{0}", ex.ToString()));
                         callback.Invoke(null);
                     }
                 },
                 fail = (fail) =>
                 {
-                    WriteWarn($"GetFontData fail {fail.errMsg}");
+                    WriteWarn(string.Format("GetFontData fail {0}", fail.errMsg));
                     callback.Invoke(null);
                 },
             });

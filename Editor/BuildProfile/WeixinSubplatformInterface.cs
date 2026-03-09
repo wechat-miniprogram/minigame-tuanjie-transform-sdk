@@ -119,7 +119,7 @@ namespace WeChatWASM
                         absolutePath = Path.GetFullPath(Path.Combine(Application.dataPath, "WebGLTemplates/WXTemplate2022TJ"));
 
                     if (Directory.Exists(absolutePath))
-                        PlayerSettings.MiniGame.SetTemplatePath_Internal(playerSettings, $"PATH:{absolutePath}");
+                        PlayerSettings.MiniGame.SetTemplatePath_Internal(playerSettings, string.Format("PATH:{0}", absolutePath));
 
                     PlayerSettings.MiniGame.SetThreadsSupport_Internal(playerSettings, false);
                     PlayerSettings.MiniGame.SetCompressionFormat_Internal(playerSettings, MiniGameCompressionFormat.Disabled);

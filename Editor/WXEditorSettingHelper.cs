@@ -1184,7 +1184,7 @@ namespace WeChatWASM
             if (shouldAddSymbol)
             {
                 shouldAddSymbol = false;
-                EditorUtility.DisplayDialog("警告", $"当前Unity版本({Application.unityVersion})不在性能分析工具适配范围内(2021.2-2023.1), 性能分析工具将被禁用。", "确定");
+                EditorUtility.DisplayDialog("警告", string.Format("当前Unity版本({0})不在性能分析工具适配范围内(2021.2-2023.1), 性能分析工具将被禁用。", Application.unityVersion), "确定");
                 config.CompileOptions.enablePerfAnalysis = false;
                 this.setData("enablePerfAnalysis", false);
             }
@@ -1194,7 +1194,7 @@ namespace WeChatWASM
             {
                 if (defineSymbols.IndexOf(MACRO_ENABLE_WX_PERF_FEATURE) == -1)
                 {
-                    PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, MACRO_ENABLE_WX_PERF_FEATURE + $";{defineSymbols}");
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, string.Format("{0};{1}", MACRO_ENABLE_WX_PERF_FEATURE, defineSymbols));
                 }
             }
             else

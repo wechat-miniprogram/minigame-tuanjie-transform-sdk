@@ -119,13 +119,13 @@ public class WXTouchInputOverride : BaseInput
             TouchData data = FindTouchData(wxTouch.identifier);
             if (data == null)
             {
-                Debug.LogError($"OnWxTouchEnd, error identifier:{wxTouch.identifier}");
+                Debug.LogError(string.Format("OnWxTouchEnd, error identifier:{0}", wxTouch.identifier));
                 return;
             }
 
             if (data.touch.phase == TouchPhase.Canceled || data.touch.phase == TouchPhase.Ended)
             {
-                Debug.LogWarning($"OnWxTouchEnd, error phase:{wxTouch.identifier}, phase:{data.touch.phase}");
+                Debug.LogWarning(string.Format("OnWxTouchEnd, error phase:{0}, phase:{1}", wxTouch.identifier, data.touch.phase));
             }
 
             // Debug.Log($"OnWxTouchEnd:{wxTouch.identifier}");
@@ -193,13 +193,13 @@ public class WXTouchInputOverride : BaseInput
             TouchData data = FindTouchData(wxTouch.identifier);
             if (data == null)
             {
-                Debug.LogError($"OnWxTouchCancel, error identifier:{wxTouch.identifier}");
+                Debug.LogError(string.Format("OnWxTouchCancel, error identifier:{0}", wxTouch.identifier));
                 return;
             }
 
             if (data.touch.phase == TouchPhase.Canceled || data.touch.phase == TouchPhase.Ended)
             {
-                Debug.LogWarning($"OnWxTouchCancel, error phase:{wxTouch.identifier}, phase:{data.touch.phase}");
+                Debug.LogWarning(string.Format("OnWxTouchCancel, error phase:{0}, phase:{1}", wxTouch.identifier, data.touch.phase));
             }
 
             // Debug.Log($"OnWxTouchCancel:{wxTouch.identifier}");
@@ -299,7 +299,7 @@ public class WXTouchInputOverride : BaseInput
 
     public override Touch GetTouch(int index)
     {
-        // Debug.LogError($"GetTouch touchCount:{touchCount}, index:{index}, touch:{_touches[index].touch.fingerId}, {_touches[index].touch.phase}");
+        // Debug.LogError(string.Format("GetTouch touchCount:{0}, index:{1}, touch:{2}, {3}", touchCount, index, _touches[index].touch.fingerId, _touches[index].touch.phase));
         return _touches[index].touch;
     }
 
