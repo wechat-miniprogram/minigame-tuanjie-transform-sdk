@@ -1136,6 +1136,14 @@ namespace WeChatWASM
         {
             WXSDKManagerHandler.Instance.NotifyMiniProgramPlayableStatus(option);
         }
+        /// <summary>
+        /// 上报自定义打点数据
+        /// </summary>
+        /// <param name="option"></param>
+        public static void ReportGameEvent(ReportGameEventOption option)
+        {
+            WXSDKManagerHandler.Instance.ReportGameEvent(option);
+        }
 #endregion
 #region 虚拟支付
         /// <summary>

@@ -107,6 +107,8 @@ namespace WeChatWASM
 #else
             WXExtEnvDef.SETDEF("PLATFORM_WEIXINMINIGAME", false);
 #endif
+            // TODO: 根据实际Emscripten版本检测逻辑来设置此值，当前暂时hardcode为true
+            WXExtEnvDef.SETDEF("UNITY_NEW_EMSCRIPTEN", true);
             RegisterController();
         }
 
