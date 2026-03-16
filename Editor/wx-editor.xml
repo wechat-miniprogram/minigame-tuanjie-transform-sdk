@@ -664,6 +664,11 @@
             是否开启 WebAssembly2023特性
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enableRenderThread">
+            <summary>
+            是否使用多线程
+            </summary>
+        </member>
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">
             <summary>
             基本汉字 [0x4e00, 0x9fff] https://www.unicode.org/charts/PDF/U4E00.pdf
