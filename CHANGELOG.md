@@ -6,6 +6,15 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2026-3-15 v0.1.32 【普通更新】
+### Feature
+* 普通：更新基础库版本
+* 普通：擂台赛api新增subScoreKey参数
+* 普通：支持gameeventreport（试玩）
+* 普通：添加WX数据保护插件，支持游戏数据加密存储和篡改检测  
+### Fixed
+* 普通：修复订阅消息报错问题
+
 ## 2026-1-13 v0.1.31 【普通更新】
 ### Fixed
 * 普通：修复glx模式下 createVideo underGameView为true 黑屏的问题
