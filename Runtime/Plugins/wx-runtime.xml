@@ -3410,7 +3410,7 @@
             需要基础库： `2.10.0`
             小程序版本
             可选值：
-            - 'develop': 开发版;
+            - 'develop': 开发版，提交代码审核时默认使用开发版进行审核。;
             - 'trial': 体验版;
             - 'release': 正式版;
             </summary>
@@ -3484,6 +3484,11 @@
         <member name="F:WeChatWASM.AppAuthorizeSetting.phoneCalendarAuthorized">
             <summary>
             允许微信读写日历的开关
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.AppBaseInfo.PCKernelVersion">
+            <summary>
+            PC 内核版本号，仅在 PC 端存在该值
             </summary>
         </member>
         <member name="F:WeChatWASM.AppBaseInfo.SDKVersion">
@@ -3588,11 +3593,29 @@
         <member name="F:WeChatWASM.DeviceInfo.platform">
             <summary>
             客户端平台
+            可选值：
+            - 'ios': iOS微信（包含 iPhone、iPad）;
+            - 'android': Android微信;
+            - 'ohos': HarmonyOS 手机端微信;
+            - 'ohos_pc': HarmonyOS PC微信;
+            - 'windows': Windows微信;
+            - 'mac': macOS微信;
+            - 'devtools': 微信开发者工具;
             </summary>
         </member>
         <member name="F:WeChatWASM.DeviceInfo.system">
             <summary>
             操作系统及版本
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.DirectAdStatusInfo.isInDirectGameAd">
+            <summary>
+            当前是否处于直接广告中
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.DirectAdStatusInfo.isInMask">
+            <summary>
+            当前是否处于蒙层阶段
             </summary>
         </member>
         <member name="F:WeChatWASM.EnterOptionsGame.apiCategory">
@@ -3661,6 +3684,11 @@
             直播间 id
             </summary>
         </member>
+        <member name="F:WeChatWASM.LaunchOptionsGame.hostExtraData">
+            <summary>
+            宿主传递的数据，第三方 app 中运行小游戏时返回
+            </summary>
+        </member>
         <member name="F:WeChatWASM.LaunchOptionsGame.query">
             <summary>
             启动小游戏的 query 参数
@@ -3689,6 +3717,11 @@
         <member name="F:WeChatWASM.LaunchOptionsGame.shareTicket">
             <summary>
             shareTicket，详见[获取更多转发信息](#)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.HostExtraData.host_scene">
+            <summary>
+            宿主app对应的场景值
             </summary>
         </member>
         <member name="F:WeChatWASM.ClientRect.bottom">
@@ -3721,9 +3754,84 @@
             宽度，单位：px
             </summary>
         </member>
+        <member name="F:WeChatWASM.OfficialComponentsInfo.challengeRewardsComponentInfo">
+            <summary>
+            擂台赛组件领奖信息
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OfficialComponentsInfo.notificationComponentInfo">
             <summary>
             通知组件信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OfficialComponentsInfo.rewardsComponentInfo">
+            <summary>
+            福利组件信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ChallengeRewardsComponentInfo.name">
+            <summary>
+            组件的名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ChallengeRewardsComponentInfo.receiveDetail">
+            <summary>
+            领取事件详情（只在onOfficialComponentsInfoChange回调中返回）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ChallengeReceiveDetail.awardResult">
+            <summary>
+            奖励领取结果：1-全部成功, 2-部分成功（礼物达到领取上限）, 3-领奖失败
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ChallengeReceiveDetail.receivedRareReward">
+            <summary>
+            是否收到了稀有奖励
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ChallengeReceiveDetail.userSourceList">
+            <summary>
+            用户领取的奖励列表
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.UserSource.sourceType">
+            <summary>
+            奖励类型：0-道具礼包, 1-微信蓝包, 2-h5商家券, 3-现金红包, 4-小程序券, 5-盲盒
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.UserSource.source">
+            <summary>
+            奖励来源信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.UserSource.sourceNum">
+            <summary>
+            获取的奖励数量
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SourceInfo.propList">
+            <summary>
+            道具列表
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SourceInfo.type">
+            <summary>
+            奖励类型：1-普通奖励, 2-稀有奖励
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.SourceInfo.sourceName">
+            <summary>
+            礼包名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PropInfo.propName">
+            <summary>
+            道具名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PropInfo.propNum">
+            <summary>
+            道具数量
             </summary>
         </member>
         <member name="F:WeChatWASM.OfficialComponentInfo.boundingClientRect">
@@ -3739,6 +3847,46 @@
         <member name="F:WeChatWASM.OfficialComponentInfo.name">
             <summary>
             组件的名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RewardsComponentInfo.canReceiveFriendGiftCount">
+            <summary>
+            可领取的好友礼包数量
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RewardsComponentInfo.canReceiveGiftCount">
+            <summary>
+            可领取的礼包数量
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RewardsComponentInfo.name">
+            <summary>
+            组件的名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RewardsComponentInfo.receiveDetail">
+            <summary>
+            领取事件详情（只在onOfficialComponentsInfoChange回调中返回）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReceiveDetail.desc">
+            <summary>
+            礼包描述，只有 gift 类型才有
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReceiveDetail.icon">
+            <summary>
+            礼包图标，只有 gift 类型才有
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReceiveDetail.name">
+            <summary>
+            礼包名称，只有 gift 类型才有
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.ReceiveDetail.type">
+            <summary>
+            gift: 礼包, friendGift: 好友礼包
             </summary>
         </member>
         <member name="F:WeChatWASM.GetStorageInfoSyncOption.currentSize">
@@ -3887,7 +4035,8 @@
             可选值：
             - 'ios': iOS微信（包含 iPhone、iPad）;
             - 'android': Android微信;
-            - 'ohos': HarmonyOS微信;
+            - 'ohos': HarmonyOS 手机端微信;
+            - 'ohos_pc': HarmonyOS PC微信;
             - 'windows': Windows微信;
             - 'mac': macOS微信;
             - 'devtools': 微信开发者工具;
@@ -4540,6 +4689,36 @@
         <member name="F:WeChatWASM.CheckIsAddedToMyMiniProgramSuccessCallbackResult.added">
             <summary>
             是否被添加至 「我的小程序」
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentFailCallbackErr.errMsg">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentSuccessCallbackResult.data">
+            <summary>
+            支付支持信息对象
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentSuccessCallbackResult.errMsg">
+            <summary>
+            调用结果信息，格式为 "checkIsSupportMidasPayment:ok"
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentSuccessCallbackDataResult.allow_pay">
+            <summary>
+            是否支持支付，true 表示支持，false 表示不支持
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentSuccessCallbackDataResult.err_code">
+            <summary>
+            错误码，0 表示成功
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CheckIsSupportMidasPaymentSuccessCallbackDataResult.err_msg">
+            <summary>
+            错误信息，"success" 表示成功
             </summary>
         </member>
         <member name="F:WeChatWASM.ChooseImageOption.count">
@@ -5710,22 +5889,22 @@
             预告状态：0可用 1取消 2已用
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.cloudID">
+        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.cloudID">
             <summary>
             敏感数据对应的云 ID，开通[云开发](https://developers.weixin.qq.com/minigame/dev/wxcloud/basis/getting-started.html)的小程序才会返回，可通过云调用直接获取开放数据，详细见[云调用直接获取开放数据](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html#method-cloud)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.encryptedData">
+        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.encryptedData">
             <summary>
             包括敏感数据在内的完整转发信息的加密数据，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.errMsg">
+        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.errMsg">
             <summary>
             错误信息
             </summary>
         </member>
-        <member name="F:WeChatWASM.GetChatToolInfoSuccessCallbackResult.iv">
+        <member name="F:WeChatWASM.RequestMidasFriendPaymentSuccessCallbackResult.iv">
             <summary>
             加密算法的初始向量，详细见[加密数据解密算法](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/signature.html)
             </summary>
@@ -5818,6 +5997,21 @@
         <member name="F:WeChatWASM.GetGameExptInfoOption.keyList">
             <summary>
             实验参数数组，不填则获取所有实验参数
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GameExptInfo.expt_id">
+            <summary>
+            实验ID，标识实验
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GameExptInfo.param_name">
+            <summary>
+            参数名称
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GameExptInfo.param_value">
+            <summary>
+            参数值
             </summary>
         </member>
         <member name="F:WeChatWASM.GetGroupEnterInfoOption.allowSingleChat">
@@ -5941,6 +6135,67 @@
             本机局域网子网掩码，基础库 2.24.0 开始支持
             </summary>
         </member>
+        <member name="F:WeChatWASM.GetLocationOption.altitude">
+            <summary>
+            需要基础库： `1.6.0`
+            传入 true 会返回高度信息，由于获取高度需要较高精确度，会减慢接口返回速度
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationOption.highAccuracyExpireTime">
+            <summary>
+            需要基础库： `2.9.0`
+            高精度定位超时时间(ms)，指定时间内返回最高精度，该值3000ms以上高精度定位才有效果
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationOption.isHighAccuracy">
+            <summary>
+            需要基础库： `2.9.0`
+            开启高精度定位
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationOption.type">
+            <summary>
+            wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.accuracy">
+            <summary>
+            位置的精确度，反应与真实位置之间的接近程度，可以理解成10即与真实位置相差10m，越小越精确
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.altitude">
+            <summary>
+            需要基础库： `1.2.0`
+            高度，单位 m
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.horizontalAccuracy">
+            <summary>
+            需要基础库： `1.2.0`
+            水平精度，单位 m
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.latitude">
+            <summary>
+            纬度，范围为 -90~90，负数表示南纬
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.longitude">
+            <summary>
+            经度，范围为 -180~180，负数表示西经
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.speed">
+            <summary>
+            速度，单位 m/s
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetLocationSuccessCallbackResult.verticalAccuracy">
+            <summary>
+            需要基础库： `1.2.0`
+            垂直精度，单位 m（Android 无法获取，返回 0）
+            </summary>
+        </member>
         <member name="F:WeChatWASM.GetNetworkTypeSuccessCallbackResult.hasSystemProxy">
             <summary>
             需要基础库： `2.22.1`
@@ -6054,6 +6309,17 @@
             每一项订阅消息的订阅状态。itemSettings对象的键为**一次性订阅消息的模板id**或**系统订阅消息的类型**，值为'accept'、'reject'、'ban'中的其中一种。'accept'表示用户同意订阅这条消息，'reject'表示用户拒绝订阅这条消息，'ban'表示已被后台封禁。一次性订阅消息使用方法详见 [wx.requestSubscribeMessage](https://developers.weixin.qq.com/minigame/dev/api/open-api/subscribe-message/wx.requestSubscribeMessage.html)，永久订阅消息（仅小游戏可用）使用方法详见[wx.requestSubscribeSystemMessage](https://developers.weixin.qq.com/minigame/dev/api/open-api/subscribe-message/wx.requestSubscribeSystemMessage.html)
             ## 注意事项
             - itemSettings 只返回用户勾选过订阅面板中的“总是保持以上选择，不再询问”的订阅消息。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetShareInfoOption.shareTicket">
+            <summary>
+            shareTicket，详见[获取更多转发信息](#)
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.GetShareInfoOption.timeout">
+            <summary>
+            需要基础库： `1.9.90`
+            超时时间，单位 ms
             </summary>
         </member>
         <member name="F:WeChatWASM.GetShowSplashAdStatusSuccessCallbackResult.code">
@@ -6602,6 +6868,11 @@
             用短链打开小程序时当前页面携带的查询字符串。小程序中使用时，应在进入页面时调用 `wx.onCopyUrl` 自定义 `query`，退出页面时调用 `wx.offCopyUrl`，防止影响其它页面。
             </summary>
         </member>
+        <member name="F:WeChatWASM.OnCopyUrlListenerResult.title">
+            <summary>
+            短链中的自定义标题，显示在小程序名称之后，可以不填
+            </summary>
+        </member>
         <member name="F:WeChatWASM.OnDeviceMotionChangeListenerResult.alpha">
             <summary>
             当 手机坐标 X/Y 和 地球 X/Y 重合时，绕着 Z 轴转动的夹角为 alpha，范围值为 [0, 2*PI)。逆时针转动为正。
@@ -6623,6 +6894,21 @@
             可选值：
             - 'landscape': 横屏正方向，以 HOME 键在屏幕右侧为正方向;
             - 'landscapeReverse': 横屏反方向，以 HOME 键在屏幕左侧为反方向;
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnDirectAdStatusChangeListenerResult.isEndByAbnormal">
+            <summary>
+            当前直玩广告是否由于异常流程而结束（如 下拉/搜索 进入正在直玩广告流程中的游戏）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnDirectAdStatusChangeListenerResult.isInDirectGameAd">
+            <summary>
+            当前是否处于直接广告中
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.OnDirectAdStatusChangeListenerResult.isInMask">
+            <summary>
+            当前是否处于蒙层阶段
             </summary>
         </member>
         <member name="F:WeChatWASM.ListenerError.message">
@@ -7020,7 +7306,7 @@
         </member>
         <member name="F:WeChatWASM.OpenChannelsUserProfileOption.finderUserName">
             <summary>
-            视频号 id
+            视频号id（参考格式为：sphcqO59YEPCvoe；查看路径为：微信客户端->我tab->视频号->右上角.-＞视频号名字-视频号ID）
             </summary>
         </member>
         <member name="F:WeChatWASM.OpenChatToolOption.chatType">
@@ -7338,6 +7624,53 @@
         <member name="F:WeChatWASM.ReportUserBehaviorBranchAnalyticsOption.branchDim">
             <summary>
             自定义维度，基础库 v2.14.0 开始支持可选
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.FacialRecognitionError.errMsg">
+            <summary>
+            错误信息
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 0 | 人脸识别成功 |  |
+            | 2002004 | 人脸识别失败 |  |
+            | 2002006 | 用户取消/超时/不同意，导致未完成人脸识别 |  |
+            | 2002007 | 本用户7天内人脸识别已通过，通过日期为XX |  |
+            | 2002008 | 本日已调起过人脸识别或者本月调用次数已达上限 |  |
+            | 2002009 | 无权限发起人脸识别 |  |
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.FacialRecognitionError.errCode">
+            <summary>
+            错误码
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 0 | 人脸识别成功 |  |
+            | 2002004 | 人脸识别失败 |  |
+            | 2002006 | 用户取消/超时/不同意，导致未完成人脸识别 |  |
+            | 2002007 | 本用户7天内人脸识别已通过，通过日期为XX |  |
+            | 2002008 | 本日已调起过人脸识别或者本月调用次数已达上限 |  |
+            | 2002009 | 无权限发起人脸识别 |  |
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestFacialVerifyOption.verifyId">
+            <summary>
+            人脸核身会话唯一标识（小程序后台根据「用户实名信息（姓名+身份证）」调用微信后台[getVerifyId](https://developers.weixin.qq.com/miniprogram/dev/server/API/face/api_getverifyid.html)接口获取）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestFacialVerifyError.errMsg">
+            <summary>
+            错误信息
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 0 | 人脸识别完成（需要通过[queryVerifyInfo](https://developers.weixin.qq.com/miniprogram/dev/server/API/face/api_queryverifyinfo.html)接口查询人脸核身真实验证结果） |  |
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.RequestFacialVerifyError.errCode">
+            <summary>
+            错误码
+            | 错误码 | 错误信息 | 说明 |
+            | - | - | - |
+            | 0 | 人脸识别完成（需要通过[queryVerifyInfo](https://developers.weixin.qq.com/miniprogram/dev/server/API/face/api_queryverifyinfo.html)接口查询人脸核身真实验证结果） |  |
             </summary>
         </member>
         <member name="F:WeChatWASM.RequestMidasFriendPaymentOption.buyQuantity">
@@ -7725,7 +8058,7 @@
         </member>
         <member name="F:WeChatWASM.SetBackgroundFetchTokenOption.token">
             <summary>
-            自定义的登录态
+            自定义的登录态。上限 1024 字符。
             </summary>
         </member>
         <member name="F:WeChatWASM.SetClipboardDataOption.data">

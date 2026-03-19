@@ -273,6 +273,24 @@ namespace WeChatWASM
                     finishExport();
                 }
             }
+
+            // PC高性能模式：在小游戏构建完成后构建PC版本
+            if (buildWebGL && WXPCHPBuildHelper.IsPCHighPerformanceEnabled())
+            {
+                Debug.Log("[微信小游戏] 小游戏构建完成，开始构建PC高性能版本...");
+                
+                if (!WXPCHPBuildHelper.BuildPCHighPerformance(config.ProjectConf.DST))
+                {
+                    Debug.LogError("[微信小游戏] PC高性能模式构建失败");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败", 
+                        "PC高性能版本构建失败，但小游戏版本已构建成功。", "确定");
+                }
+                else
+                {
+                    Debug.Log("[微信小游戏] PC高性能版本构建完成!");
+                }
+            }
+
             return WXExportError.SUCCEED;
         }
 
@@ -428,24 +446,24 @@ namespace WeChatWASM
                 bool showEnableGLX2022Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202203OrNewer();
 
                 var glx2022Importer = AssetImporter.GetAtPath(glLibs[0]) as PluginImporter;
-                #if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                     glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2022Plugin);
-                #else
-                    glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
-                #endif
+#else
+                glx2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2022Plugin);
+#endif
                 SetPluginCompatibilityByModifyingMetadataFile(glLibs[0], showEnableGLX2022Plugin);
             }
-            
+
             {
                 // unity2021 lib引入
                 bool showEnableGLX2021Plugin = config.CompileOptions.enableEmscriptenGLX && IsCompatibleWithUnity202102To202203();
 
                 var glx2021Importer = AssetImporter.GetAtPath(glLibs[1]) as PluginImporter;
-                #if PLATFORM_WEIXINMINIGAME
+#if PLATFORM_WEIXINMINIGAME
                     glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, showEnableGLX2021Plugin);
-                #else
-                    glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
-                #endif
+#else
+                glx2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, showEnableGLX2021Plugin);
+#endif
                 SetPluginCompatibilityByModifyingMetadataFile(glLibs[1], showEnableGLX2021Plugin);
             }
 
@@ -973,7 +991,7 @@ namespace WeChatWASM
                 {
                     new Rule()
                     {
-                        old = "if (GameGlobal.unityNamespace.enableProfileStats)", 
+                        old = "if (GameGlobal.unityNamespace.enableProfileStats)",
                         newStr = "if (GameGlobal.unityNamespace.enableProfileStats || (typeof GameGlobal.manager.getWXAppCheatMonitor === 'function' && GameGlobal.manager.getWXAppCheatMonitor().shouldForceShowPerfMonitor()))"
                     }
                 };

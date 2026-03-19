@@ -6,6 +6,32 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2026-3-16 v0.1.32 【普通更新】
+### Feature
+* 普通：更新基础库版本
+* 普通：擂台赛api新增subScoreKey参数
+* 普通：支持gameeventreport（试玩）
+* 普通：添加WX数据保护插件，支持游戏数据加密存储和篡改检测  
+### Fixed
+* 普通：修复订阅消息报错问题
+
+## 2026-1-13 v0.1.31 【普通更新】
+### Fixed
+* 普通：修复glx模式下 createVideo underGameView为true 黑屏的问题
+* 普通：修复build profile在团结1.6之后的导出问题
+
+## 2025-11-6 v0.1.30 【重要更新】
+### Feature
+* 重要：EmscriptenGLX支持微信压缩纹理
+* 普通：EmscriptenGLX支持Android glReadpixels
+* 普通：EmscriptenGLX优化Android CPU与功耗
+* 普通：Metal高帧率下功耗优化
+* 普通：团结引擎buildprofile支持
+### Fixed
+* 重要：Metal编码库batch size修复
+* 普通：PageManager相关问题修复
+* 普通：iOS18的微信字体修复
+
 ## 2025-9-8 v0.1.29 【重要更新】
 ### Feature
 * 普通：本地缓存存在时，UnityWebRequest支持同步方式(API：wx.SetSyncReadCacheEnabled)以加快读取速度
