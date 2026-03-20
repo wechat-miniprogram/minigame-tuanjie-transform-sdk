@@ -24,7 +24,7 @@ namespace WeChatWASM.Examples
             Debug.Log("[PCHPTestExample] Start - 获取 PC 高性能管理器");
             
 #if UNITY_STANDALONE_WIN
-            _pcManager = WX.GetPCHighPerformanceManager();
+            _pcManager = WXPCHighPerformanceManager.GetInstance();
             
             if (_pcManager != null && _pcManager.IsSupported)
             {
