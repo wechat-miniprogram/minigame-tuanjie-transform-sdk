@@ -130,6 +130,11 @@ namespace WeChatWASM
                         Directory.CreateDirectory(pchpOutputPath);
                         File.Move(tempWxapkgPath, finalWxapkgPath);
 
+                        // 创建空的 game.js 文件
+                        string gameJsPath = Path.Combine(pchpOutputPath, "game.js");
+                        File.WriteAllText(gameJsPath, "");
+                        Debug.Log($"[PC高性能模式] 已创建 game.js: {gameJsPath}");
+
                         Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
                     }
                     else
@@ -167,13 +172,32 @@ namespace WeChatWASM
             }
             finally
             {
-                // 始终恢复到 WebGL 构建目标，确保微信小游戏转换工具能正常加载
-                if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
-                {
-                    Debug.Log($"[PC高性能模式] 切换回 WebGL 构建目标");
-                    EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
-                }
+                // 恢复到小游戏构建目标，确保微信小游戏转换工具能正常加载
+                RestoreToMiniGamePlatform();
             }
+        }
+
+        /// <summary>
+        /// 恢复到小游戏平台
+        /// 团结引擎使用 WeixinMiniGame，Unity 使用 WebGL
+        /// </summary>
+        private static void RestoreToMiniGamePlatform()
+        {
+#if TUANJIE_2022_3_OR_NEWER
+            // 团结引擎：切换到 WeixinMiniGame 平台
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame)
+            {
+                Debug.Log($"[PC高性能模式] 切换回 WeixinMiniGame 构建目标");
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
+            }
+#else
+            // Unity：切换到 WebGL 平台
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
+            {
+                Debug.Log($"[PC高性能模式] 切换回 WebGL 构建目标");
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+            }
+#endif
         }
 
         /// <summary>
