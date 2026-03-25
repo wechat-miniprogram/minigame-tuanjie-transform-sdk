@@ -121,6 +121,14 @@ namespace WeChatWASM
                 EditorGUILayout.EndVertical();
             }
 
+            foldPCHighPerformance = EditorGUILayout.Foldout(foldPCHighPerformance, "PC高性能模式选项");
+            if (foldPCHighPerformance)
+            {
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
+                OnSettingPCHighPerformance();
+                EditorGUILayout.EndVertical();
+            }
+
             foldDebugOptions = EditorGUILayout.Foldout(foldDebugOptions, "调试编译选项");
             if (foldDebugOptions)
             {
@@ -230,6 +238,14 @@ namespace WeChatWASM
             {
                 EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
                 OnSettingSDKOptions();
+                EditorGUILayout.EndVertical();
+            }
+
+            foldPCHighPerformance = EditorGUILayout.Foldout(foldPCHighPerformance, "PC高性能模式");
+            if (foldPCHighPerformance)
+            {
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
+                OnSettingPCHighPerformance();
                 EditorGUILayout.EndVertical();
             }
 
@@ -372,6 +388,11 @@ namespace WeChatWASM
             formCheckbox("useMiniGameChat", "使用社交组件");
             formCheckbox("preloadWXFont", "预加载微信字体(?)", "在game.js执行开始时预载微信系统字体，运行期间可使用WX.GetWXFont获取微信字体");
             formCheckbox("disableMultiTouch", "禁止多点触控");
+        }
+
+        private void OnSettingPCHighPerformance()
+        {
+            formCheckbox("enablePCHighPerformance", "PC高性能模式(?)", "勾选后将在构建时同时构建PC端高性能版本，构建产物会放到导出路径下的PCHP目录");
         }
 
         private void OnSettingDebugOptions(bool showDevBuild)
@@ -519,6 +540,7 @@ namespace WeChatWASM
         private bool foldBaseInfo = true;
         private bool foldLoadingConfig = true;
         private bool foldSDKOptions = true;
+        private bool foldPCHighPerformance = true;
         private bool foldDebugOptions = true;
         private bool foldInstantGame = false;
         private bool foldFontOptions = false;
@@ -657,6 +679,7 @@ namespace WeChatWASM
             this.setData("loadingBarWidth", ProjectConf.loadingBarWidth.ToString());
             this.setData("needCheckUpdate", ProjectConf.needCheckUpdate);
             this.setData("disableHighPerformanceFallback", ProjectConf.disableHighPerformanceFallback);
+            this.setData("enablePCHighPerformance", ProjectConf.EnablePCHighPerformance);
         }
 
         private void loadSDKOptionsData(SDKOptions SDKOptions)
@@ -784,6 +807,7 @@ namespace WeChatWASM
             ProjectConf.loadingBarWidth = int.Parse(this.getDataInput("loadingBarWidth"));
             ProjectConf.needCheckUpdate = this.getDataCheckbox("needCheckUpdate");
             ProjectConf.disableHighPerformanceFallback = this.getDataCheckbox("disableHighPerformanceFallback");
+            ProjectConf.EnablePCHighPerformance = this.getDataCheckbox("enablePCHighPerformance");
         }
 
         private void saveSDKOptionsData(SDKOptions SDKOptions)
@@ -873,6 +897,7 @@ namespace WeChatWASM
             _ProjectConf.loadingBarWidth = ProjectConf.FindPropertyRelative("loadingBarWidth").intValue;
             _ProjectConf.needCheckUpdate = ProjectConf.FindPropertyRelative("needCheckUpdate").boolValue;
             _ProjectConf.disableHighPerformanceFallback = ProjectConf.FindPropertyRelative("disableHighPerformanceFallback").boolValue;
+            _ProjectConf.EnablePCHighPerformance = ProjectConf.FindPropertyRelative("EnablePCHighPerformance").boolValue;
         }
         private void serializeProjectConf(WXProjectConf _ProjectConf, SerializedProperty ProjectConf)
         {
@@ -902,6 +927,7 @@ namespace WeChatWASM
             ProjectConf.FindPropertyRelative("loadingBarWidth").intValue = _ProjectConf.loadingBarWidth;
             ProjectConf.FindPropertyRelative("needCheckUpdate").boolValue = _ProjectConf.needCheckUpdate;
             ProjectConf.FindPropertyRelative("disableHighPerformanceFallback").boolValue = _ProjectConf.disableHighPerformanceFallback;
+            ProjectConf.FindPropertyRelative("EnablePCHighPerformance").boolValue = _ProjectConf.EnablePCHighPerformance;
 
             //miniGameProperty.FindPropertyRelative("m_AutomaticFillInstantGame").boolValue = getDataCheckbox("m_AutomaticFillInstantGame");
 
