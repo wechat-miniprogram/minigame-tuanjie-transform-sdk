@@ -167,8 +167,10 @@ namespace WeChatWASM
                 Debug.LogError("性能分析工具只能用于Development Build, 终止导出!");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
-            dynamic config = isPlayableBuild ? UnityUtil.GetPlayableEditorConf() : UnityUtil.GetEditorConf();
-            if (config.ProjectConf.relativeDST == string.Empty)
+            string relativeDST = isPlayableBuild
+                ? UnityUtil.GetPlayableEditorConf().ProjectConf.relativeDST
+                : UnityUtil.GetEditorConf().ProjectConf.relativeDST;
+            if (relativeDST == string.Empty)
             {
                 Debug.LogError("请先配置游戏导出路径");
                 return WXExportError.BUILD_WEBGL_FAILED;
@@ -273,6 +275,24 @@ namespace WeChatWASM
                     finishExport();
                 }
             }
+
+            // PC高性能模式：在小游戏构建完成后构建PC版本
+            if (buildWebGL && WXPCHPBuildHelper.IsPCHighPerformanceEnabled())
+            {
+                Debug.Log("[微信小游戏] 小游戏构建完成，开始构建PC高性能版本...");
+                
+                if (!WXPCHPBuildHelper.BuildPCHighPerformance(config.ProjectConf.DST))
+                {
+                    Debug.LogError("[微信小游戏] PC高性能模式构建失败");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败", 
+                        "PC高性能版本构建失败，但小游戏版本已构建成功。", "确定");
+                }
+                else
+                {
+                    Debug.Log("[微信小游戏] PC高性能版本构建完成!");
+                }
+            }
+
             return WXExportError.SUCCEED;
         }
 

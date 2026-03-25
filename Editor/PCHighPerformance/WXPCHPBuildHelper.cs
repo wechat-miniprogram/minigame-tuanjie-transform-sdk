@@ -1,0 +1,395 @@
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+
+namespace WeChatWASM
+{
+    /// <summary>
+    /// PC高性能小游戏构建辅助类
+    /// 用于在微信小游戏转换工具面板中集成PC高性能模式构建
+    /// </summary>
+    public static class WXPCHPBuildHelper
+    {
+        /// <summary>
+        /// PC高性能构建产物目录名
+        /// </summary>
+        public const string PCHPOutputDir = "pchpcode";
+
+        /// <summary>
+        /// 检查是否开启了PC高性能模式
+        /// </summary>
+        public static bool IsPCHighPerformanceEnabled()
+        {
+            var config = UnityUtil.GetEditorConf();
+            bool enabled = config != null && config.ProjectConf.EnablePCHighPerformance;
+            Debug.Log($"[PC高性能模式] 检查配置: config={config != null}, EnablePCHighPerformance={config?.ProjectConf?.EnablePCHighPerformance}, 结果={enabled}");
+            return enabled;
+        }
+
+        /// <summary>
+        /// 执行PC高性能构建
+        /// </summary>
+        /// <param name="exportBasePath">导出基础路径（来自小游戏面板配置）</param>
+        /// <returns>构建是否成功</returns>
+        public static bool BuildPCHighPerformance(string exportBasePath)
+        {
+            if (string.IsNullOrEmpty(exportBasePath))
+            {
+                Debug.LogError("[PC高性能模式] 导出路径为空，无法构建");
+                return false;
+            }
+
+            // 确定构建目标平台
+            var currentPlatform = Application.platform;
+            BuildTarget buildTarget;
+            string platformName;
+
+            if (currentPlatform == RuntimePlatform.OSXEditor)
+            {
+                buildTarget = BuildTarget.StandaloneOSX;
+                platformName = "Mac";
+            }
+            else
+            {
+                buildTarget = BuildTarget.StandaloneWindows64;
+                platformName = "Windows";
+            }
+
+            // 构建输出路径：直接放在 minigame/pchpcode 目录下
+            string pchpOutputPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, PCHPOutputDir);
+
+            Debug.Log($"[PC高性能模式] 开始构建，目标平台: {platformName}");
+            Debug.Log($"[PC高性能模式] 输出路径: {pchpOutputPath}");
+
+            // 保存当前构建目标
+            var originalTarget = EditorUserBuildSettings.activeBuildTarget;
+            var originalTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+
+            try
+            {
+                // 切换构建目标（如果需要）
+                if (originalTarget != buildTarget)
+                {
+                    Debug.Log($"[PC高性能模式] 切换构建目标: {originalTarget} -> {buildTarget}");
+                    if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget))
+                    {
+                        Debug.LogError("[PC高性能模式] 切换构建目标失败");
+                        return false;
+                    }
+                }
+
+                // 配置 Player Settings
+                ConfigurePlayerSettings();
+
+                // 确保输出目录存在
+                if (!Directory.Exists(pchpOutputPath))
+                {
+                    Directory.CreateDirectory(pchpOutputPath);
+                }
+
+                // 获取可执行文件路径
+                string executablePath = GetExecutablePath(pchpOutputPath, buildTarget);
+
+                // 获取场景列表
+                var scenes = GetEnabledScenes();
+                if (scenes.Length == 0)
+                {
+                    Debug.LogError("[PC高性能模式] 没有启用的场景，请在 Build Settings 中添加场景");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败", "没有启用的场景，请在 Build Settings 中添加场景", "确定");
+                    return false;
+                }
+
+                // 构建选项
+                var buildOptions = BuildOptions.None;
+
+                // 执行构建
+                Debug.Log($"[PC高性能模式] 执行构建，输出: {executablePath}");
+                var report = BuildPipeline.BuildPlayer(scenes, executablePath, buildTarget, buildOptions);
+
+                // 检查构建结果
+                if (report.summary.result == BuildResult.Succeeded)
+                {
+                    Debug.Log($"[PC高性能模式] 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
+                    Debug.Log($"[PC高性能模式] 输出路径: {pchpOutputPath}");
+
+                    // 打包成 wxapkg 格式（先打包到临时位置）
+                    string tempWxapkgPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, $"{PCHPOutputDir}_temp.wxapkg");
+                    string finalWxapkgPath = Path.Combine(pchpOutputPath, $"{PCHPOutputDir}.wxapkg");
+
+                    Debug.Log($"[PC高性能模式] 开始打包 wxapkg...");
+
+                    if (WXApkgPacker.Pack(pchpOutputPath, tempWxapkgPath))
+                    {
+                        // 删除原始构建材料
+                        Debug.Log($"[PC高性能模式] 清理原始构建材料...");
+                        Directory.Delete(pchpOutputPath, true);
+
+                        // 重新创建目录并移动 wxapkg
+                        Directory.CreateDirectory(pchpOutputPath);
+                        File.Move(tempWxapkgPath, finalWxapkgPath);
+
+                        // 创建空的 game.js 文件
+                        string gameJsPath = Path.Combine(pchpOutputPath, "game.js");
+                        File.WriteAllText(gameJsPath, "");
+                        Debug.Log($"[PC高性能模式] 已创建 game.js: {gameJsPath}");
+
+                        Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
+                        if (File.Exists(tempWxapkgPath))
+                        {
+                            File.Delete(tempWxapkgPath);
+                        }
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError($"[PC高性能模式] 构建失败: {report.summary.result}");
+                    foreach (var step in report.steps)
+                    {
+                        foreach (var message in step.messages)
+                        {
+                            if (message.type == LogType.Error)
+                            {
+                                Debug.LogError($"[PC高性能模式] 构建错误: {message.content}");
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[PC高性能模式] 构建异常: {e.Message}");
+                Debug.LogException(e);
+                return false;
+            }
+            finally
+            {
+                // 恢复到小游戏构建目标，确保微信小游戏转换工具能正常加载
+                RestoreToMiniGamePlatform();
+            }
+        }
+
+        /// <summary>
+        /// 恢复到小游戏平台
+        /// 团结引擎使用 WeixinMiniGame，Unity 使用 WebGL
+        /// </summary>
+        private static void RestoreToMiniGamePlatform()
+        {
+#if TUANJIE_2022_3_OR_NEWER
+            // 团结引擎：切换到 WeixinMiniGame 平台
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame)
+            {
+                Debug.Log($"[PC高性能模式] 切换回 WeixinMiniGame 构建目标");
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WeixinMiniGame, BuildTarget.WeixinMiniGame);
+            }
+
+            // 激活微信小游戏子平台
+            ActivateWeixinSubplatform();
+#else
+            // Unity：切换到 WebGL 平台
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
+            {
+                Debug.Log($"[PC高性能模式] 切换回 WebGL 构建目标");
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+            }
+#endif
+        }
+
+#if TUANJIE_2022_3_OR_NEWER
+        /// <summary>
+        /// 激活微信小游戏子平台（通过反射兼容不同版本团结引擎）
+        /// </summary>
+        private static void ActivateWeixinSubplatform()
+        {
+            try
+            {
+                var miniGameType = typeof(PlayerSettings).GetNestedType("MiniGame");
+                if (miniGameType == null)
+                {
+                    Debug.LogWarning("[PC高性能模式] 未找到 PlayerSettings.MiniGame 类型");
+                    return;
+                }
+
+                var methods = miniGameType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                System.Reflection.MethodInfo setActiveMethod = null;
+
+                foreach (var m in methods)
+                {
+                    if (m.Name == "SetActiveSubplatform")
+                    {
+                        setActiveMethod = m;
+                        break;
+                    }
+                }
+
+                if (setActiveMethod == null)
+                {
+                    Debug.LogWarning("[PC高性能模式] 未找到 SetActiveSubplatform 方法");
+                    return;
+                }
+
+                var parameters = setActiveMethod.GetParameters();
+                if (parameters.Length != 2)
+                {
+                    Debug.LogWarning($"[PC高性能模式] SetActiveSubplatform 参数数量异常: {parameters.Length}");
+                    return;
+                }
+
+                var firstParamType = parameters[0].ParameterType;
+
+                if (firstParamType.IsEnum)
+                {
+                    // 枚举版本：尝试多个可能的枚举值名称
+                    string[] enumNames = { "WeChat", "Weixin", "WeiXin" };
+                    foreach (var name in enumNames)
+                    {
+                        try
+                        {
+                            var enumValue = System.Enum.Parse(firstParamType, name);
+                            setActiveMethod.Invoke(null, new object[] { enumValue, true });
+                            Debug.Log($"[PC高性能模式] 已激活微信小游戏子平台 (enum: {name})");
+                            return;
+                        }
+                        catch { }
+                    }
+
+                    // 如果上面都没命中，打印所有可用枚举值帮助排查
+                    var allNames = System.Enum.GetNames(firstParamType);
+                    Debug.LogWarning($"[PC高性能模式] 未找到匹配的枚举值，可用值: {string.Join(", ", allNames)}");
+                }
+                else if (firstParamType == typeof(string))
+                {
+                    // 字符串版本：按优先级尝试多个可能的标识符
+                    // "weixin" 与命令行参数 -minigamesubplatform weixin 一致
+                    string[] candidates = { "weixin", "WeChat", "Weixin", "wechat", "WeChat:微信小游戏" };
+                    foreach (var candidate in candidates)
+                    {
+                        try
+                        {
+                            setActiveMethod.Invoke(null, new object[] { candidate, true });
+                            Debug.Log($"[PC高性能模式] 已激活微信小游戏子平台 (name: {candidate})");
+                            return;
+                        }
+                        catch (System.Reflection.TargetInvocationException ex)
+                        {
+                            // 内部抛出异常说明名称不对，继续尝试下一个
+                            Debug.Log($"[PC高性能模式] 尝试子平台名称 \"{candidate}\" 失败: {ex.InnerException?.Message}");
+                        }
+                    }
+
+                    Debug.LogWarning("[PC高性能模式] 所有候选子平台名称均失败");
+                }
+                else
+                {
+                    Debug.LogWarning($"[PC高性能模式] SetActiveSubplatform 参数类型未知: {firstParamType}");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[PC高性能模式] 激活微信小游戏子平台失败: {e.Message}");
+            }
+        }
+#endif
+
+        /// <summary>
+        /// 配置 Player Settings 用于 PC 高性能构建
+        /// </summary>
+        private static void ConfigurePlayerSettings()
+        {
+            // 设置窗口模式
+            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+
+            // 设置默认分辨率
+            PlayerSettings.defaultScreenWidth = 1280;
+            PlayerSettings.defaultScreenHeight = 720;
+
+            // 允许调整窗口大小
+            PlayerSettings.resizableWindow = true;
+
+            // 处理 Windows 上 Linear 色彩空间与图形 API 的兼容性问题
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                ConfigureWindowsGraphicsAPI();
+            }
+
+            Debug.Log("[PC高性能模式] Player Settings 配置完成");
+        }
+
+        /// <summary>
+        /// 配置 Windows 图形 API，解决 Linear 色彩空间兼容性问题
+        /// </summary>
+        private static void ConfigureWindowsGraphicsAPI()
+        {
+            // 检查当前色彩空间
+            bool isLinear = PlayerSettings.colorSpace == ColorSpace.Linear;
+
+            if (isLinear)
+            {
+                // Linear 色彩空间需要 DX11 或更高版本
+                // 禁用自动图形 API，手动指定兼容的 API
+                PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
+
+                var graphicsAPIs = new UnityEngine.Rendering.GraphicsDeviceType[]
+                {
+                    UnityEngine.Rendering.GraphicsDeviceType.Direct3D11,
+                    UnityEngine.Rendering.GraphicsDeviceType.Direct3D12,
+                    UnityEngine.Rendering.GraphicsDeviceType.Vulkan
+                };
+
+                PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64, graphicsAPIs);
+                Debug.Log("[PC高性能模式] 已配置 Windows 图形 API: D3D11, D3D12, Vulkan（Linear 色彩空间兼容）");
+            }
+            else
+            {
+                // Gamma 色彩空间，使用默认图形 API 即可
+                PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, true);
+                Debug.Log("[PC高性能模式] 使用默认 Windows 图形 API（Gamma 色彩空间）");
+            }
+        }
+
+        /// <summary>
+        /// 获取可执行文件路径
+        /// </summary>
+        private static string GetExecutablePath(string outputPath, BuildTarget target)
+        {
+            string productName = PlayerSettings.productName;
+            if (string.IsNullOrEmpty(productName))
+            {
+                productName = "Game";
+            }
+
+            if (target == BuildTarget.StandaloneOSX)
+            {
+                return Path.Combine(outputPath, $"{productName}.app");
+            }
+            else
+            {
+                return Path.Combine(outputPath, $"{productName}.exe");
+            }
+        }
+
+        /// <summary>
+        /// 获取启用的场景列表
+        /// </summary>
+        private static string[] GetEnabledScenes()
+        {
+            var scenes = new List<string>();
+            foreach (var scene in EditorBuildSettings.scenes)
+            {
+                if (scene.enabled)
+                {
+                    scenes.Add(scene.path);
+                }
+            }
+            return scenes.ToArray();
+        }
+    }
+}

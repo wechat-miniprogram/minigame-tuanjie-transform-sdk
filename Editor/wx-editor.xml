@@ -493,6 +493,11 @@
             注意：不要随意修改，默认值为0，0表示不限制
             </summary>
         </member>
+        <member name="F:WeChatWASM.WXProjectConf.EnablePCHighPerformance">
+            <summary>
+            是否开启PC高性能模式
+            </summary>
+        </member>
         <member name="F:WeChatWASM.CompressTexture.halfSize">
             <summary>
             自动将图片尺寸减小一半
