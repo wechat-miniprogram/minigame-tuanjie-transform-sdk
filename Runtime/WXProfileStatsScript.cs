@@ -231,6 +231,13 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         UpdateValue("NumberOnDisk", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleNumberOnDisk(), sb);
         UpdateValue("SizeInMemory", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleSizeInMemory() / toMB, sb);
         UpdateValue("SizeOnDisk", WeChatWASM.WXSDKManagerHandler.Instance.GetBundleSizeOnDisk() / toMB, sb);
+        UpdateValue("ReadCount", WeChatWASM.WXSDKManagerHandler.Instance.GetReadCount(), sb);
+        UpdateValue("CacheMissCount", WeChatWASM.WXSDKManagerHandler.Instance.GetCacheMissCount(), sb);
+        UpdateValue("FdCacheMissCount", WeChatWASM.WXSDKManagerHandler.Instance.GetFdCacheMissCount(), sb);
+        UpdateValue("OpenSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetOpenSyncCount(), sb);
+        UpdateValue("StatSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetStatSyncCount(), sb);
+        UpdateValue("ReadSyncCount", WeChatWASM.WXSDKManagerHandler.Instance.GetReadSyncCount(), sb);
+        WeChatWASM.WXSDKManagerHandler.Instance.ResetPerfCounters();
 
 #if UNITY_2021_2_OR_NEWER
         // sb.AppendLine("-------------MemoryRecorder-----");
@@ -278,29 +285,37 @@ public class WXProfileStatsScript : MonoBehaviour, WeChatWASM.WXSDKManagerHandle
         if(!WeChatWASM.WXSDKManagerHandler.Instance.IsCloudTest()) {
             GUI.backgroundColor = new Color(0, 0, 0, 0.5f);
 #if UNITY_EDITOR
-            GUI.skin.button.fontSize = 10;
-            GUI.skin.label.fontSize = 10;
+            int fontSize = 10;
+            int btnWidth = 150;
+            int btnHeight = 20;
+            int padding = 5;
 #else
-            GUI.skin.button.fontSize = 30;
-            GUI.skin.label.fontSize = 30;
+            int fontSize = 30;
+            int btnWidth = 400;
+            int btnHeight = 50;
+            int padding = 10;
 #endif
-            if (GUILayout.Button("Performance Stats", GUILayout.ExpandWidth(false)))
+            GUI.skin.button.fontSize = fontSize;
+            GUI.skin.label.fontSize = fontSize;
+
+            float curY = padding;
+            if (GUI.Button(new Rect(padding, curY, btnWidth, btnHeight), "Performance Stats"))
             {
                 m_isShow = !m_isShow;
             }
+            curY += btnHeight + padding;
 
-            if (GUILayout.Button("ProfilingMemory Dump", GUILayout.ExpandWidth(false)))
+            if (GUI.Button(new Rect(padding, curY, btnWidth, btnHeight), "ProfilingMemory Dump"))
             {
                 WeChatWASM.WXSDKManagerHandler.Instance.ProfilingMemoryDump();
             }
+            curY += btnHeight + padding;
 
-            GUILayout.BeginVertical(m_bgStyle);
             if (m_isShow)
             {
-                GUILayout.Label(statsText);
+                GUI.Box(new Rect(padding, curY, Screen.width - padding * 2, Screen.height - curY - padding), "", m_bgStyle);
+                GUI.Label(new Rect(padding * 2, curY + padding, Screen.width - padding * 4, Screen.height - curY - padding * 2), statsText);
             }
-
-            GUILayout.EndVertical();
         }
     }
 
