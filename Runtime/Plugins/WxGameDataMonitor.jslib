@@ -1,6 +1,5 @@
 mergeInto(LibraryManager.library, {
     JSStartGameDataMonitor: function() {
-        if (!Module.IsWxGame) return;
         console.log("call JSStartGameDataMonitor \n"); 
 
         if (typeof GameGlobal.manager.getGameDataMonitor === 'function')

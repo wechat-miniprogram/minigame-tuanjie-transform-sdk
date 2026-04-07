@@ -108,69 +108,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.checkIsSupportFacialRecognition(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/face/wx.checkIsSupportFacialRecognition.html)
-        /// 需要基础库： `3.8.12`
-        /// 检查当前设备是否支持人脸识别能力
-        /// **示例代码**
-        /// ```js
-        /// wx.checkIsSupportFacialRecognition({
-        /// success() {
-        /// // 支持人脸识别
-        /// },
-        /// fail() {
-        /// // 不支持人脸识别
-        /// },
-        /// })
-        /// ```
-        /// </summary>
-        public static void CheckIsSupportFacialRecognition(CheckIsSupportFacialRecognitionOption callback)
-        {
-            WXSDKManagerHandler.Instance.CheckIsSupportFacialRecognition(callback);
-        }
-
-        /// <summary>
-        /// [wx.checkIsSupportMidasPayment(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.checkIsSupportMidasPayment.html)
-        /// 需要基础库： `3.10.3`
-        /// 检查当前环境是否支持虚拟支付。使用前请注意阅读[相关说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/virtual-payment2.html)。
-        /// **平台支持说明**
-        /// - Android、Windows、OHOS 平台：默认支持虚拟支付，接口直接返回支持
-        /// - iOS 平台：需满足以下环境要求才可能支持虚拟支付
-        /// - 操作系统要求：使用 iPhone 或者 iPad，iOS 15 及以上版本
-        /// - 基础库版本要求：3.10.3 及以上
-        /// - 客户端版本要求：8.0.68 及以上
-        /// - 苹果支付不支持使用沙箱环境，仅支持使用现网环境
-        /// **注意事项**
-        /// 若该 API 都不存在，则 iOS 一定不支持虚拟支付，请保持旧版本逻辑。
-        /// **示例代码**
-        /// ```js
-        /// if (wx.checkIsSupportMidasPayment) {
-        /// wx.checkIsSupportMidasPayment({
-        /// success(res) {
-        /// console.log('支持检查结果:', res)
-        /// if (res.data.allow_pay) {
-        /// console.log('当前环境支持支付')
-        /// // 可以继续调用支付相关接口
-        /// } else {
-        /// console.log('当前环境不支持支付')
-        /// // 请自行适配用户提示文案
-        /// }
-        /// },
-        /// fail(err) {
-        /// console.error('检查支持情况失败:', err)
-        /// },
-        /// complete() {
-        /// console.log('检查完成')
-        /// }
-        /// })
-        /// }
-        /// ```
-        /// </summary>
-        public static void CheckIsSupportMidasPayment(CheckIsSupportMidasPaymentOption callback)
-        {
-            WXSDKManagerHandler.Instance.CheckIsSupportMidasPayment(callback);
-        }
-
-        /// <summary>
         /// [wx.checkSession(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/login/wx.checkSession.html)
         /// 检查登录态 session_key 是否过期。
         /// session_key 具有唯一性，在使用小程序时，同一用户在同一时刻仅有一个有效的 session_key。
@@ -342,7 +279,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.exitChatTool(Object object)](https://developers.weixin.qq.com/minigame/dev/api/chattool/wx.exitChatTool.html)
         /// 需要基础库： `3.7.12`
-        /// 退出聊天工具开放能力模式
+        /// 退出聊天工具模式
         /// </summary>
         public static void ExitChatTool(ExitChatToolOption callback)
         {
@@ -738,7 +675,6 @@ namespace WeChatWASM
         /// | 8   | 当天(自然日)赞官方贴子数                      | 无需传入  |  |
         /// | 9   | 当天(自然日)评论官方贴子数                     | 无需传入  |  |
         /// | 10   | 当天(自然日)发表到本圈子话题的贴子数           | 传入话题id，从mp-游戏圈话题管理处获取  |  |
-        /// | 11  | 用户最近一次推荐游戏时间                      | 无需传入  | 秒级时间戳 |  |
         /// **encryptedData 解密后得到的 GameClubData 的结构**
         /// | 属性 | 类型 | 说明                                   |
         /// | ------- | ------- | -------------------------------------- |
@@ -755,22 +691,9 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.getGameExptInfo(Object options)](https://developers.weixin.qq.com/minigame/dev/api/data-analysis/wx.getGameExptInfo.html)
+        /// [wx.getGameExptInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/data-analysis/wx.getGameExptInfo.html)
         /// 需要基础库： `3.8.8`
         /// 给定实验参数数组，获取对应的实验参数值
-        /// **示例代码**
-        /// ```js
-        /// wx.getGameExptInfo({
-        /// keyList: ['experiment_key1', 'experiment_key2'],
-        /// success(res) {
-        /// res.list.forEach((expParam) => {
-        /// console.log('实验ID:', expParam.expt_id);
-        /// console.log('参数名:', expParam.param_name);
-        /// console.log('参数值:', expParam.param_value);
-        /// })
-        /// }
-        /// });
-        /// ```
         /// </summary>
         public static void GetGameExptInfo(GetGameExptInfoOption callback)
         {
@@ -865,14 +788,6 @@ namespace WeChatWASM
         public static void GetLocalIPAddress(GetLocalIPAddressOption callback)
         {
             WXSDKManagerHandler.Instance.GetLocalIPAddress(callback);
-        }
-
-        /// <summary>
-        /// [wx.getLocation(Object object)](https://developers.weixin.qq.com/minigame/dev/api/location/wx.getLocation.html)
-        /// </summary>
-        public static void GetLocation(GetLocationOption callback)
-        {
-            WXSDKManagerHandler.Instance.GetLocation(callback);
         }
 
         /// <summary>
@@ -999,15 +914,6 @@ namespace WeChatWASM
         public static void GetSetting(GetSettingOption callback)
         {
             WXSDKManagerHandler.Instance.GetSetting(callback);
-        }
-
-        /// <summary>
-        /// [wx.getShareInfo(Object object)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.getShareInfo.html)
-        /// 需要基础库： `1.1.0`
-        /// </summary>
-        public static void GetShareInfo(GetShareInfoOption callback)
-        {
-            WXSDKManagerHandler.Instance.GetShareInfo(callback);
         }
 
         /// <summary>
@@ -1356,6 +1262,9 @@ namespace WeChatWASM
         /// 从 2.3.0 版本开始，若用户未点击小程序页面任意位置，则开发者将无法调用此接口自动跳转至其他小程序。
         /// ##### 需要用户确认跳转
         /// 从 2.3.0 版本开始，在跳转至其他小程序前，将统一增加弹窗，询问是否跳转，用户确认后才可以跳转其他小程序。如果用户点击取消，则回调 `fail cancel`。
+        /// ##### 无需声明跳转名单，不限跳转数量（众测中）
+        /// 1. 从2020年4月24日起，使用跳转其他小程序功能将无需在全局配置中声明跳转名单，调用此接口时将不再校验所跳转的 AppID 是否在 navigateToMiniProgramAppIdList 中。
+        /// 2. 从2020年4月24日起，跳转其他小程序将不再受数量限制，使用此功能时请注意遵守运营规范。
         /// **运营规范**
         /// 平台将坚决打击小程序盒子等互推行为，使用此功能时请严格遵守[《微信小程序平台运营规范》](https://developers.weixin.qq.com/miniprogram/product/#_5-10-%E4%BA%92%E6%8E%A8%E8%A1%8C%E4%B8%BA)，若发现小程序违反运营规范将被下架处理。
         /// **关于调试**
@@ -1792,125 +1701,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.requestFacialRecognition(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/account-info/wx.requestFacialRecognition.html)
-        /// 需要基础库： `3.11.2`
-        /// 腾讯游戏人脸识别验证功能是基于健康系统防沉迷体系，用于识别疑似未成年人冒用成年人账号游玩游戏的行为，是防止未成年人沉迷网络游戏的一项重要措施。本接口是为开通虚拟支付功能的小游戏开发者提供的，此接口是基于人脸识别的未成年人身份核验接口。本次识别是根据用户在腾讯健康系统中留存的实名信息进行验证，结果将直接返回至开发者。
-        /// **接口限额**
-        /// - 超出限额后将返回错误码 2002008（频率控制）
-        /// - 1天内全部游戏对一个用户只能调起1次人脸识别
-        /// - 若用户人脸识别通过：7天内不能再被弹出人脸识别
-        /// - 根据小游戏评级每个月限制使用次数，一旦发现恶意滥用接口，会取消使用资格。具体使用次数如下：
-        /// - S级：300次/月
-        /// - A级：100次/月
-        /// - B级：30次/月
-        /// **处理流程**
-        /// <img src="https://mmgame.qpic.cn/image/2034b86e1e8f3541629d4b4d16cf41ff84fd99efe25f4fac181603edd8a29e14/0" width="600" alt="人脸识别流程图" />
-        /// **示例代码**
-        /// ```js
-        /// // 实际业务场景：防沉迷身份验证
-        /// function checkUserIdentity() {
-        /// wx.requestFacialRecognition({
-        /// success(res) {
-        /// // 场景 1：本次人脸识别通过
-        /// // res = { errCode: 0, errMsg: 'ok' }
-        /// console.log('人脸识别成功:', res)
-        /// // 允许继续游戏
-        /// startGame()
-        /// },
-        /// fail(err) {
-        /// console.error('人脸识别失败:', err)
-        /// let tipMessage = ''
-        /// let shouldBlock = false  // 是否需要阻断游戏
-        /// // 根据错误码进行不同处理
-        /// switch (err.errCode) {
-        /// case 2002004:
-        /// // 人脸识别失败（需要阻断）
-        /// // err = { errCode: 2002004, errMsg: '人脸识别失败' }
-        /// tipMessage = '识别失败，请稍后重试'
-        /// shouldBlock = true
-        /// break
-        /// case 2002006:
-        /// // 用户取消/超时/不同意，导致未完成人脸识别（需要阻断）
-        /// // err = { errCode: 2002006, errMsg: '用户取消' }
-        /// tipMessage = '您已取消验证，无法继续游戏'
-        /// shouldBlock = true
-        /// break
-        /// case 2002007:
-        /// // 本用户7天内人脸识别已通过（可以继续游戏）
-        /// // err = { errCode: 2002007, errMsg: '本用户7天内人脸识别已通过，通过日期为2024-01-15' }
-        /// tipMessage = '您已完成验证'
-        /// shouldBlock = false
-        /// break
-        /// case 2002008:
-        /// // 频率控制：本日已调起过人脸识别 or 本月调用次数已达上限（可以继续游戏）
-        /// // err = { errCode: 2002008, errMsg: '本日已调起过人脸识别' }
-        /// // 或 err = { errCode: 2002008, errMsg: '本月调用次数已达上限' }
-        /// tipMessage = '今日验证次数已达上限'
-        /// shouldBlock = false
-        /// break
-        /// case 2002009:
-        /// // 无权限发起人脸识别（可以继续游戏）
-        /// // err = { errCode: 2002009, errMsg: '无权限发起人脸识别' }
-        /// tipMessage = '暂无权限使用此功能'
-        /// shouldBlock = false
-        /// break
-        /// default:
-        /// // 系统异常等其他错误（可以继续游戏，避免影响正常用户）
-        /// tipMessage = '系统异常，请稍后重试'
-        /// shouldBlock = false
-        /// }
-        /// if (tipMessage) {
-        /// wx.showModal({
-        /// title: '提示',
-        /// content: tipMessage,
-        /// showCancel: false
-        /// })
-        /// }
-        /// if (shouldBlock) {
-        /// // 仅对识别失败(2002004)和用户取消(2002006)阻断游戏
-        /// restrictGameFeatures()
-        /// } else {
-        /// // 其他情况允许继续游戏
-        /// startGame()
-        /// }
-        /// },
-        /// complete(res) {
-        /// // 无论成功失败均会触发
-        /// console.log('人脸识别流程结束:', res)
-        /// }
-        /// })
-        /// }
-        /// ```
-        /// </summary>
-        public static void RequestFacialRecognition(RequestFacialRecognitionOption callback)
-        {
-            WXSDKManagerHandler.Instance.RequestFacialRecognition(callback);
-        }
-
-        /// <summary>
-        /// [wx.requestFacialVerify(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/face/wx.requestFacialVerify.html)
-        /// 需要基础库： `3.8.12`
-        /// 对用户实名信息进行基于生物识别的人脸核身验证
-        /// **示例代码**
-        /// ```js
-        /// wx.requestFacialVerify({
-        /// // 人脸核身会话唯一标识
-        /// verifyId: 'xxx',
-        /// success() {
-        /// // 人脸核身验证成功，需要通知小程序后台根据本次人脸核身会话唯一标识 verifyId 字段调用微信后台 queryVerifyInfo 接口查询人脸核身真实验证结果。
-        /// },
-        /// fail() {
-        /// // 人脸核身验证失败
-        /// },
-        /// })
-        /// ```
-        /// </summary>
-        public static void RequestFacialVerify(RequestFacialVerifyOption callback)
-        {
-            WXSDKManagerHandler.Instance.RequestFacialVerify(callback);
-        }
-
-        /// <summary>
         /// [wx.requestMidasFriendPayment(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.requestMidasFriendPayment.html)
         /// 需要基础库： `2.11.0`
         /// </summary>
@@ -2253,8 +2043,6 @@ namespace WeChatWASM
         /// [wx.setDeviceOrientation(Object object)](https://developers.weixin.qq.com/minigame/dev/api/device/orientation/wx.setDeviceOrientation.html)
         /// 需要基础库： `2.26.0`
         /// 切换横竖屏。接口调用成功后会触发 wx.onDeviceOrientationChange 事件
-        /// **注意**
-        /// - PC小程序处于全屏时，无法切换横竖屏。
         /// </summary>
         public static void SetDeviceOrientation(SetDeviceOrientationOption callback)
         {
@@ -2976,15 +2764,6 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [wx.reportMonitor(string name, number value)](https://developers.weixin.qq.com/minigame/dev/api/data-analysis/wx.reportMonitor.html)
-        /// 需要基础库： `2.1.2`
-        /// </summary>
-        public static void ReportMonitor(string name, double value)
-        {
-            WXSDKManagerHandler.Instance.ReportMonitor(name, value);
-        }
-
-        /// <summary>
         /// [wx.reportPerformance(Number id, Number value, String|Array dimensions)](https://developers.weixin.qq.com/minigame/dev/api/base/performance/wx.reportPerformance.html)
         /// 需要基础库： `2.10.0`
         /// 小程序测速上报。使用前，需要在小程序管理后台配置。 详情参见[小程序测速](https://developers.weixin.qq.com/miniprogram/dev/framework/performanceReport/)指南。
@@ -3248,7 +3027,6 @@ namespace WeChatWASM
         /// 监听搜索到新设备的事件
         /// **注意**
         /// - 若在 [wx.onBluetoothDeviceFound](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth/wx.onBluetoothDeviceFound.html) 回调了某个设备，则此设备会添加到 [wx.getBluetoothDevices](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth/wx.getBluetoothDevices.html) 接口获取到的数组中。
-        /// - 地址变化这个是鸿蒙系统特性，小程序可以不缓存地址，重新搜索连接。
         /// **示例代码**
         /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/pQU51zmz7a3K)
         /// ```js
@@ -3341,34 +3119,6 @@ namespace WeChatWASM
         public static void OffDeviceOrientationChange(Action<OnDeviceOrientationChangeListenerResult> result)
         {
             WXSDKManagerHandler.Instance.OffDeviceOrientationChange(result);
-        }
-
-        /// <summary>
-        /// [wx.onDirectAdStatusChange(function listener)](https://developers.weixin.qq.com/minigame/dev/api/ad/wx.onDirectAdStatusChange.html)
-        /// 需要基础库： `3.11.2`
-        /// 监听监听直玩广告状态变化
-        /// **示例代码**
-        /// ```js
-        /// wx.onDirectAdStatusChange(res => {
-        /// // 会有如下的几种状态值组合
-        /// // a) { isInMask: true, isInDirectGameAd: true } -> 表示当前正在直玩广告 且 未戳破蒙层
-        /// // b) { isInMask: false, isInDirectGameAd: true } -> 表示当前正在直玩广告 且 戳破了蒙层
-        /// // c) { isInMask: false, isInDirectGameAd: false, isEndByAbnormal: false }, -> 表示倒计时结束了，并且选择了继续玩
-        /// // d) { isInMask: false, isInDirectGameAd: false, isEndByAbnormal: true }, -> 表示由于异常流程而结束
-        /// console.log(res.isInMask)
-        /// console.log(res.isInDirectGameAd)
-        /// console.log(res.isEndByAbnormal)
-        /// })
-        /// ```
-        /// </summary>
-        public static void OnDirectAdStatusChange(Action<OnDirectAdStatusChangeListenerResult> result)
-        {
-            WXSDKManagerHandler.Instance.OnDirectAdStatusChange(result);
-        }
-
-        public static void OffDirectAdStatusChange(Action<OnDirectAdStatusChangeListenerResult> result)
-        {
-            WXSDKManagerHandler.Instance.OffDirectAdStatusChange(result);
         }
 
         /// <summary>
@@ -3745,21 +3495,21 @@ namespace WeChatWASM
         /// 需要基础库： `2.8.1`
         /// 监听用户主动截屏事件。用户使用系统截屏按键截屏时触发，只能注册一个监听
         /// **示例代码**
-        /// 页面要先调用wx.showShareMenu()来允许调用
         /// ```js
         /// wx.onUserCaptureScreen(function (res) {
         /// console.log('用户截屏了')
         /// return {
         /// query: "parameter=test", // 通过截屏图片打开小程序的query参数
         /// promise: new Promise((resolve) => { // 通过promise延时传递小程序的query参数
-        /// setTimeout(() => {
-        /// resolve({
-        /// query: "parameter=test2",
-        /// })
-        /// }, 1000) // 在1秒内对query进行解析
-        /// })
+        ///         setTimeout(() => {
+        ///             resolve({
+        ///                 query: "parameter=test2",
+        ///             })
+        ///         }, 1000) // 在1秒内对query进行解析
+        ///     })
         /// }
-        /// })
+        /// }
+        /// )
         /// ```
         /// </summary>
         public static void OnUserCaptureScreen(Action<OnUserCaptureScreenListenerResult> result)
@@ -3893,7 +3643,7 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.onCopyUrl(function listener)](https://developers.weixin.qq.com/minigame/dev/api/share/wx.onCopyUrl.html)
         /// 需要基础库： `2.14.3`
-        /// 监听用户点击右上角菜单的「复制链接」按钮时触发的事件。
+        /// 监听用户点击右上角菜单的「复制链接」按钮时触发的事件。本接口为 Beta 版本，暂只在 Android 平台支持。
         /// </summary>
         public static void OnCopyUrl(Action<Action<OnCopyUrlListenerResult>> callback)
         {
@@ -4079,23 +3829,6 @@ namespace WeChatWASM
         public static DeviceInfo GetDeviceInfo()
         {
             return WXSDKManagerHandler.GetDeviceInfo();
-        }
-
-        /// <summary>
-        /// [Object wx.getDirectAdStatusSync()](https://developers.weixin.qq.com/minigame/dev/api/ad/wx.getDirectAdStatusSync.html)
-        /// 需要基础库： `3.11.2`
-        /// 获取直玩广告组件展示状态。
-        /// **示例代码**
-        /// ```js
-        /// const statusInfo = wx.getDirectAdStatusSync();
-        /// console.log(statusInfo.isInMask) // 当前是否在蒙层阶段
-        /// console.log(statusInfo.isInDirectGameAd) // 当前是否在直玩广告中
-        /// ```
-        /// </summary>
-        /// <returns></returns>
-        public static DirectAdStatusInfo GetDirectAdStatusSync()
-        {
-            return WXSDKManagerHandler.GetDirectAdStatusSync();
         }
 
         /// <summary>
@@ -4312,19 +4045,19 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// [[ImageData](https://developers.weixin.qq.com/minigame/dev/api/render/image/ImageData.html) wx.createImageData(number width, number height, Uint8ClampedArray data)](https://developers.weixin.qq.com/minigame/dev/api/render/image/wx.createImageData.html)
+        /// [[ImageData](https://developers.weixin.qq.com/minigame/dev/api/render/image/ImageData.html) wx.createImageData(number width, number height)](https://developers.weixin.qq.com/minigame/dev/api/render/image/wx.createImageData.html)
         /// 需要基础库： `3.4.10`
-        /// 这里有两种使用方法, 一种是指定ImageData的宽和高, 另外一种使用已有的ImageData的图像二进制数据，来构建新的对象。
+        /// 这里有两种使用方法, 一种是指定ImageData的宽和高, 另外一种是使用ImageData, 通过它本身的宽高尺寸来构建新的对象。
         /// **示例代码**
         /// ```js
-        /// const imageData1 = wx.createImageData(100, 100)
-        /// const imageData2 = wx.createImageData(imageData1.data, 100, 100)
+        /// const imageData1 =  wx.createImageData(100, 100)
+        /// const imageData2 =  wx.createImageData(imageData1)
         /// ```
         /// </summary>
         /// <returns></returns>
-        public static ImageData CreateImageData(double width, double height, int[] data)
+        public static ImageData CreateImageData(double width, double height)
         {
-            return WXSDKManagerHandler.CreateImageData(width, height, data);
+            return WXSDKManagerHandler.CreateImageData(width, height);
         }
 
         /// <summary>
