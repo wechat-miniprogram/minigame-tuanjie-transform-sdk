@@ -170,18 +170,14 @@ namespace WeChatWASM
                 Debug.LogException(e);
                 return false;
             }
-            finally
-            {
-                // 恢复到小游戏构建目标，确保微信小游戏转换工具能正常加载
-                RestoreToMiniGamePlatform();
-            }
         }
 
         /// <summary>
-        /// 恢复到小游戏平台
+        /// 恢复到小游戏平台（仅路径A——转换工具链——需要调用）
+        /// 路径B（原生 Standalone 接入）不应调用此方法
         /// 团结引擎使用 WeixinMiniGame，Unity 使用 WebGL
         /// </summary>
-        private static void RestoreToMiniGamePlatform()
+        public static void RestoreToMiniGamePlatform()
         {
 #if TUANJIE_2022_3_OR_NEWER
             // 团结引擎：切换到 WeixinMiniGame 平台

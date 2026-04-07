@@ -79,9 +79,10 @@ namespace WeChatWASM
             // 提示信息
             EditorGUILayout.HelpBox(
                 "点击「生成并转换」将执行以下操作：\n" +
-                "1. 向首场景注入 WXPCHPInitScript 脚本\n" +
+                "1. 自动添加 WX_PCHP_ENABLED 宏到 Standalone 平台\n" +
                 "2. 构建 Standalone 可执行文件\n" +
-                "3. SDK 初始化时会弹窗展示各步骤进度",
+                "3. 运行时通过 RuntimeInitializeOnLoadMethod 自动初始化 SDK\n\n" +
+                "提示：开发者也可以手动在场景中挂载 WXPCHPInitScript 来精确控制初始化时机",
                 MessageType.Info);
 
             EditorGUILayout.EndScrollView();
@@ -161,11 +162,15 @@ namespace WeChatWASM
 
             try
             {
-                // Step 1: 注入 WXPCHPInitScript 到首场景
-                EditorUtility.DisplayProgressBar("PC高性能模式", "正在向首场景注入 SDK 脚本...", 0.1f);
-                InjectSDKToFirstScene();
+                // Step 1: 确保 WX_PCHP_ENABLED 宏已定义
+                EditorUtility.DisplayProgressBar("PC高性能模式", "正在检查 WX_PCHP_ENABLED 宏...", 0.05f);
+                EnsurePCHPDefineSymbol();
 
-                // Step 2: 切换构建目标
+                // Step 2: 检查首场景是否已有 SDK（有则跳过注入，依赖 RuntimeInitializeOnLoadMethod）
+                EditorUtility.DisplayProgressBar("PC高性能模式", "正在检查 SDK 注入状态...", 0.1f);
+                CheckAndOptionallyInjectSDK();
+
+                // Step 3: 切换构建目标
                 EditorUtility.DisplayProgressBar("PC高性能模式", "正在切换构建目标...", 0.2f);
                 var originalTarget = EditorUserBuildSettings.activeBuildTarget;
                 if (originalTarget != buildTarget)
@@ -174,11 +179,11 @@ namespace WeChatWASM
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
                 }
 
-                // Step 3: 配置 Player Settings
+                // Step 4: 配置 Player Settings
                 EditorUtility.DisplayProgressBar("PC高性能模式", "正在配置 Player Settings...", 0.3f);
                 ConfigurePlayerSettings();
 
-                // Step 4: 准备输出目录
+                // Step 5: 准备输出目录
                 if (!Directory.Exists(fullExportPath))
                 {
                     Directory.CreateDirectory(fullExportPath);
@@ -191,7 +196,7 @@ namespace WeChatWASM
                     ? Path.Combine(fullExportPath, $"{productName}.app")
                     : Path.Combine(fullExportPath, $"{productName}.exe");
 
-                // Step 5: 获取场景列表
+                // Step 6: 获取场景列表
                 var scenes = GetEnabledScenes();
                 if (scenes.Length == 0)
                 {
@@ -200,7 +205,7 @@ namespace WeChatWASM
                     return;
                 }
 
-                // Step 6: 执行构建
+                // Step 7: 执行构建
                 EditorUtility.DisplayProgressBar("PC高性能模式", "正在构建 Standalone...", 0.5f);
                 Debug.Log($"[PC高性能模式] 开始构建，输出: {executablePath}");
 
@@ -224,6 +229,7 @@ namespace WeChatWASM
                     Debug.LogError($"[PC高性能模式] 构建失败: {report.summary.result}");
                     EditorUtility.DisplayDialog("构建失败", $"构建失败: {report.summary.result}\n\n请查看 Console 获取详细错误信息", "确定");
                 }
+                // 注意：路径B 不调用 RestoreToMiniGamePlatform()，保持 Standalone 平台
             }
             catch (System.Exception e)
             {
@@ -233,70 +239,85 @@ namespace WeChatWASM
             }
         }
 
-        #region Scene Injection
+        /// <summary>
+        /// 确保 WX_PCHP_ENABLED 宏已定义
+        /// </summary>
+        private void EnsurePCHPDefineSymbol()
+        {
+            var targetGroup = BuildTargetGroup.Standalone;
+#if UNITY_2023_1_OR_NEWER
+            var namedTarget = UnityEditor.Build.NamedBuildTarget.Standalone;
+            var defines = PlayerSettings.GetScriptingDefineSymbols(namedTarget);
+#else
+            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+#endif
+
+            if (!defines.Contains("WX_PCHP_ENABLED"))
+            {
+                var newDefines = string.IsNullOrEmpty(defines)
+                    ? "WX_PCHP_ENABLED"
+                    : defines + ";WX_PCHP_ENABLED";
+
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(namedTarget, newDefines);
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
+#endif
+                Debug.Log("[PC高性能模式] 已自动添加 WX_PCHP_ENABLED 宏");
+            }
+        }
 
         /// <summary>
-        /// 向首场景注入 WXPCHPInitScript
+        /// 检查首场景是否已有 SDK 组件，没有时可选注入
+        /// 有 RuntimeInitializeOnLoadMethod 兜底，场景注入不再是必须
         /// </summary>
-        private void InjectSDKToFirstScene()
+        private void CheckAndOptionallyInjectSDK()
         {
-            // 查找脚本类型
             var sdkType = FindTypeInAllAssemblies(SDK_CLASS_NAME);
             if (sdkType == null)
             {
-                throw new System.Exception($"找不到 {SDK_CLASS_NAME} 类型，请确保 WX-WASM-SDK-V2 已正确安装");
+                Debug.LogWarning($"[PC高性能模式] 未找到 {SDK_CLASS_NAME}，可能需要等待宏生效后重新编译");
+                return;
             }
 
-            var assemblyName = sdkType.Assembly.GetName().Name;
-            Debug.Log($"[PC高性能模式] 找到 WXPCHPInitScript，程序集: {assemblyName}");
-
-            if (assemblyName.Contains("Editor"))
-            {
-                throw new System.Exception("WXPCHPInitScript 在 Editor 程序集中，无法用于 Runtime 构建！请确保脚本放在 Runtime 目录下");
-            }
-
-            // 获取首场景
+            // 检查首场景
             var firstScenePath = GetFirstEnabledScenePath();
-            if (string.IsNullOrEmpty(firstScenePath))
-            {
-                throw new System.Exception("没有启用的场景，请在 Build Settings 中添加场景");
-            }
+            if (string.IsNullOrEmpty(firstScenePath)) return;
 
-            // 打开首场景
             var currentScenes = EditorSceneManager.GetSceneManagerSetup();
-            var scene = EditorSceneManager.OpenScene(firstScenePath, OpenSceneMode.Single);
-
-            // 清理旧对象
-            var oldSDK = GameObject.Find("EmbeddedAppletSDK");
-            if (oldSDK != null)
+            try
             {
-                Debug.Log("[PC高性能模式] 删除旧的 EmbeddedAppletSDK 对象");
-                GameObject.DestroyImmediate(oldSDK);
+                var scene = EditorSceneManager.OpenScene(firstScenePath, OpenSceneMode.Single);
+                var existing = GameObject.Find(SDK_GAMEOBJECT_NAME);
+
+                if (existing != null && existing.GetComponent(sdkType) != null)
+                {
+                    Debug.Log("[PC高性能模式] 首场景已有 WXPCHPInitScript，跳过注入");
+                    return;
+                }
+
+                // 清理旧对象
+                var oldSDK = GameObject.Find("EmbeddedAppletSDK");
+                if (oldSDK != null)
+                {
+                    GameObject.DestroyImmediate(oldSDK);
+                }
+
+                // 场景中没有，但 RuntimeInitializeOnLoadMethod 会自动创建
+                Debug.Log("[PC高性能模式] 首场景无 SDK 组件，将依赖 RuntimeInitializeOnLoadMethod 自动初始化");
+
+                EditorSceneManager.SaveScene(scene);
             }
-
-            // 删除已存在的同名对象（避免重复）
-            var existingSDK = GameObject.Find(SDK_GAMEOBJECT_NAME);
-            if (existingSDK != null)
+            finally
             {
-                Debug.Log($"[PC高性能模式] 删除已存在的 {SDK_GAMEOBJECT_NAME}，重新创建");
-                GameObject.DestroyImmediate(existingSDK);
-            }
-
-            // 创建新的 GameObject 并添加 WXPCHPInitScript
-            var sdkObject = new GameObject(SDK_GAMEOBJECT_NAME);
-            sdkObject.AddComponent(sdkType);
-            Debug.Log($"[PC高性能模式] ✅ 已在场景 [{scene.name}] 创建 {SDK_GAMEOBJECT_NAME} 并挂载 WXPCHPInitScript");
-
-            // 保存场景
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
-
-            // 恢复场景状态
-            if (currentScenes != null && currentScenes.Length > 0)
-            {
-                EditorSceneManager.RestoreSceneManagerSetup(currentScenes);
+                if (currentScenes != null && currentScenes.Length > 0)
+                {
+                    EditorSceneManager.RestoreSceneManagerSetup(currentScenes);
+                }
             }
         }
+
+        #region Scene Helpers
 
         /// <summary>
         /// 在所有程序集中查找类型

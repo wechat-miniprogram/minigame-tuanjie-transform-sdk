@@ -1,3 +1,7 @@
+// WX_PCHP_ENABLED: PC高性能模式总开关
+// 路径A（转换工具链）: 由转换工具自动添加到 ScriptingDefineSymbols
+// 路径B（原生接入）: 开发者手动添加，或通过 Editor 菜单一键开启
+#if WX_PCHP_ENABLED
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -172,13 +176,15 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
-        // 获取当前活动窗口句柄
+        // 获取当前活动窗口句柄（Windows 专属）
+#if UNITY_STANDALONE_WIN
         [DllImport("user32.dll")]
         private static extern IntPtr GetActiveWindow();
 
         // Windows MessageBox
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+#endif
 
         #endregion
 
@@ -245,6 +251,25 @@ namespace WeChatWASM
 
         // 窗口句柄
         public IntPtr WindowHandle { get; private set; }
+
+        #endregion
+
+        #region Auto Initialize
+
+        /// <summary>
+        /// 自动初始化入口（零侵入）
+        /// 通过 RuntimeInitializeOnLoadMethod 在场景加载后自动创建
+        /// 如果开发者已手动在场景中挂载，则跳过
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AutoInitialize()
+        {
+            if (Instance != null) return;
+
+            var go = new GameObject("[WXPCHPInitScript]");
+            go.AddComponent<WXPCHPInitScript>();
+            Debug.Log("[WXPCHPInitScript] 通过 RuntimeInitializeOnLoadMethod 自动创建");
+        }
 
         #endregion
 
@@ -346,11 +371,21 @@ namespace WeChatWASM
                 // 4. 获取窗口句柄并初始化游戏窗口
                 Debug.Log("[WXPCHPInitScript] Step 4: 获取窗口句柄");
                 ShowStepInfo("步骤 4/5 - GetActiveWindow", "正在获取游戏窗口句柄...");
+#if UNITY_STANDALONE_WIN
                 WindowHandle = GetActiveWindow();
+#else
+                // macOS: 暂不通过 P/Invoke 获取窗口句柄，传 0 由 DLL 内部处理
+                WindowHandle = IntPtr.Zero;
+                Debug.Log("[WXPCHPInitScript] macOS 平台，窗口句柄由 DLL 内部获取");
+#endif
                 if (WindowHandle == IntPtr.Zero)
                 {
+#if UNITY_STANDALONE_WIN
                     ShowError("GetActiveWindow 返回空句柄");
                     return;
+#else
+                    Debug.Log("[WXPCHPInitScript] macOS 平台，使用 IntPtr.Zero 作为窗口句柄");
+#endif
                 }
                 Debug.Log($"获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
                 ShowStepInfo("步骤 4/5 - GetActiveWindow ✅", $"窗口句柄获取成功: 0x{WindowHandle.ToInt64():X}");
@@ -970,3 +1005,4 @@ namespace WeChatWASM
         }
     }
 }
+#endif // WX_PCHP_ENABLED

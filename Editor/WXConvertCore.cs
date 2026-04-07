@@ -291,6 +291,9 @@ namespace WeChatWASM
                 {
                     Debug.Log("[微信小游戏] PC高性能版本构建完成!");
                 }
+
+                // 路径A（转换工具链）：构建完成后恢复到小游戏平台
+                WXPCHPBuildHelper.RestoreToMiniGamePlatform();
             }
 
             return WXExportError.SUCCEED;
