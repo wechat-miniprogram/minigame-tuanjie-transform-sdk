@@ -33,7 +33,16 @@ namespace WeChatWASM
             PlayerSettings.WeixinMiniGame.compressionFormat = WeixinMiniGameCompressionFormat.Disabled;
             if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
             {
-                var absolutePath = Path.GetFullPath("Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ");
+                string templateRelPath;
+                if (UnityUtil.GetSDKMode() == UnityUtil.SDKMode.Package)
+                {
+                    templateRelPath = "Packages/com.qq.weixin.minigame/WebGLTemplates/WXTemplate2022TJ";
+                }
+                else
+                {
+                    templateRelPath = "Assets/WX-WASM-SDK-V2/WebGLTemplates/WXTemplate2022TJ";
+                }
+                var absolutePath = Path.GetFullPath(templateRelPath);
                 PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
             }
             else
