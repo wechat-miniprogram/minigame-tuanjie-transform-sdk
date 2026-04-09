@@ -41,6 +41,10 @@ namespace WeChatWASM
                 else
                 {
                     templateRelPath = "Assets/WX-WASM-SDK-V2/WebGLTemplates/WXTemplate2022TJ";
+                    if (!Directory.Exists(templateRelPath))
+                    {
+                        templateRelPath = "Assets/WebGLTemplates/WXTemplate2022TJ";
+                    }
                 }
                 var absolutePath = Path.GetFullPath(templateRelPath);
                 PlayerSettings.WeixinMiniGame.template = $"PATH:{absolutePath}";
