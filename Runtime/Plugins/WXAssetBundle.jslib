@@ -272,7 +272,7 @@ var WXAssetBundleLibrary = {
       }
       url = url.replaceAll(' ', '%20')
       if(url.startsWith('/vfs_streamingassets/')){
-        var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/StreamingAssets/");
+        var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/" + (GameGlobal.unityNamespace.dataFileSubPrefix || '') + "StreamingAssets/");
       }
       else{
         var path = url.replace(GameGlobal.unityNamespace.DATA_CDN, wx.env.USER_DATA_PATH+'/__GAME_FILE_CACHE/');
