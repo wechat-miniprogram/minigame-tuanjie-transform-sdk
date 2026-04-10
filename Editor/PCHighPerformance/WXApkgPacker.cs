@@ -13,10 +13,10 @@ namespace WeChatWASM
     /// wxapkg 格式结构：
     /// 1. 头部段 (14 字节)
     ///    - 起始标志: 1 字节 (0xBE)
-    ///    - 未知字段: 4 字节 (固定为 0)
-    ///    - 结束标志: 1 字节 (0xED)
+    ///    - info1: 4 字节 (固定为 0)
     ///    - 索引段长度: 4 字节 (大端序)
     ///    - 数据段长度: 4 字节 (大端序)
+    ///    - 结束标志: 1 字节 (0xED)
     /// 2. 索引段
     ///    - 文件数量: 4 字节 (大端序)
     ///    - 文件信息块序列（每个文件）：
@@ -158,20 +158,20 @@ namespace WeChatWASM
             // 起始标志
             header[0] = HEADER_MARK_START;
 
-            // 4 字节未知字段 (固定为 0)
+            // 4 字节 info1 字段 (固定为 0)
             header[1] = 0;
             header[2] = 0;
             header[3] = 0;
             header[4] = 0;
 
-            // 结束标志
-            header[5] = HEADER_MARK_END;
-
             // 索引段长度 (大端序)
-            WriteInt32BE(header, 6, indexLength);
+            WriteInt32BE(header, 5, indexLength);
 
             // 数据段长度 (大端序)
-            WriteInt32BE(header, 10, dataLength);
+            WriteInt32BE(header, 9, dataLength);
+
+            // 结束标志
+            header[13] = HEADER_MARK_END;
 
             return header;
         }
