@@ -707,22 +707,11 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 显示步骤信息弹窗（Windows 使用 MessageBox，其他平台使用 Debug.Log）
+        /// 显示步骤信息日志（仅输出到控制台，不弹窗阻塞流程）
         /// </summary>
         private void ShowStepInfo(string title, string message)
         {
             Debug.Log($"[WXPCHPInitScript] [{title}] {message}");
-#if UNITY_STANDALONE_WIN
-            try
-            {
-                // MB_OK | MB_ICONINFORMATION = 0x40
-                MessageBox(IntPtr.Zero, message, $"PC高性能模式 - {title}", 0x40);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogWarning($"[WXPCHPInitScript] MessageBox 调用失败: {e.Message}");
-            }
-#endif
         }
 
         /// <summary>
