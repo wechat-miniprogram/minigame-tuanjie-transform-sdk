@@ -176,12 +176,8 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
-        // 获取当前活动窗口句柄（Windows 专属）
+        // Windows MessageBox（仅错误提示使用）
 #if UNITY_STANDALONE_WIN
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetActiveWindow();
-
-        // Windows MessageBox
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 #endif
@@ -370,25 +366,29 @@ namespace WeChatWASM
 
                 // 4. 获取窗口句柄并初始化游戏窗口
                 Debug.Log("[WXPCHPInitScript] Step 4: 获取窗口句柄");
-                ShowStepInfo("步骤 4/5 - GetActiveWindow", "正在获取游戏窗口句柄...");
+                ShowStepInfo("步骤 4/5 - 获取窗口句柄", "正在获取游戏窗口句柄...");
 #if UNITY_STANDALONE_WIN
-                WindowHandle = GetActiveWindow();
+                // 通过进程主窗口句柄获取，不依赖窗口激活状态和调用时序
+                WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                if (WindowHandle == IntPtr.Zero)
+                {
+                    // 极端情况下主窗口句柄还未就绪，短暂等待后重试
+                    Debug.LogWarning("[WXPCHPInitScript] MainWindowHandle 为空，等待 200ms 后重试...");
+                    System.Threading.Thread.Sleep(200);
+                    WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                }
+                if (WindowHandle == IntPtr.Zero)
+                {
+                    ShowError("获取窗口句柄失败：Process.MainWindowHandle 返回空。请确保游戏以窗口模式运行（非 -batchmode）");
+                    return;
+                }
 #else
                 // macOS: 暂不通过 P/Invoke 获取窗口句柄，传 0 由 DLL 内部处理
                 WindowHandle = IntPtr.Zero;
                 Debug.Log("[WXPCHPInitScript] macOS 平台，窗口句柄由 DLL 内部获取");
 #endif
-                if (WindowHandle == IntPtr.Zero)
-                {
-#if UNITY_STANDALONE_WIN
-                    ShowError("GetActiveWindow 返回空句柄");
-                    return;
-#else
-                    Debug.Log("[WXPCHPInitScript] macOS 平台，使用 IntPtr.Zero 作为窗口句柄");
-#endif
-                }
-                Debug.Log($"获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
-                ShowStepInfo("步骤 4/5 - GetActiveWindow ✅", $"窗口句柄获取成功: 0x{WindowHandle.ToInt64():X}");
+                Debug.Log($"[WXPCHPInitScript] 获取窗口句柄成功: 0x{WindowHandle.ToInt64():X}");
+                ShowStepInfo("步骤 4/5 - 获取窗口句柄 ✅", $"窗口句柄获取成功: 0x{WindowHandle.ToInt64():X}");
 
                 // 5. 通知内核获取窗口句柄
                 Debug.Log("[WXPCHPInitScript] Step 5: 调用 InitGameWindow");
