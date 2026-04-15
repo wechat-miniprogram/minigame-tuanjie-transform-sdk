@@ -74,7 +74,7 @@ var WXAssetBundleLibrary = {
       }
       return 0
     }
-    
+
     var WXFileCache = /*#__PURE__*/function () {
       function WXFileCache(ttl, capacity) {
         _classCallCheck(this, WXFileCache);
@@ -171,19 +171,19 @@ var WXAssetBundleLibrary = {
       }, {
         key: "delete",
         value: function _delete(key) {
-            this.size -= this.hash.get(key).ab.byteLength;
-            return this.hash.delete(key)
+          this.size -= this.hash.get(key).ab.byteLength;
+          return this.hash.delete(key)
         }
       }, {
         key: "has",
         value: function _has(key) {
-            return this.hash.has(key)
+          return this.hash.has(key)
         }
       }
       ]);
       return WXFileCache;
     }();
-    
+
     WXFS.cache = new WXFileCache(ttl, capacity);
     WXFS.prefetchSize = prefetchSize || 1024; // iOS prefetch bytes, default 1024
     // Per-frame perf counters
@@ -394,8 +394,20 @@ var WXAssetBundleLibrary = {
   UnCleanbyPath: function (ptr, fromFile) {
     var url = UTF8ToString(ptr);
     var path = WXFS.url2path(url);
-    if(fromFile && !GameGlobal.manager.fs.accessSync(path)){
-      return false;
+    if (fromFile) {
+      if (path.startsWith(wx.env.USER_DATA_PATH) && !path.includes('/__GAME_FILE_CACHE/')) {
+        if (!WXFS.disk.has(path)) {
+          try {
+            WXFS.fs.accessSync(path);
+          } catch (e) {
+            return false;
+          }
+        }
+      } else {
+        if (!GameGlobal.manager.fs.accessSync(path)) {
+          return false;
+        }
+      }
     }
     if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
@@ -518,16 +530,16 @@ var WXAssetBundleLibrary = {
     xhr.send();
   },
 
-  WXGetBundleNumberInMemory: function () { 
+  WXGetBundleNumberInMemory: function () {
     return WXFS&&WXFS.cache&&WXFS.cache.hash&&WXFS.cache.hash.size; 
   },
-  WXGetBundleNumberOnDisk: function () { 
+  WXGetBundleNumberOnDisk: function () {
     return WXFS&&WXFS.disk&&WXFS.disk.hash&&WXFS.disk.hash.size; 
   },
-  WXGetBundleSizeInMemory: function () { 
+  WXGetBundleSizeInMemory: function () {
     return WXFS&&WXFS.cache&&WXFS.cache.size; 
   },
-  WXGetBundleSizeOnDisk: function () { 
+  WXGetBundleSizeOnDisk: function () {
     return WXFS&&WXFS.disk&&WXFS.disk.size; 
   },
   WXGetReadCount: function () {
