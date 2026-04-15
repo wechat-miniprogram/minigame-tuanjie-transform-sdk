@@ -17,7 +17,6 @@ mergeInto(LibraryManager.library, {
         monoHeapReserved, monoHeapUsed, nativeReserved, nativeUnused, nativeAllocated, // profiler.
         setPassCalls, drawCalls, vertices, trianglesCount // render.
     ) {
-        console.log("call JSReportUnityProfileData \n"); 
         let report_data = {
             timestamp: new Date().getTime(),
             fps: {
@@ -53,4 +52,25 @@ mergeInto(LibraryManager.library, {
 
         GameGlobal.manager.getGameDataMonitor().reportUnityProfileData(report_data)
     },
+
+    JSManageCpuProfile: function() {
+        if (!Module.IsWxGame) return;
+        if (typeof GameGlobal.manager.getGameDataMonitor !== 'function') return;
+        var monitor = GameGlobal.manager.getGameDataMonitor();
+        if (!monitor || !monitor.isRunning()) return;
+
+        if (monitor.shouldStartCpuProfile()) {
+            wx.startCPUProfiling();
+            monitor.onCpuProfileStarted();
+        } else if (monitor.shouldStopCpuProfile()) {
+            var cpuProfileData = wx.stopCPUProfiling();
+            var jsonString = JSON.stringify(cpuProfileData);
+            var filePath = wx.env.USER_DATA_PATH + '/cpuprofile_temp.cpuprofile';
+            var fs = wx.getFileSystemManager();
+            fs.writeFileSync(filePath, jsonString, 'utf8');
+            var stat = fs.statSync(filePath);
+            monitor.onCpuProfileFileReady(filePath, stat.size);
+        }
+    },
+
 });

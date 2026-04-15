@@ -112,6 +112,13 @@ function _JS_Video_Create(url) {
         };
         // eslint-disable-next-line no-plusplus
         videoInstances[++videoInstanceIdCounter] = videoInstance;
+        // @ts-ignore
+        const needMediaAudioPlayer = !videoDecoder.avSync && typeof wx.createMediaAudioPlayer === 'function';
+        let mediaAudioPlayer = null;
+        if (needMediaAudioPlayer) {
+            // @ts-ignore
+            mediaAudioPlayer = wx.createMediaAudioPlayer();
+        }
         
         videoDecoder.remove();
         videoDecoder.on('start', (res) => {
@@ -129,6 +136,31 @@ function _JS_Video_Create(url) {
             else {
                 videoInstance.paused = false;
                 videoInstance.stoped = false;
+                if (mediaAudioPlayer && !videoInstance._audioStarted) {
+                    (async () => {
+                        try {
+                            await mediaAudioPlayer.start();
+                            await mediaAudioPlayer.addAudioSource(videoDecoder);
+                            videoInstance._audioStarted = true;
+                            
+                            if (videoInstance.muted) {
+                                mediaAudioPlayer.volume = 0;
+                            }
+                            else {
+                                mediaAudioPlayer.volume = videoInstance.volume ?? 1;
+                            }
+                        }
+                        catch (e) {
+                            console.error('MediaAudioPlayer启动失败:', e);
+                        }
+                    })();
+                }
+                
+                if (videoInstance._pendingOnReady) {
+                    const { onready, ref } = videoInstance._pendingOnReady;
+                    videoInstance._pendingOnReady = null;
+                    dynCall_vi(onready, ref);
+                }
             }
         });
         videoDecoder.on('stop', (res) => {
@@ -141,7 +173,25 @@ function _JS_Video_Create(url) {
         videoDecoder.on('ended', (res) => {
             debugLog('wxVideoDecoder ended:', res);
             if (videoInstance.loop) {
-                videoInstance.seek(0);
+                // @ts-ignore
+                if (videoDecoder.avSync) {
+                    videoInstance.seek(0);
+                }
+                else {
+                    if (mediaAudioPlayer && videoInstance._audioStarted) {
+                        try {
+                            mediaAudioPlayer.removeAudioSource(videoDecoder);
+                            mediaAudioPlayer.stop();
+                        }
+                        catch (e) {  }
+                        videoInstance._audioStarted = false;
+                    }
+                    videoDecoder.stop();
+                    videoInstance.stoped = true;
+                    setTimeout(() => {
+                        videoDecoder.start(startOption);
+                    }, 50);
+                }
             }
             else {
                 videoInstance.ended = true;
@@ -158,6 +208,8 @@ function _JS_Video_Create(url) {
                 videoInstance.frameData?.close?.();
             }
             videoInstance.frameData = res;
+            
+            videoInstance._hasFrameEvent = true;
         });
         const startOption = {
             source,
@@ -183,11 +235,39 @@ function _JS_Video_Create(url) {
         };
         videoInstance.seek = (time) => {
             // @ts-ignore
-            videoDecoder.avSync.seek({ stamp: time });
-            videoInstance.seeking = true;
-            videoDecoder.emitter.emit('seek', {});
+            if (videoDecoder.avSync && videoDecoder.emitter) {
+                try {
+                    // @ts-ignore
+                    videoDecoder.avSync.seek({ stamp: time });
+                    videoInstance.seeking = true;
+                    videoDecoder.emitter.emit('seek', {});
+                }
+                catch (e) {
+                    // @ts-ignore
+                    videoDecoder.seek(time);
+                    videoInstance.seeking = true;
+                }
+            }
+            else {
+                // @ts-ignore
+                videoDecoder.seek(time);
+                videoInstance.seeking = true;
+            }
         };
+        
+        videoInstance.mediaAudioPlayer = mediaAudioPlayer;
         videoInstance.destroy = () => {
+            if (mediaAudioPlayer) {
+                try {
+                    mediaAudioPlayer.removeAudioSource(videoDecoder);
+                    mediaAudioPlayer.stop();
+                    mediaAudioPlayer.destroy();
+                }
+                catch (e) {  }
+                mediaAudioPlayer = null;
+                videoInstance.mediaAudioPlayer = null;
+                videoInstance._audioStarted = false;
+            }
             if (needCache) {
                 videoDecoder.stop();
                 cacheVideoDecoder.push(videoDecoder);
@@ -341,6 +421,10 @@ function _JS_Video_Play(video, muted) {
     debugLog('_JS_Video_Play', video, muted);
     const v = videoInstances[video];
     v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
+    
+    if (v.mediaAudioPlayer) {
+        v.mediaAudioPlayer.volume = v.muted ? 0 : (v.volume ?? 1);
+    }
     v.play();
     _JS_Video_SetLoop(video, v.loop);
 }
@@ -368,6 +452,10 @@ function _JS_Video_SetMute(video, muted) {
     debugLog('_JS_Video_SetMute', video, muted);
     const v = videoInstances[video];
     v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
+    
+    if (v.mediaAudioPlayer) {
+        v.mediaAudioPlayer.volume = v.muted ? 0 : (v.volume ?? 1);
+    }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_Video_SetPlaybackRate(video, rate) {
@@ -390,12 +478,25 @@ function _JS_Video_SetReadyHandler(video, ref, onready) {
         });
     }
     else {
+        const vi = v;
+        
+        if (vi.isReady) {
+            if (!vi.stoped) {
+                
+                dynCall_vi(onready, ref);
+            }
+            else {
+                
+                vi._pendingOnReady = { onready, ref };
+            }
+            return;
+        }
         const fn = () => {
             console.log('_JS_Video_SetReadyHandler onCanPlay');
             dynCall_vi(onready, ref);
-            v.videoDecoder?.off('bufferchange', fn);
+            vi.videoDecoder?.off('bufferchange', fn);
         };
-        v.videoDecoder?.on('bufferchange', fn);
+        vi.videoDecoder?.on('bufferchange', fn);
     }
 }
 function _JS_Video_SetSeekedOnceHandler(video, ref, onseeked) {
@@ -414,7 +515,11 @@ function _JS_Video_SetSeekedOnceHandler(video, ref, onseeked) {
 }
 function _JS_Video_SetVolume(video, volume) {
     debugLog('_JS_Video_SetVolume');
-    videoInstances[video].volume = volume;
+    const v = videoInstances[video];
+    v.volume = volume;
+    if (v.mediaAudioPlayer && !v.muted) {
+        v.mediaAudioPlayer.volume = volume;
+    }
 }
 function _JS_Video_Time(video) {
     return videoInstances[video].currentTime;
@@ -424,6 +529,19 @@ function _JS_Video_UpdateToTexture(video, tex) {
     const v = videoInstances[video];
     if (!(v.videoWidth > 0 && v.videoHeight > 0)) {
         return false;
+    }
+    if (!isWebVideo && !v._hasFrameEvent && v.videoDecoder && !v.stoped) {
+        const fd = v.videoDecoder?.getFrameData?.();
+        if (fd && fd.data) {
+            if (supportVideoFrame || GameGlobal.mtl) {
+                v.frameData?.close?.();
+            }
+            v.frameData = fd;
+            v.currentTime = fd.pkPts / 1000;
+        }
+        else if (!v.frameData) {
+            return false;
+        }
     }
     if (v.lastUpdateTextureTime === v.currentTime) {
         return false;
