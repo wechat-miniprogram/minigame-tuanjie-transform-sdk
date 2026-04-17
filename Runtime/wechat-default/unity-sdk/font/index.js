@@ -91,7 +91,7 @@ const fontOptions = {
 };
 function handleGetFontData(config, forceFallback) {
     
-    const canGetWxCommonFont = !!GameGlobal.manager?.font?.getCommonFont;
+    const canGetWxCommonFont = !isIOS && !!GameGlobal.manager?.font?.getCommonFont;
     
     if (!config && !canGetWxCommonFont) {
         return Promise.reject('invalid usage');
