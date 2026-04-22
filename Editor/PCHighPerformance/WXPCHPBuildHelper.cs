@@ -353,22 +353,19 @@ namespace WeChatWASM
 
         /// <summary>
         /// 获取可执行文件路径
+        /// PC高性能模式统一使用固定名称 pchp，确保微信客户端能正确定位可执行文件
         /// </summary>
         private static string GetExecutablePath(string outputPath, BuildTarget target)
         {
-            string productName = PlayerSettings.productName;
-            if (string.IsNullOrEmpty(productName))
-            {
-                productName = "Game";
-            }
+            const string execName = "pchp";
 
             if (target == BuildTarget.StandaloneOSX)
             {
-                return Path.Combine(outputPath, $"{productName}.app");
+                return Path.Combine(outputPath, $"{execName}.app");
             }
             else
             {
-                return Path.Combine(outputPath, $"{productName}.exe");
+                return Path.Combine(outputPath, $"{execName}.exe");
             }
         }
 

@@ -176,10 +176,16 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
-        // Windows MessageBox（仅错误提示使用）
+        // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_HIDE = 0;
+        private const int SW_SHOW = 5;
 #endif
 
         #endregion
@@ -277,6 +283,10 @@ namespace WeChatWASM
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 
+            // 立即隐藏窗口，防止 Unity 独立窗口暴露在桌面上
+            // 后续由微信客户端通过 InitGameWindow 接管窗口显示
+            HideGameWindow();
+
             if (instance != null && instance != this)
             {
                 Debug.LogWarning("[WXPCHPInitScript] 检测到重复实例，销毁当前对象");
@@ -310,6 +320,37 @@ namespace WeChatWASM
         private void OnApplicationQuit()
         {
             CleanupSDK();
+        }
+
+        #endregion
+
+        #region Window Management
+
+        /// <summary>
+        /// 隐藏游戏窗口，防止 Unity 独立窗口暴露在桌面上。
+        /// 在 Awake 时立即调用，后续由微信客户端通过 InitGameWindow 接管窗口显示。
+        /// </summary>
+        private void HideGameWindow()
+        {
+#if UNITY_STANDALONE_WIN
+            try
+            {
+                var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                if (hwnd != IntPtr.Zero)
+                {
+                    ShowWindow(hwnd, SW_HIDE);
+                    Debug.Log($"[WXPCHPInitScript] 窗口已隐藏: 0x{hwnd.ToInt64():X}");
+                }
+                else
+                {
+                    Debug.LogWarning("[WXPCHPInitScript] HideGameWindow: MainWindowHandle 为空，窗口可能尚未创建");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] 隐藏窗口失败: {e.Message}");
+            }
+#endif
         }
 
         #endregion

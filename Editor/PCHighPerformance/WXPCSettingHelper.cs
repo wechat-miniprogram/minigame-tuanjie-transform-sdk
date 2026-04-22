@@ -189,12 +189,12 @@ namespace WeChatWASM
                     Directory.CreateDirectory(fullExportPath);
                 }
 
-                string productName = PlayerSettings.productName;
-                if (string.IsNullOrEmpty(productName)) productName = "Game";
+                // PC高性能模式统一使用固定名称 pchp
+                const string execName = "pchp";
 
                 string executablePath = buildTarget == BuildTarget.StandaloneOSX
-                    ? Path.Combine(fullExportPath, $"{productName}.app")
-                    : Path.Combine(fullExportPath, $"{productName}.exe");
+                    ? Path.Combine(fullExportPath, $"{execName}.app")
+                    : Path.Combine(fullExportPath, $"{execName}.exe");
 
                 // Step 6: 获取场景列表
                 var scenes = GetEnabledScenes();
