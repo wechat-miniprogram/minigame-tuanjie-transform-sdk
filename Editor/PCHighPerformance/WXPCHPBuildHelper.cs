@@ -310,13 +310,17 @@ namespace WeChatWASM
             // 允许调整窗口大小
             PlayerSettings.resizableWindow = true;
 
+            // 关闭 Splash Screen，防止启动时独立窗口暴露在桌面上
+            // PC高性能模式下窗口由微信客户端接管，不需要 Unity 的启动画面
+            PlayerSettings.SplashScreen.show = false;
+
             // 处理 Windows 上 Linear 色彩空间与图形 API 的兼容性问题
             if (Application.platform == RuntimePlatform.WindowsEditor)
             {
                 ConfigureWindowsGraphicsAPI();
             }
 
-            Debug.Log("[PC高性能模式] Player Settings 配置完成");
+            Debug.Log("[PC高性能模式] Player Settings 配置完成（Splash Screen 已关闭）");
         }
 
         /// <summary>

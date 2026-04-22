@@ -259,6 +259,34 @@ namespace WeChatWASM
         #region Auto Initialize
 
         /// <summary>
+        /// 最早时机隐藏窗口（BeforeSceneLoad 是 C# 能触达的最早时机）
+        /// 在 Splash Screen 结束后、场景加载前立即执行，最大程度减少窗口可见时间
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void HideWindowEarly()
+        {
+#if UNITY_STANDALONE_WIN
+            try
+            {
+                var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                if (hwnd != IntPtr.Zero)
+                {
+                    ShowWindow(hwnd, SW_HIDE);
+                    _cachedWindowHandle = hwnd;
+                    Debug.Log($"[WXPCHPInitScript] BeforeSceneLoad: 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] BeforeSceneLoad: 隐藏窗口失败: {e.Message}");
+            }
+#endif
+        }
+
+        // 静态缓存句柄，BeforeSceneLoad 时保存，Awake 时使用
+        private static IntPtr _cachedWindowHandle = IntPtr.Zero;
+
+        /// <summary>
         /// 自动初始化入口（零侵入）
         /// 通过 RuntimeInitializeOnLoadMethod 在场景加载后自动创建
         /// 如果开发者已手动在场景中挂载，则跳过
@@ -335,14 +363,21 @@ namespace WeChatWASM
 #if UNITY_STANDALONE_WIN
             try
             {
+                // 优先使用 BeforeSceneLoad 阶段已缓存的句柄
+                if (_cachedWindowHandle != IntPtr.Zero)
+                {
+                    WindowHandle = _cachedWindowHandle;
+                    Debug.Log($"[WXPCHPInitScript] HideGameWindow: 使用 BeforeSceneLoad 缓存句柄: 0x{WindowHandle.ToInt64():X}");
+                    return;
+                }
+
+                // fallback: BeforeSceneLoad 没拿到的情况
                 var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 if (hwnd != IntPtr.Zero)
                 {
-                    // 先缓存句柄，再隐藏窗口
-                    // 因为 SW_HIDE 之后 MainWindowHandle 会返回 IntPtr.Zero
                     WindowHandle = hwnd;
                     ShowWindow(hwnd, SW_HIDE);
-                    Debug.Log($"[WXPCHPInitScript] 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
+                    Debug.Log($"[WXPCHPInitScript] HideGameWindow: 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
                 }
                 else
                 {
