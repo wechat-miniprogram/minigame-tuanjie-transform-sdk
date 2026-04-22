@@ -338,8 +338,11 @@ namespace WeChatWASM
                 var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 if (hwnd != IntPtr.Zero)
                 {
+                    // 先缓存句柄，再隐藏窗口
+                    // 因为 SW_HIDE 之后 MainWindowHandle 会返回 IntPtr.Zero
+                    WindowHandle = hwnd;
                     ShowWindow(hwnd, SW_HIDE);
-                    Debug.Log($"[WXPCHPInitScript] 窗口已隐藏: 0x{hwnd.ToInt64():X}");
+                    Debug.Log($"[WXPCHPInitScript] 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
                 }
                 else
                 {
@@ -409,8 +412,12 @@ namespace WeChatWASM
                 Debug.Log("[WXPCHPInitScript] Step 4: 获取窗口句柄");
                 ShowStepInfo("步骤 4/5 - 获取窗口句柄", "正在获取游戏窗口句柄...");
 #if UNITY_STANDALONE_WIN
-                // 通过进程主窗口句柄获取，不依赖窗口激活状态和调用时序
-                WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                // 优先使用 HideGameWindow 阶段缓存的句柄
+                // （窗口被 SW_HIDE 后 MainWindowHandle 会返回 IntPtr.Zero）
+                if (WindowHandle == IntPtr.Zero)
+                {
+                    WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                }
                 if (WindowHandle == IntPtr.Zero)
                 {
                     // 极端情况下主窗口句柄还未就绪，短暂等待后重试
