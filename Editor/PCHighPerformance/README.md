@@ -18,7 +18,7 @@
 ## 架构概览
 
 ```
-C# (Unity)  ←→  direct_applet_sdk.dll  ←→  微信内核  ←→  基础库
+C# (Unity)  ←→  pchp_sdk.dll  ←→  微信内核  ←→  基础库
 ```
 
 | 模块 | 职责 |
@@ -229,7 +229,7 @@ DLL 线程: HandleAsyncMessage → 反序列化 → _messageQueue.Enqueue()
 | 错误信息 | 原因 | 解决 |
 |----------|------|------|
 | `DllNotFoundException` | DLL 不在 .exe 同级目录 | 复制 DLL 到 .exe 目录 |
-| `EntryPointNotFoundException` | DLL 版本不匹配 | 更新 `direct_applet_sdk.dll` |
+| `EntryPointNotFoundException` | DLL 版本不匹配 | 更新 `pchp_sdk.dll` |
 | `找不到 WXPCHPInitScript 类型` | SDK 未安装或宏未生效 | 重新导入 SDK 或等待编译 |
 | `GetActiveWindow 返回空句柄` | 窗口未创建（仅 Windows） | 延迟初始化或检查 Player Settings |
 | `WXPCHPInitScript 必须在 Runtime 程序集` | 脚本放在了 Editor 目录 | 移到 Runtime 目录 |

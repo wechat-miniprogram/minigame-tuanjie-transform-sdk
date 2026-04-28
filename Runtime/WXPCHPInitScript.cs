@@ -144,13 +144,13 @@ namespace WeChatWASM
 
     /// <summary>
     /// PC高性能小游戏初始化脚本
-    /// 负责与宿主程序的 direct_applet_sdk.dll 进行交互
+    /// 负责与宿主程序的 pchp_sdk.dll 进行交互
     /// </summary>
     public class WXPCHPInitScript : MonoBehaviour
     {
         #region DLL Imports
 
-        private const string DLL_NAME = "direct_applet_sdk.dll";
+        private const string DLL_NAME = "pchp_sdk.dll";
 
         // 初始化SDK
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
