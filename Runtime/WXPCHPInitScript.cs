@@ -514,6 +514,178 @@ namespace WeChatWASM
             return callbackId;
         }
 
+        /// <summary>
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OneWayCallback 类 API）
+        /// 使用外部已分配的 callbackId，不自行管理回调，通过统一委托回传结果
+        /// </summary>
+        /// <param name="method">API名称（驼峰），如 "login"</param>
+        /// <param name="callbackId">WXSDKManagerHandler 已分配的 callbackId</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串</param>
+        /// <param name="onResponse">统一回调，参数为 WXJSCallback 格式的 JSON: { callbackId, type, res }</param>
+        public void CallWXAPIBridge(string method, string callbackId, string paramsJson, Action<string> onResponse)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                // 构造 fail + complete 回调给上层
+                string errRes = "{\"errMsg\":\"" + method + ":fail SDK not initialized\"}";
+                string failMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = errRes });
+                onResponse?.Invoke(failMsg);
+                onResponse?.Invoke(compMsg);
+                return;
+            }
+
+            // 注册回调（统一 onResponse 分发 success/fail/complete）
+            _pendingCallbacks[callbackId] = new CallbackInfo
+            {
+                OnSuccess = (res) => {
+                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "success", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                OnFail = (res) => {
+                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                OnComplete = (res) => {
+                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                ApiName = method
+            };
+
+            // 构建下行指令
+            var command = new PCHPExeCommand
+            {
+                callbackId = callbackId,
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送API请求: {method}, callbackId: {callbackId}");
+
+            if (!SendMessageInternal(commandJson))
+            {
+                _pendingCallbacks.Remove(callbackId);
+                string errRes = "{\"errMsg\":\"" + method + ":fail send message failed\"}";
+                string failMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = errRes });
+                onResponse?.Invoke(failMsg);
+                onResponse?.Invoke(compMsg);
+            }
+        }
+
+        /// <summary>
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OneWayNoCallback 类 API）
+        /// 只发消息，不注册回调
+        /// </summary>
+        /// <param name="method">API名称</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串，可为 null</param>
+        public void CallWXAPINoCallback(string method, string paramsJson = null)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                return;
+            }
+
+            var command = new PCHPExeCommand
+            {
+                callbackId = GenerateCallbackId(),
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送无回调API请求: {method}");
+            SendMessageInternal(commandJson);
+        }
+
+        /// <summary>
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（SyncFunction 类 API）
+        /// 由于 PCHP 通道是异步的，同步 API 通过阻塞等待实现
+        /// </summary>
+        /// <param name="method">API名称</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串</param>
+        /// <param name="timeoutMs">超时时间（毫秒）</param>
+        /// <returns>API 返回的 JSON 字符串</returns>
+        public string CallWXAPISyncBridge(string method, string paramsJson = null, int timeoutMs = 5000)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                return "";
+            }
+
+            string callbackId = GenerateCallbackId();
+            string result = null;
+            bool completed = false;
+
+            _pendingCallbacks[callbackId] = new CallbackInfo
+            {
+                OnSuccess = (res) => { result = res; completed = true; },
+                OnFail = (res) => { result = res; completed = true; },
+                OnComplete = (res) => { /* success/fail 已经设置了 result */ },
+                ApiName = method
+            };
+
+            var command = new PCHPExeCommand
+            {
+                callbackId = callbackId,
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送同步API请求: {method}, callbackId: {callbackId}");
+
+            if (!SendMessageInternal(commandJson))
+            {
+                _pendingCallbacks.Remove(callbackId);
+                return "";
+            }
+
+            // 阻塞等待结果（注意：需要在非主线程调用或接受帧阻塞）
+            var startTime = DateTime.UtcNow;
+            while (!completed && (DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
+            {
+                // 手动 pump 消息队列以处理响应
+                if (_messageQueue.TryDequeue(out var messageJson))
+                {
+                    try { ProcessIncomingMessage(messageJson); } catch { }
+                }
+                System.Threading.Thread.Sleep(1);
+            }
+
+            if (!completed)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] 同步API超时: {method}");
+                _pendingCallbacks.Remove(callbackId);
+            }
+
+            return result ?? "";
+        }
+
+        /// <summary>
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OnEvent 事件注册）
+        /// </summary>
+        /// <param name="eventName">事件名称，如 "OnShow"</param>
+        /// <param name="callback">回调函数，参数为事件数据 JSON 字符串</param>
+        public void RegisterEventBridge(string eventName, Action<string> callback)
+        {
+            RegisterEventListener(eventName, callback);
+        }
+
+        /// <summary>
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OffEvent 事件注销）
+        /// </summary>
+        /// <param name="eventName">事件名称</param>
+        public void UnregisterEventBridge(string eventName)
+        {
+            UnregisterEventListener(eventName);
+        }
+
         #endregion
 
         #region Public Methods - Event Listeners
