@@ -1195,8 +1195,45 @@ namespace WeChatWASM
         public static WXRankManager GetRankManager() {
             return WXSDKManagerHandler.Instance.GetRankManager();
         }
+#endregion
+
+#region PC高性能小游戏
+        /// <summary>
+        /// 获取 PC 高性能小游戏管理器
+        /// 类似于 VA 方案的 wx.getAndroidHighPerformanceManager()
+        /// 用于在 PC 原生环境下与微信基础库通信
+        /// </summary>
+        /// <returns>PC高性能管理器实例，如果不支持则返回 null</returns>
+        /// <example>
+        /// var pcManager = WX.GetPCHighPerformanceManager();
+        /// if (pcManager != null && pcManager.IsSupported)
+        /// {
+        ///     pcManager.ShowToast(new PCHPShowToastOption
+        ///     {
+        ///         title = "Hello PC!",
+        ///         icon = "success",
+        ///         duration = 2000
+        ///     });
+        /// }
+        /// </example>
+#if WX_PCHP_ENABLED
+        public static WXPCHighPerformanceManager GetPCHighPerformanceManager()
+        {
+            return WXPCHighPerformanceManager.GetInstance();
+        }
+#else
+        /// <summary>
+        /// PC高性能模式管理器（需启用 WX_PCHP_ENABLED 宏）
+        /// 未启用时返回 null
+        /// </summary>
+        public static object GetPCHighPerformanceManager()
+        {
+            Debug.LogWarning("[WX] GetPCHighPerformanceManager 需要启用 WX_PCHP_ENABLED 宏（仅 Standalone 平台可用）");
+            return null;
+        }
+#endif
+#endregion
     }
 }
-#endregion
 
 #endif
