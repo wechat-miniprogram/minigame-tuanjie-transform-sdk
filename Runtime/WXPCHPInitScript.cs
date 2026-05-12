@@ -529,8 +529,8 @@ namespace WeChatWASM
                 Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
                 // 构造 fail + complete 回调给上层
                 string errRes = "{\"errMsg\":\"" + method + ":fail SDK not initialized\"}";
-                string failMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = errRes });
-                string compMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = errRes });
+                string failMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = errRes });
                 onResponse?.Invoke(failMsg);
                 onResponse?.Invoke(compMsg);
                 return;
@@ -540,15 +540,15 @@ namespace WeChatWASM
             _pendingCallbacks[callbackId] = new CallbackInfo
             {
                 OnSuccess = (res) => {
-                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "success", res = res });
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "success", res = res });
                     onResponse?.Invoke(msg);
                 },
                 OnFail = (res) => {
-                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = res });
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = res });
                     onResponse?.Invoke(msg);
                 },
                 OnComplete = (res) => {
-                    string msg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = res });
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = res });
                     onResponse?.Invoke(msg);
                 },
                 ApiName = method
@@ -569,8 +569,8 @@ namespace WeChatWASM
             {
                 _pendingCallbacks.Remove(callbackId);
                 string errRes = "{\"errMsg\":\"" + method + ":fail send message failed\"}";
-                string failMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "fail", res = errRes });
-                string compMsg = JsonMapper.ToJson(new WXJSCallback { callbackId = callbackId, type = "complete", res = errRes });
+                string failMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = errRes });
                 onResponse?.Invoke(failMsg);
                 onResponse?.Invoke(compMsg);
             }
