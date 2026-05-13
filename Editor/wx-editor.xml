@@ -95,6 +95,16 @@
             导出产物 minigame 目录，所有文件变动请勿离开该目录
             </summary>
         </member>
+        <member name="T:WeChatWASM.JsonFormatter">
+            <summary>
+            JSON 格式化工具类
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.JsonFormatter.PrettyPrint(System.String)">
+            <summary>
+            将 JSON 字符串格式化为带缩进的美化格式
+            </summary>
+        </member>
         <member name="M:WeChatWASM.LifeCycleBase.beforeExport">
             <summary>
             在正式导出前
@@ -664,6 +674,11 @@
             是否开启 WebAssembly2023特性
             </summary>
         </member>
+        <member name="F:WeChatWASM.CompileOptions.enableRenderThread">
+            <summary>
+            是否使用多线程
+            </summary>
+        </member>
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">
             <summary>
             基本汉字 [0x4e00, 0x9fff] https://www.unicode.org/charts/PDF/U4E00.pdf
@@ -759,6 +774,116 @@
             自定义需要的Unicode字符
             </summary>
         </member>
+        <member name="T:WeChatWASM.PackageCondition">
+            <summary>
+            多包融合条件配置项
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PackageCondition.condition">
+            <summary>
+            条件表达式
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PackageCondition.packageSuffix">
+            <summary>
+            对应的包后缀
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.PackageCondition.packagePath">
+            <summary>
+            条件包路径（新版多包结构使用）
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.MultiPackageMergeConfig">
+            <summary>
+            多包融合配置（重构版 - 支持动态条件）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.stPackagePath">
+            <summary>
+            ST包路径（单线程包）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.mtPackagePath">
+            <summary>
+            MT包路径（多线程包）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.stMode">
+            <summary>
+            ST模式：standard 或 split
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.mergeMode">
+            <summary>
+            融合模式：standard / seperateJsCode，默认使用 seperateJsCode
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.seperateFileList">
+            <summary>
+            JS分离模式下的文件列表（逗号分隔）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.seperateMode">
+            <summary>
+            JS分离存放方式：subDir / topDir
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.outputPath">
+            <summary>
+            融合输出目录
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.devPluginId">
+            <summary>
+            开发插件 ID（devPluginId）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.useNewPackageStructure">
+            <summary>
+            是否使用新版多包结构（收拢到 minigame-xx）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.packageConditions">
+            <summary>
+            条件列表（默认至少有一个条件）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.defaultPackagePath">
+            <summary>
+            默认包路径（对应 else 分支，无后缀）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.commonDirectories">
+            <summary>
+            额外公共目录列表（逗号分隔，如 my-dir,another-dir）。
+            这些目录只保留在顶层，不复制到各条件子包中。
+            以下目录已内置无需填写：images/, unity-sdk/
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.commonFiles">
+            <summary>
+            额外公共文件列表（逗号分隔，如 my-lib.js,config.json）。
+            这些文件只保留在顶层，不复制到各条件子包中。
+            以下文件已内置无需填写：check-version.js, events.js, project.json, weapp-adapter.js, plugin-config.js
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.MultiPackageMergeConfig.framework">
+            <summary>
+            框架标识，默认 "unity"。不同框架有不同的特定修改（如 unity-sdk、plugin-config 等）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.MultiPackageMergeConfig.GetPackageConditions">
+            <summary>
+            获取条件列表
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.MultiPackageMergeConfig.GetCommonDirectories">
+            <summary>获取额外公共目录</summary>
+        </member>
+        <member name="M:WeChatWASM.MultiPackageMergeConfig.GetCommonFiles">
+            <summary>获取额外公共文件</summary>
+        </member>
         <member name="F:WeChatWASM.WXEditorScriptObject.CompressTexture">
             <summary>
             压缩纹理配置
@@ -772,6 +897,146 @@
         <member name="F:WeChatWASM.WXEditorScriptObject.FontOptions">
             <summary>
             字体配置
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXEditorScriptObject.MultiPackageMerge">
+            <summary>
+            多包融合配置
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXMultiPackageMergeCLI">
+            <summary>
+            多包融合命令行工具
+            使用方式:
+            Unity -batchmode -quit -executeMethod WeChatWASM.WXMultiPackageMergeCLI.Run -args -configPath "path/to/config.json"
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeCLI.Run">
+            <summary>
+            命令行入口
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXMultiPackageMergeCore">
+            <summary>
+            多包融合核心逻辑类
+            提供多包融合的业务逻辑，不包含UI相关代码
+            使用纯C#实现，无需Node.js
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeCore.ValidateConfig(WeChatWASM.MultiPackageMergeConfig,System.String@)">
+            <summary>
+            验证融合配置
+            </summary>
+            <param name="config">融合配置</param>
+            <param name="errorMessage">错误信息输出</param>
+            <returns>是否验证通过</returns>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeCore.ValidateNewPackageStructureConfig(WeChatWASM.MultiPackageMergeConfig,System.String@)">
+            <summary>
+            验证新版多包结构配置
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeCore.ExecuteMerge(WeChatWASM.MultiPackageMergeConfig,System.Action{System.String},System.Action{System.String},System.Action,System.Action{System.String})">
+            <summary>
+            执行多包融合
+            </summary>
+            <param name="config">融合配置</param>
+            <param name="onOutput">输出回调（日志）</param>
+            <param name="onError">错误回调</param>
+            <param name="onSuccess">成功回调</param>
+            <param name="onFailed">失败回调</param>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeCore.ExecuteNewPackageStructureMerge(WeChatWASM.MultiPackageMergeConfig,System.Action{System.String})">
+            <summary>
+            执行新版多包结构融合
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXMultiPackageMergeEngine">
+            <summary>
+            多包融合引擎 - 纯C#实现
+            替代原Node.js工具的功能
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions">
+            <summary>
+            新版多包结构选项
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions.framework">
+            <summary>框架标识，默认 "unity"</summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.ExecuteNewPackageStructure(WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions,System.Action{System.String})">
+            <summary>
+            执行新版多包结构融合
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.MergeProjectConfig(WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions,System.Action{System.String})">
+            <summary>
+            合并所有包的 project.config.json，检查冲突
+            如果有冲突的值，抛出异常终止融合
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.CopyCommonFilesToRoot(System.String,System.String,System.String[],System.String[],System.String)">
+            <summary>
+            复制公共文件到根目录
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXMultiPackageMergeEngine.ForceCopyDirs">
+            <summary>
+            必须复制到子包的目录（即使被标记为公共目录）
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXMultiPackageMergeEngine.MergeToRootDirs">
+            <summary>
+            需要合并到顶层的目录（game.json 的 workers 字段是字符串，不支持分包路径）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.ProcessWasmcodeGameJs(System.String,System.String)">
+            <summary>
+            处理 wasmcode/game.js，添加 wasmPath 赋值（Unity 框架专属）
+            </summary>
+            <param name="packageName">所在包目录名，如 "minigame" 或 "minigame-mt"，用于生成正确的路径前缀</param>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.InsertCodePackageNameBeforeMd5(System.String,System.String,System.String)">
+            <summary>
+            处理 game.js，在 CODE_FILE_MD5 之前插入 CODE_PACKAGE_NAME 和 GAME_DIR（Unity 框架专属）
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.CopyPackageToMinigameDir(System.String,System.String,System.String,System.String[],System.String[],System.String,System.String)">
+            <summary>
+            复制包内容到 minigame-xx 目录
+            </summary>
+            <param name="packageSuffix">条件包后缀，非空表示条件包，用于插入 CODE_PACKAGE_NAME</param>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.ProcessGameJsImportPaths(System.String,System.String)">
+            <summary>
+            处理 game.js 的 import 路径，将根目录文件改为相对路径
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.GenerateNewPackageGameJs(WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions)">
+            <summary>
+            生成新版 game.js
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.GenerateNewPackageGameJson(WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions)">
+            <summary>
+            生成新版 game.json
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.ReadSubpackagesFromGameJson(System.String)">
+            <summary>
+            从原始包的 game.json 读取 subpackages 配置
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.MergeWorkersToRoot(WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions,System.Action{System.String})">
+            <summary>
+            合并各包的 workers 目录到顶层
+            workers 字段在 game.json 中是字符串，不支持分包，所以必须合并到顶层
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMultiPackageMergeEngine.GetPackagePathForCondition(WeChatWASM.PackageCondition,WeChatWASM.WXMultiPackageMergeEngine.NewPackageStructureOptions)">
+            <summary>
+            根据条件获取包路径
             </summary>
         </member>
         <member name="F:WeChatWASM.WXPlayableProjectConf.projectName">
