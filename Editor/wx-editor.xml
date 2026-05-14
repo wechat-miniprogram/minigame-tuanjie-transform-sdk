@@ -799,36 +799,6 @@
             多包融合配置（重构版 - 支持动态条件）
             </summary>
         </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.stPackagePath">
-            <summary>
-            ST包路径（单线程包）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.mtPackagePath">
-            <summary>
-            MT包路径（多线程包）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.stMode">
-            <summary>
-            ST模式：standard 或 split
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.mergeMode">
-            <summary>
-            融合模式：standard / seperateJsCode，默认使用 seperateJsCode
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.seperateFileList">
-            <summary>
-            JS分离模式下的文件列表（逗号分隔）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.seperateMode">
-            <summary>
-            JS分离存放方式：subDir / topDir
-            </summary>
-        </member>
         <member name="F:WeChatWASM.MultiPackageMergeConfig.outputPath">
             <summary>
             融合输出目录
@@ -837,11 +807,6 @@
         <member name="F:WeChatWASM.MultiPackageMergeConfig.devPluginId">
             <summary>
             开发插件 ID（devPluginId）
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.MultiPackageMergeConfig.useNewPackageStructure">
-            <summary>
-            是否使用新版多包结构（收拢到 minigame-xx）
             </summary>
         </member>
         <member name="F:WeChatWASM.MultiPackageMergeConfig.packageConditions">

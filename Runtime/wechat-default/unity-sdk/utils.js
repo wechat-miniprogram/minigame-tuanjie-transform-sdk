@@ -407,7 +407,7 @@ export function debugLog(...args) {
     }
 }
 export function heapBufferSlice(heap, offset, length) {
-    if (heap.buffer instanceof SharedArrayBuffer) {
+    if (heap.buffer.constructor.name === 'SharedArrayBuffer') {
         return new Uint8Array(heap.subarray(offset, offset + length)).buffer;
     }
     return heap.buffer.slice(offset, offset + length);

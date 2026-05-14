@@ -146,11 +146,6 @@ namespace WeChatWASM
 
             GUILayout.Space(10);
 
-            // 融合模式固定使用 seperateJsCode (JS分离模式)
-            mergeConfig.mergeMode = "seperateJsCode";
-            // 强制使用 topDir 模式
-            mergeConfig.seperateMode = "topDir";
-
             // 输出目录
             EditorGUILayout.LabelField("输出目录", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
