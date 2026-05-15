@@ -21,17 +21,17 @@ internal class TouchData
  * 所以需要使用WX的触控接口重新覆盖Unity的BaseInput关于触控方面的接口
  * 通过设置StandaloneInputModule.inputOverride的方式来实现
 */
-[RequireComponent(typeof(WXTouchInputModule))]
+[RequireComponent(typeof(StandaloneInputModule))]
 public class WXTouchInputOverride : BaseInput
 {
     private bool _isInitWechatSDK;
     private readonly List<TouchData> _touches = new List<TouchData>();
-    private WXTouchInputModule _standaloneInputModule = null;
+    private StandaloneInputModule _standaloneInputModule = null;
 
     protected override void Awake()
     {
         base.Awake();
-        _standaloneInputModule = GetComponent<WXTouchInputModule>();
+        _standaloneInputModule = GetComponent<StandaloneInputModule>();
     }
 
     protected override void OnEnable()
@@ -138,16 +138,11 @@ public class WXTouchInputOverride : BaseInput
             Button button = selectedObject.GetComponent<Button>();
             if (button != null)
             {
-                bool touchInButtonArea = false;
-                foreach (var wxTouch in touchEvent.changedTouches) 
-                { 
-                    TouchData data = FindTouchData(wxTouch.identifier);
-                    touchInButtonArea = touchInButtonArea || IsTouchInButtonArea(data, button);
-                }
-                if(touchInButtonArea)
-                {
-                    button.OnPointerClick(new PointerEventData(EventSystem.current));
-                    // button.onClick.Invoke();
+                int clickListenerCount = button.onClick.GetPersistentEventCount();
+                if (clickListenerCount > 0) {
+                    button.onClick.SetPersistentListenerState(0, UnityEventCallState.EditorAndRuntime);
+                    button.onClick.Invoke();
+                    button.onClick.SetPersistentListenerState(0, UnityEventCallState.Off);
                 }
             } 
 #if !UNITY_EDITOR
@@ -178,12 +173,6 @@ public class WXTouchInputOverride : BaseInput
             }
 #endif
         }
-    }
-
-    private static bool IsTouchInButtonArea(TouchData data, Button button)
-    {
-        RectTransform rect = button.GetComponent<RectTransform>();
-        return RectTransformUtility.RectangleContainsScreenPoint(rect, data.touch.position, null);
     }
 
     private void OnWxTouchCancel(OnTouchStartListenerResult touchEvent)
