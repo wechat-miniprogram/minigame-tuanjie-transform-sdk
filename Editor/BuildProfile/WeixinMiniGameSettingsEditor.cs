@@ -30,6 +30,12 @@ namespace WeChatWASM
 
         public override void OnMiniGameSettingsIMGUI(SerializedObject serializedObject, SerializedProperty miniGameProperty)
         {
+            if (helper == null)
+            {
+                Debug.LogWarning("WXSettingsHelper is null, recreate it before drawing MiniGame settings.");
+                helper = new WXSettingsHelper();
+            }
+
             helper.OnSettingsGUI(serializedObject, miniGameProperty);
         }
 
