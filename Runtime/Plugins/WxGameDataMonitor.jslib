@@ -48,6 +48,12 @@ mergeInto(LibraryManager.library, {
                 numberOnDisk: _WXGetBundleNumberOnDisk(),
                 sizeInMemory:  _WXGetBundleSizeInMemory(),
                 sizeOnDisk: _WXGetBundleSizeOnDisk(),
+                readCount: _WXGetReadCount(),
+                cacheMissCount: _WXGetCacheMissCount(),
+                fdCacheMissCount: _WXGetFdCacheMissCount(),
+                openSyncCount: _WXGetOpenSyncCount(),
+                statSyncCount: _WXGetStatSyncCount(),
+                readSyncCount: _WXGetReadSyncCount(),
             }
         }
 

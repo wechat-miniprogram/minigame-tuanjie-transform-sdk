@@ -643,6 +643,62 @@ namespace WeChatWASM
         {
             return WXSDKManagerHandler.Instance.GetBundleSizeOnDisk();
         }
+
+        /// <summary>
+        /// 获取当前帧WXFS.read的执行次数
+        /// </summary>
+        public static uint GetReadCount()
+        {
+            return WXSDKManagerHandler.Instance.GetReadCount();
+        }
+
+        /// <summary>
+        /// 获取当前帧WXFS.read的Cache Miss次数
+        /// </summary>
+        public static uint GetCacheMissCount()
+        {
+            return WXSDKManagerHandler.Instance.GetCacheMissCount();
+        }
+
+        /// <summary>
+        /// 获取当前帧fd缓存的Cache Miss次数
+        /// </summary>
+        public static uint GetFdCacheMissCount()
+        {
+            return WXSDKManagerHandler.Instance.GetFdCacheMissCount();
+        }
+
+        /// <summary>
+        /// 获取当前帧openSync的调用次数
+        /// </summary>
+        public static uint GetOpenSyncCount()
+        {
+            return WXSDKManagerHandler.Instance.GetOpenSyncCount();
+        }
+
+        /// <summary>
+        /// 获取当前帧statSync的调用次数
+        /// </summary>
+        public static uint GetStatSyncCount()
+        {
+            return WXSDKManagerHandler.Instance.GetStatSyncCount();
+        }
+
+        /// <summary>
+        /// 获取当前帧readSync的调用次数
+        /// </summary>
+        public static uint GetReadSyncCount()
+        {
+            return WXSDKManagerHandler.Instance.GetReadSyncCount();
+        }
+
+        /// <summary>
+        /// 重置WXFS性能计数器
+        /// </summary>
+        public static void ResetPerfCounters()
+        {
+            WXSDKManagerHandler.Instance.ResetPerfCounters();
+        }
 #endregion
 
         /// <summary>

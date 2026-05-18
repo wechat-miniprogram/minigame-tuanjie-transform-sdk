@@ -1,7 +1,7 @@
 var WXAssetBundleLibrary = {
   $WXFS: {},
 
-  WXFSInit: function (ttl, capacity) {
+  WXFSInit: function (ttl, capacity, prefetchSize, fdCacheCount) {
     function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
     function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
     function _classCallCheck(instance, Constructor) { if (!_instanceof(instance, Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -74,7 +74,7 @@ var WXAssetBundleLibrary = {
       }
       return 0
     }
-    
+
     var WXFileCache = /*#__PURE__*/function () {
       function WXFileCache(ttl, capacity) {
         _classCallCheck(this, WXFileCache);
@@ -104,7 +104,7 @@ var WXAssetBundleLibrary = {
             this.hash.set(key, temp);
             return temp.ab;
           }
-          return -1;
+          return null;
         }
       }, {
         key: "put",
@@ -122,14 +122,12 @@ var WXAssetBundleLibrary = {
             this.hash.delete(key);
             this.hash.set(key, value);
           } else {
-            if (this.capacity !== undefined && this.size >= this.capacity) {
+            while (this.capacity !== undefined && this.size >= this.capacity) {
               var idx = this.hash.keys().next().value;
-              this.size -= idx.ab.byteLength;
+              this.size -= this.hash.get(idx).ab.byteLength;
               this.hash.delete(idx);
-              this.hash.set(key, value);
-            } else {
-              this.hash.set(key, value);
             }
+            this.hash.set(key, value);
           }
           this.size += value.ab.byteLength;
           this.maxSize = Math.max(this.size, this.maxSize);
@@ -173,20 +171,53 @@ var WXAssetBundleLibrary = {
       }, {
         key: "delete",
         value: function _delete(key) {
-            this.size -= this.hash.get(key).ab.byteLength;
-            return this.hash.delete(key)
+          this.size -= this.hash.get(key).ab.byteLength;
+          return this.hash.delete(key)
         }
       }, {
         key: "has",
         value: function _has(key) {
-            return this.hash.has(key)
+          return this.hash.has(key)
         }
       }
       ]);
       return WXFileCache;
     }();
-    
+
     WXFS.cache = new WXFileCache(ttl, capacity);
+    WXFS.prefetchSize = prefetchSize || 1024; // iOS prefetch bytes, default 1024
+    // Per-frame perf counters
+    WXFS.perfReadCount = 0;        // WXFS.read call count per frame
+    WXFS.perfCacheMissCount = 0;   // LoadPartialFromFile / LoadBundleFromFile count per frame
+    WXFS.perfFdCacheMissCount = 0; // fd cache miss (close old + open new) count per frame
+    WXFS.perfOpenSyncCount = 0;    // fs.openSync call count per frame
+    WXFS.perfStatSyncCount = 0;    // fs.statSync call count per frame
+    WXFS.perfReadSyncCount = 0;    // fs.readSync call count per frame
+    // LRU cache for wx file descriptors, max 10, default 1
+    WXFS.fdCacheCount = Math.min(fdCacheCount || 1, 10);
+    WXFS.wxFdCache = new Map(); // path -> wxFd
+    WXFS.getWxFd = function(path) {
+      var wxFd = WXFS.wxFdCache.get(path);
+      if (wxFd !== undefined) {
+        // Move to end (most recently used)
+        WXFS.wxFdCache.delete(path);
+        WXFS.wxFdCache.set(path, wxFd);
+        return wxFd;
+      }
+      // Evict oldest if at capacity
+      if (WXFS.wxFdCache.size >= WXFS.fdCacheCount) {
+        var oldestPath = WXFS.wxFdCache.keys().next().value;
+        var oldestFd = WXFS.wxFdCache.get(oldestPath);
+        WXFS.fs.closeSync({ fd: oldestFd });
+        WXFS.wxFdCache.delete(oldestPath);
+        WXFS.perfFdCacheMissCount++;
+      }
+      // Open new fd and cache
+      wxFd = WXFS.fs.openSync({ filePath: path, flag: 'r' });
+      WXFS.perfOpenSyncCount++;
+      WXFS.wxFdCache.set(path, wxFd);
+      return wxFd;
+    };
     if(unityNamespace.isIOS && unityNamespace.isH5Renderer) {
       WXFS.cache.RegularCleaning(1);
     }
@@ -195,9 +226,10 @@ var WXAssetBundleLibrary = {
       try {
         var fd = WXFS.path2fd.get(path)
         if (fd !== undefined){
+          var wxStream = WXFS.fd2wxStream.get(fd);
           var stat = {
             mode: 33206,
-            size: WXFS.cache.get(fd).byteLength,
+            size: wxStream.node.usedBytes,
             dev: 1,
             ino: 1,
             nlink: 1,
@@ -213,7 +245,7 @@ var WXAssetBundleLibrary = {
           return stat;
         }
         var stat = WXFS.fs.statSync(path);
-        // something not in wx.FileSystemManager, just fill in 0/1
+        WXFS.perfStatSyncCount++;
         stat.dev = 1;
         stat.ino = 1;
         stat.nlink = 1;
@@ -240,7 +272,7 @@ var WXAssetBundleLibrary = {
       }
       url = url.replaceAll(' ', '%20')
       if(url.startsWith('/vfs_streamingassets/')){
-        var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/StreamingAssets/");
+        var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/" + (GameGlobal.unityNamespace.dataFileSubPrefix || '') + "StreamingAssets/");
       }
       else{
         var path = url.replace(GameGlobal.unityNamespace.DATA_CDN, wx.env.USER_DATA_PATH+'/__GAME_FILE_CACHE/');
@@ -278,17 +310,75 @@ var WXAssetBundleLibrary = {
       }
       return res;
     };
-    WXFS.read = function(stream, buffer, offset, length, position){
-      var contents = WXFS.cache.get(stream.fd);
-      if (contents === -1) {
-        var res = WXFS.LoadBundleFromFile(stream.path);
-        WXFS.cache.put(stream.fd, res);
-        contents = res;
+    // iOS: read partial file content on demand
+    WXFS.LoadPartialFromFile = function(path, position, length) {
+      var wxFd = WXFS.getWxFd(path);
+      var ab = new ArrayBuffer(length);
+      var res = WXFS.fs.readSync({ fd: wxFd, arrayBuffer: ab, offset: 0, length: length, position: position });
+      WXFS.perfReadSyncCount++;
+      return { ab: ab, bytesRead: res.bytesRead };
+    };
+    // Open file, construct wxStream and store in related maps
+    WXFS.open = function(pathname) {
+      var numberfd = WXFS.path2fd.get(pathname);
+      if (numberfd !== undefined) {
+        return numberfd;
       }
+      numberfd = WXFS.newfd();
+      var fileSize;
+      if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
+        // iOS: only get file size via statSync, do not read file content
+        fileSize = WXFS.fs.statSync(pathname).size;
+        WXFS.perfStatSyncCount++;
+      } else {
+        // Non-iOS: read file and cache
+        var res = WXFS.LoadBundleFromFile(pathname);
+        fileSize = new Uint8Array(res).length;
+        WXFS.cache.put(numberfd, res);
+      }
+      var wxStream = {
+        fd: numberfd,
+        path: pathname,
+        seekable: true,
+        position: 0,
+        stream_ops: MEMFS.stream_ops,
+        ungotten: [],
+        node: { mode: 32768, usedBytes: fileSize },
+        error: false
+      };
+      wxStream.stream_ops.read = WXFS.read;
+      WXFS.path2fd.set(pathname, numberfd);
+      WXFS.fd2wxStream.set(numberfd, wxStream);
+      return numberfd;
+    };
+    WXFS.read = function(stream, buffer, offset, length, position){
       if (position >= stream.node.usedBytes) return 0;
       var size = Math.min(stream.node.usedBytes - position, length);
       assert(size >= 0);
-      buffer.set(new Uint8Array(contents.slice(position, position + size)), offset);
+      WXFS.perfReadCount++;
+      // Check cache first
+      var contents = WXFS.cache.get(stream.fd);
+      if (contents && position + size <= contents.byteLength) {
+        buffer.set(new Uint8Array(contents, position, size), offset);
+        return size;
+      }
+      WXFS.perfCacheMissCount++;
+      // iOS: read on demand
+      if (unityNamespace.isIOS && WXFS.prefetchSize > 0) {
+        var readLen = position === 0 ? Math.max(size, Math.min(WXFS.prefetchSize, stream.node.usedBytes)) : size;
+        var res = WXFS.LoadPartialFromFile(stream.path, position, readLen);
+        if (position === 0) {
+          WXFS.cache.put(stream.fd, res.ab, true);
+        }
+        buffer.set(new Uint8Array(res.ab, 0, size), offset);
+        return size;
+      }
+      // Non-iOS: load full file
+      if (!contents) {
+        contents = WXFS.LoadBundleFromFile(stream.path);
+        WXFS.cache.put(stream.fd, contents);
+      }
+      buffer.set(new Uint8Array(contents, position, size), offset);
       return size;
     };
   },
@@ -304,8 +394,20 @@ var WXAssetBundleLibrary = {
   UnCleanbyPath: function (ptr, fromFile) {
     var url = UTF8ToString(ptr);
     var path = WXFS.url2path(url);
-    if(fromFile && !GameGlobal.manager.fs.accessSync(path)){
-      return false;
+    if (fromFile) {
+      if (path.startsWith(wx.env.USER_DATA_PATH) && !path.includes('/__GAME_FILE_CACHE/')) {
+        if (!WXFS.disk.has(path)) {
+          try {
+            WXFS.fs.accessSync(path);
+          } catch (e) {
+            return false;
+          }
+        }
+      } else {
+        if (!GameGlobal.manager.fs.accessSync(path)) {
+          return false;
+        }
+      }
     }
     if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
@@ -428,17 +530,45 @@ var WXAssetBundleLibrary = {
     xhr.send();
   },
 
-  WXGetBundleNumberInMemory: function () { 
+  WXGetBundleNumberInMemory: function () {
     return WXFS&&WXFS.cache&&WXFS.cache.hash&&WXFS.cache.hash.size; 
   },
-  WXGetBundleNumberOnDisk: function () { 
+  WXGetBundleNumberOnDisk: function () {
     return WXFS&&WXFS.disk&&WXFS.disk.hash&&WXFS.disk.hash.size; 
   },
-  WXGetBundleSizeInMemory: function () { 
+  WXGetBundleSizeInMemory: function () {
     return WXFS&&WXFS.cache&&WXFS.cache.size; 
   },
-  WXGetBundleSizeOnDisk: function () { 
+  WXGetBundleSizeOnDisk: function () {
     return WXFS&&WXFS.disk&&WXFS.disk.size; 
+  },
+  WXGetReadCount: function () {
+    return WXFS ? WXFS.perfReadCount : 0;
+  },
+  WXGetCacheMissCount: function () {
+    return WXFS ? WXFS.perfCacheMissCount : 0;
+  },
+  WXGetFdCacheMissCount: function () {
+    return WXFS ? WXFS.perfFdCacheMissCount : 0;
+  },
+  WXGetOpenSyncCount: function () {
+    return WXFS ? WXFS.perfOpenSyncCount : 0;
+  },
+  WXGetStatSyncCount: function () {
+    return WXFS ? WXFS.perfStatSyncCount : 0;
+  },
+  WXGetReadSyncCount: function () {
+    return WXFS ? WXFS.perfReadSyncCount : 0;
+  },
+  WXResetPerfCounters: function () {
+    if (WXFS) {
+      WXFS.perfReadCount = 0;
+      WXFS.perfCacheMissCount = 0;
+      WXFS.perfFdCacheMissCount = 0;
+      WXFS.perfOpenSyncCount = 0;
+      WXFS.perfStatSyncCount = 0;
+      WXFS.perfReadSyncCount = 0;
+    }
   }
 };
 
