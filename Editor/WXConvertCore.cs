@@ -28,7 +28,7 @@ namespace WeChatWASM
         {
             string templateHeader = "PROJECT:";
 #if TUANJIE_2022_3_OR_NEWER
-            PlayerSettings.WeixinMiniGame.threadsSupport = WXConvertCore.EnableRenderThread;
+            PlayerSettings.WeixinMiniGame.threadsSupport = false;
             PlayerSettings.runInBackground = false;
             PlayerSettings.WeixinMiniGame.compressionFormat = WeixinMiniGameCompressionFormat.Disabled;
             if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
@@ -85,8 +85,6 @@ namespace WeChatWASM
         public static string miniGameDir = "minigame"; // 生成小游戏的目录
         public static string audioDir = "Assets"; // 音频资源目录
         public static string frameworkDir = "framework";
-        public static string frameworkFilename = "webgl.wasm.framework.unityweb.js";
-        public static string wasmWorkerIndexFilename = "webgl.worker.js";
         public static string dataFileSize = string.Empty;
         public static string codeMd5 = string.Empty;
         public static string dataMd5 = string.Empty;
@@ -123,45 +121,6 @@ namespace WeChatWASM
             {
                 return config.CompileOptions.enableEmscriptenGLX;
             }
-        }
-        public static bool EnableRenderThread
-        {
-            get
-            {
-#if TUANJIE_1_9_OR_NEWER
-                return config.CompileOptions.enableRenderThread;
-#else
-                return config.CompileOptions.enableRenderThread;
-#endif
-            }
-        }
-
-        /// <summary>
-        /// 刷新 enableRenderThread 配置。有 buildProfile 时从 BuildProfile 读取，否则从全局 PlayerSettings 读取。
-        /// 在 DoExport 前调用，确保 EnableRenderThread 属性返回正确值。
-        /// </summary>
-        public static void RefreshEnableRenderThread(
-#if TUANJIE_1_9_OR_NEWER
-            UnityEditor.Build.Profile.BuildProfile buildProfile = null
-#endif
-        )
-        {
-#if TUANJIE_1_9_OR_NEWER
-            if (buildProfile != null)
-            {
-                bool val = BuildPipeline.IsMiniGameBuildThreadedFromBuildProfile(buildProfile);
-                UnityEngine.Debug.LogFormat("[WX] RefreshEnableRenderThread: from BuildProfile, enableRenderThread = {0}", val);
-                config.CompileOptions.enableRenderThread = val;
-            }
-            else
-            {
-                bool val = BuildPipeline.IsMiniGameBuildThreadedFromPlayerSettings();
-                UnityEngine.Debug.LogFormat("[WX] RefreshEnableRenderThread: from PlayerSettings, enableRenderThread = {0}", val);
-                config.CompileOptions.enableRenderThread = val;
-            }
-#else
-            UnityEngine.Debug.Log("[WX] RefreshEnableRenderThread: TUANJIE_1_9_OR_NEWER not defined, skipped (using config value: " + config.CompileOptions.enableRenderThread + ")");
-#endif
         }
         // public static void SetPlayableEnabled(bool enabled)
         // {
@@ -272,7 +231,7 @@ namespace WeChatWASM
 #if PLATFORM_PLAYABLEADS
                         webglDir = "PlayableAds";
 #endif
-                        symFile1 = Path.Combine(rootPath, "Library", "Bee", "artifacts", webglDir, "build", config.CompileOptions.enableRenderThread ? "debug_WebGL_wasm_mt" : "debug_WebGL_wasm", "build.js.symbols");
+                        symFile1 = Path.Combine(rootPath, "Library", "Bee", "artifacts", webglDir, "build", "debug_WebGL_wasm", "build.js.symbols");
                     }
                     WeChatWASM.UnityUtil.preprocessSymbols(symFile1, GetWebGLSymbolPath());
                     // WeChatWASM.UnityUtil.preprocessSymbols(GetWebGLSymbolPath());
@@ -710,7 +669,7 @@ namespace WeChatWASM
                     PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES2 });
                 }
             }
-            else
+            else 
             {
                 if (config.CompileOptions.Webgl2)
                 {
@@ -734,95 +693,53 @@ namespace WeChatWASM
 #endif
         }
 
-        public static int SeekFunctionEnd(string input, int lastIndex)
-        {
-            int braceCount = 0;
-            while (input[lastIndex] != '{')
-            {
-                lastIndex++;
-            }
-
-            braceCount = 1;
-            ++lastIndex;
-
-            while (lastIndex < input.Length && braceCount > 0)
-            {
-                if (input[lastIndex] == '{')
-                {
-                    ++braceCount;
-                }
-                else if (input[lastIndex] == '}')
-                {
-                    --braceCount;
-                }
-                ++lastIndex;
-            }
-            return lastIndex;
-        }
         /// <summary>
-        /// 扫一遍代码，把带删除前缀的函数删除，把带替换前缀的替换成调sdk的接口，function与函数名之间仅允许有一个空格
+        /// 移除输入js代码字符串中所有以prefix为前缀的函数的函数体，function与函数名之间仅允许有一个空格
         /// </summary>
         /// <param name="input">输入字符串</param>
-        /// <param name="removePrefix">要删除函数的名字前缀</param
-        /// <param name="replacePrefix">要替换函数的前缀</param>>
+        /// <param name="prefix">函数前缀</param>
         /// <returns>处理后的字符串</returns>
-        public static string ReplaceOrRemoveFunctionsWithPrefix(string input, string[] removePrefixes, string[] replacePrefixes)
+        public static string RemoveFunctionsWithPrefix(string input, string prefix)
         {
             StringBuilder output = new StringBuilder();
+
+            int braceCount = 0;
             int lastIndex = 0;
-            int index = input.IndexOf("function ");
+            int index = input.IndexOf("function " + prefix);
 
             while (index != -1)
             {
                 output.Append(input, lastIndex, index - lastIndex);
                 lastIndex = index;
-                index = input.IndexOf("(", lastIndex);
-                if (index == -1)
+
+                while (input[lastIndex] != '{')
                 {
-                    break;
+                    lastIndex++;
                 }
-                bool shouldRemove = false;
-                bool shouldReplace = false;
-                string funcName = input.Substring(lastIndex + 9, index - lastIndex - 9).TrimStart();
-                for (int i = 0; i < removePrefixes.Length; ++i)
+
+                braceCount = 1;
+                ++lastIndex;
+
+                while (braceCount > 0)
                 {
-                    if (funcName.Contains(removePrefixes[i]))
+                    if (input[lastIndex] == '{')
                     {
-                        shouldRemove = true;
-                        break;
+                        ++braceCount;
                     }
-                }
-                if (shouldRemove)
-                {
-                    lastIndex = SeekFunctionEnd(input, index);
-                    index = lastIndex < input.Length ? input.IndexOf("function ", lastIndex) : -1;
-                    continue;
-                }
-                for (int i = 0; i < replacePrefixes.Length; ++i)
-                {
-                    if (funcName.Contains(replacePrefixes[i]))
+                    else if (input[lastIndex] == '}')
                     {
-                        shouldReplace = true;
-                        break;
+                        --braceCount;
                     }
+                    ++lastIndex;
                 }
-                if (shouldReplace)
-                {
-                    lastIndex = SeekFunctionEnd(input, index);
-                    index = lastIndex < input.Length ? input.IndexOf("function ", lastIndex) : -1;
-                    output.Append("var " + funcName + " = window.WXWASMSDK." + funcName + " ? window.WXWASMSDK." + funcName + " : () => console.warn(\"unimplemented:" + funcName + "\", jsStackTrace());");
-                    continue;
-                }
-                index = input.IndexOf("function ", index);
+
+                index = input.IndexOf("function " + prefix, lastIndex);
             }
-            if (lastIndex < input.Length)
-            {
-                output.Append(input, lastIndex, input.Length - lastIndex);
-            }
+
+            output.Append(input, lastIndex, input.Length - lastIndex);
 
             return output.ToString();
         }
-
 
         private static bool CheckBuildTemplate()
         {
@@ -897,7 +814,7 @@ namespace WeChatWASM
 
         private static void ConvertDotnetFrameworkCode()
         {
-            var target = frameworkFilename;
+            var target = "webgl.wasm.framework.unityweb.js";
             var dotnetJsPath =
                 Path.Combine(config.ProjectConf.DST, webglDir, "Code", "wwwroot", "_framework", "dotnet.js");
             var dotnetJs = File.ReadAllText(dotnetJsPath, Encoding.UTF8);
@@ -921,7 +838,7 @@ namespace WeChatWASM
 
             UnityUtil.DelectDir(Path.Combine(config.ProjectConf.DST, miniGameDir));
             string text = String.Empty;
-            var target = frameworkFilename;
+            var target = "webgl.wasm.framework.unityweb.js";
             if (WXExtEnvDef.GETDEF("UNITY_2020_1_OR_NEWER"))
             {
                 if (UseIL2CPP)
@@ -939,16 +856,6 @@ namespace WeChatWASM
             {
                 text = File.ReadAllText(Path.Combine(config.ProjectConf.DST, webglDir, "Build", "webgl.wasm.framework.unityweb"), Encoding.UTF8);
             }
-            string[] removePrefixes = new string[] {
-                "jsAudio",
-            };
-            string[] replacePrefixes = new string[] {
-                "_JS_Video_",
-                "_JS_Sound_",
-                "_JS_MobileKeyboard_",
-                "_JS_MobileKeybard_"
-            };
-            text = ReplaceOrRemoveFunctionsWithPrefix(text, removePrefixes, replacePrefixes);
             int i;
             for (i = 0; i < ReplaceRules.rules.Length; i++)
             {
@@ -962,17 +869,20 @@ namespace WeChatWASM
                     text = Regex.Replace(text, rule.old, rule.newStr);
                 }
             }
-            if (EnableRenderThread)
-            {
-                UnityEngine.Debug.Log("[WX] EnableRenderThread=true, applying MainThreadRules");
-                text = ReplaceByRegex(text, ReplaceRules.MainThreadRules(), "MainThreadReplaceRules");
-            }
-            else
-            {
-                UnityEngine.Debug.Log("[WX] EnableRenderThread=false, skipping MainThreadRules");
-            }
             EditorUtility.ClearProgressBar();
-
+            string[] prefixs =
+             {
+                "_JS_Video_",
+                //"jsVideo",
+                "_JS_Sound_",
+                "jsAudio",
+                "_JS_MobileKeyboard_",
+                "_JS_MobileKeybard_"
+            };
+            foreach (var prefix in prefixs)
+            {
+                text = RemoveFunctionsWithPrefix(text, prefix);
+            }
 #if PLATFORM_WEIXINMINIGAME
             if (PlayerSettings.WeixinMiniGame.exceptionSupport == WeixinMiniGameExceptionSupport.None)
 #else
@@ -1170,7 +1080,7 @@ namespace WeChatWASM
 #if UNITY_6000_0_OR_NEWER
             // 从小游戏转换工具里无法直接开启wasm2023特性 会导致转出的webgl异常，所以强制关闭
            	PlayerSettings.WebGL.wasm2023 = false;
-#endif
+#endif   
 
 #if UNITY_2021_2_OR_NEWER
 #if UNITY_2022_1_OR_NEWER
@@ -1354,15 +1264,6 @@ namespace WeChatWASM
             int code = GenerateBinFile();
             if (code == 0)
             {
-                if (EnableRenderThread)
-                {
-                    UnityEngine.Debug.Log("[WX] EnableRenderThread=true, calling ConvertForThread");
-                    ConvertForThread();
-                }
-                else
-                {
-                    UnityEngine.Debug.Log("[WX] EnableRenderThread=false, skipping ConvertForThread");
-                }
                 convertDataPackage(false);
                 UnityEngine.Debug.LogFormat("[Converter] All done!");
                 //ShowNotification(new GUIContent("转换完成"));
@@ -2227,8 +2128,7 @@ namespace WeChatWASM
                 // Perfstream，暂时设为false
                 "false",
                 config.CompileOptions.enableEmscriptenGLX ? "true" : "false",
-                config.CompileOptions.enableiOSMetal ? "true" : "false",
-                EnableRenderThread ? "true" : "false"
+                config.CompileOptions.enableiOSMetal ? "true" : "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);
@@ -2416,18 +2316,7 @@ namespace WeChatWASM
             return "";
 #endif
         }
-        public static string ReplaceByRegex(string text, Rule[] rules, string file)
-        {
-            for (int i = 0; i < rules.Length; i++)
-            {
-                var rule = rules[i];
-                if (ShowMatchFailedWarning(text, rule.old, file) == false)
-                {
-                    text = Regex.Replace(text, rule.old, rule.newStr);
-                }
-            }
-            return text;
-        }
+
         public static bool ShowMatchFailedWarning(string text, string rule, string file)
         {
             if (Regex.IsMatch(text, rule) == false)
@@ -2436,28 +2325,6 @@ namespace WeChatWASM
                 return true;
             }
             return false;
-        }
-        public static void ConvertForThread()
-        {
-            string workerDir = Path.Combine(config.ProjectConf.DST, miniGameDir, "workers", "response");
-            string workerFrameworkPath = Path.Combine(workerDir, frameworkFilename);
-            string workerIndexPath = Path.Combine(workerDir, wasmWorkerIndexFilename);
-
-
-            // 拷贝胶水层到worker里并替换
-            File.Copy(Path.Combine(config.ProjectConf.DST, miniGameDir, frameworkFilename), workerFrameworkPath);
-            string text = File.ReadAllText(workerFrameworkPath, Encoding.UTF8);
-            text = ReplaceByRegex(text, ReplaceRules.WorkerThreadRules(), "WorkerThreadReplaceRules");
-
-            text += ReplaceRules.WorkerThreadFooter;
-            File.WriteAllText(workerFrameworkPath, text);
-
-            // 拷贝worker.js到worker里并替换
-            File.Copy(Path.Combine(config.ProjectConf.DST, webglDir, "Build", wasmWorkerIndexFilename), workerIndexPath);
-            text = File.ReadAllText(workerIndexPath, Encoding.UTF8);
-            text = ReplaceByRegex(text, ReplaceRules.WorkerIndexRules(), "WorkerIndexReplaceRules");
-            text += ReplaceRules.WorkerIndexFooter;
-            File.WriteAllText(workerIndexPath, text);
         }
     }
 

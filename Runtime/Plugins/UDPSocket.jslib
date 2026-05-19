@@ -58,6 +58,9 @@ var WXUDPSocketLibrary =
     },
     WX_RegisterUDPSocketOnMessageCallback:function(callback) {
         window.WXWASMSDK.WX_RegisterUDPSocketOnMessageCallback(callback);
+    },
+    WX_RegisterUDPSocketOnMessageCallbackV2:function(callback) {
+        window.WXWASMSDK.WX_RegisterUDPSocketOnMessageCallbackV2(callback);
     }
 };
 
