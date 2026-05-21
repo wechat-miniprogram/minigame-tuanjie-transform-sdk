@@ -67,6 +67,26 @@ const mod = {
             noneLimitSupportedTextures.push('astc');
             GameGlobal.TextureCompressedFormat = 'astc';
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        if (GameGlobal.unityNamespace
+            && GameGlobal.unityNamespace.isPc
+            && GameGlobal._webgpuASTCEnabled) {
+            if (noneLimitSupportedTextures.indexOf('astc') === -1) {
+                noneLimitSupportedTextures.push('astc');
+            }
+            GameGlobal.TextureCompressedFormat = 'astc';
+        }
+        
                 hasCheckSupportedExtensions = true;
         GameGlobal.NoneLimitSupportedTexture = noneLimitSupportedTextures.pop();
         return GameGlobal.TextureCompressedFormat;

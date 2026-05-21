@@ -142,9 +142,64 @@ mergeInto(LibraryManager.library, {
             }
             return
         }
-        if (GL.currentContext.supportsWebGL2EntryPoints) {
-            GLctx["compressedTexImage2D"](target, level, internalFormat, width, height, border, HEAPU8, data, imageSize);
-            return
+        var isAstcFmt = internalFormat >= 37808 && internalFormat <= 37821 || internalFormat >= 37840 && internalFormat <= 37853;
+        if (GameGlobal._webgpuASTCEnabled && GameGlobal._webgpuASTCDecoder && isAstcFmt) {
+          if (!GameGlobal.__astcBlockMap__) {
+            GameGlobal.__astcBlockMap__ = {
+              37808: [4, 4], 37809: [5, 4], 37810: [5, 5], 37811: [6, 5],
+              37812: [6, 6], 37813: [8, 5], 37814: [8, 6], 37815: [8, 8],
+              37816: [10, 5], 37817: [10, 6], 37818: [10, 8], 37819: [10, 10],
+              37820: [12, 10], 37821: [12, 12],
+              37840: [4, 4], 37841: [5, 4], 37842: [5, 5], 37843: [6, 5],
+              37844: [6, 6], 37845: [8, 5], 37846: [8, 6], 37847: [8, 8],
+              37848: [10, 5], 37849: [10, 6], 37850: [10, 8], 37851: [10, 10],
+              37852: [12, 10], 37853: [12, 12]
+            };
+          }
+          if (!GameGlobal.__astcSrgbAlphaExt__) {
+            var _ext = GLctx.getExtension("EXT_sRGB");
+            GameGlobal.__astcSrgbAlphaExt__ = (_ext && _ext.SRGB_ALPHA_EXT) ? _ext.SRGB_ALPHA_EXT : 0;
+          }
+          var astcBytes = data ? HEAPU8.subarray(data, data + imageSize) : null;
+          if (astcBytes) {
+            var blk = GameGlobal.__astcBlockMap__[internalFormat] || [8, 8];
+            var _isSrgbAstc = (internalFormat >= 37840 && internalFormat <= 37853);
+            // 同步用占位 RGBA（全 0）调原生 texImage2D 建立 storage，
+            // 异步解码完成后 decoder 会用真实 RGBA 覆盖（见 webgpu-astc-bootstrap.js）。
+            var CUBE_LO = 0x8515, CUBE_HI = 0x851A, T2D = 0x0DE1, TCUBE = 0x8513;
+            var _imgTarget, _bindTarget, _bindQuery;
+            if (target >= CUBE_LO && target <= CUBE_HI) {
+              _imgTarget = target; _bindTarget = TCUBE; _bindQuery = 0x8514; /* TEXTURE_BINDING_CUBE_MAP */
+            } else {
+              _imgTarget = T2D; _bindTarget = T2D; _bindQuery = GLctx.TEXTURE_BINDING_2D;
+            }
+            var _needBytes = width * height * 4;
+            if (!GameGlobal._astcPlaceholderZeros || GameGlobal._astcPlaceholderZeros.length < _needBytes) {
+              GameGlobal._astcPlaceholderZeros = new Uint8Array(_needBytes);
+            }
+            var _zeros = GameGlobal._astcPlaceholderZeros.subarray(0, _needBytes);
+            var _prevBind = GLctx.getParameter(_bindQuery);
+            var _texObj = GL.textures[lastTid];
+            // WebGL1 sRGB: EXT_sRGB → SRGB_ALPHA_EXT (0x8C42) 作为 internalFormat 和 format
+            // 非 sRGB 或无扩展 → RGBA / RGBA
+            var _srgbExt = GameGlobal.__astcSrgbAlphaExt__;
+            var _phInternalFormat = (_isSrgbAstc && _srgbExt) ? _srgbExt : GLctx.RGBA;
+            var _phFormat = (_isSrgbAstc && _srgbExt) ? _srgbExt : GLctx.RGBA;
+            if (_texObj) {
+              GLctx.bindTexture(_bindTarget, _texObj);
+              GLctx.texImage2D(_imgTarget, level, _phInternalFormat, width, height, 0,
+                               _phFormat, GLctx.UNSIGNED_BYTE, _zeros);
+              GLctx.bindTexture(_bindTarget, _prevBind);
+            }
+            GameGlobal._webgpuASTCDecoder.decodeAndInjectToGLTexture(lastTid, astcBytes, width, height, blk[0], blk[1], {
+              target: target, level: level, isSub: false, internalFormat: internalFormat
+            }).catch(function (e) {
+              if (GameGlobal.logmanager) {
+                GameGlobal.logmanager.warn("[WebGPU ASTC Linear] decodeAndInject failed:", e && e.message)
+              }
+            })
+          }
+          return
         }
         GLctx["compressedTexImage2D"](target, level, internalFormat, width, height, border, data ? HEAPU8.subarray(data, data + imageSize) : null)
     },
@@ -315,9 +370,62 @@ mergeInto(LibraryManager.library, {
             }
             return
         }
-        if (GL.currentContext.supportsWebGL2EntryPoints) {
-            GLctx["compressedTexSubImage2D"](target, level, xoffset, yoffset, width, height, format, HEAPU8, data, imageSize);
-            return
+        var isAstcFmt = format >= 37808 && format <= 37821 || format >= 37840 && format <= 37853;
+        if (GameGlobal._webgpuASTCEnabled && GameGlobal._webgpuASTCDecoder && isAstcFmt) {
+          if (!GameGlobal.__astcBlockMap__) {
+            GameGlobal.__astcBlockMap__ = {
+              37808: [4, 4], 37809: [5, 4], 37810: [5, 5], 37811: [6, 5],
+              37812: [6, 6], 37813: [8, 5], 37814: [8, 6], 37815: [8, 8],
+              37816: [10, 5], 37817: [10, 6], 37818: [10, 8], 37819: [10, 10],
+              37820: [12, 10], 37821: [12, 12],
+              37840: [4, 4], 37841: [5, 4], 37842: [5, 5], 37843: [6, 5],
+              37844: [6, 6], 37845: [8, 5], 37846: [8, 6], 37847: [8, 8],
+              37848: [10, 5], 37849: [10, 6], 37850: [10, 8], 37851: [10, 10],
+              37852: [12, 10], 37853: [12, 12]
+            };
+          }
+          if (!GameGlobal.__astcSrgbAlphaExt__) {
+            var _ext = GLctx.getExtension("EXT_sRGB");
+            GameGlobal.__astcSrgbAlphaExt__ = (_ext && _ext.SRGB_ALPHA_EXT) ? _ext.SRGB_ALPHA_EXT : 0;
+          }
+          var astcBytes = data ? HEAPU8.subarray(data, data + imageSize) : null;
+          if (astcBytes) {
+            var blk = GameGlobal.__astcBlockMap__[format] || [8, 8];
+            var _isSrgbAstcSub = (format >= 37840 && format <= 37853);
+            var CUBE_LO2 = 0x8515, CUBE_HI2 = 0x851A, T2D2 = 0x0DE1, TCUBE2 = 0x8513;
+            var _imgTarget2, _bindTarget2, _bindQuery2;
+            if (target >= CUBE_LO2 && target <= CUBE_HI2) {
+              _imgTarget2 = target; _bindTarget2 = TCUBE2; _bindQuery2 = 0x8514;
+            } else {
+              _imgTarget2 = T2D2; _bindTarget2 = T2D2; _bindQuery2 = GLctx.TEXTURE_BINDING_2D;
+            }
+            var _needBytes2 = width * height * 4;
+            if (!GameGlobal._astcPlaceholderZeros || GameGlobal._astcPlaceholderZeros.length < _needBytes2) {
+              GameGlobal._astcPlaceholderZeros = new Uint8Array(_needBytes2);
+            }
+            var _zeros2 = GameGlobal._astcPlaceholderZeros.subarray(0, _needBytes2);
+            var _prevBind2 = GLctx.getParameter(_bindQuery2);
+            var _texObj2 = GL.textures[lastTid];
+            // WebGL1 sRGB: EXT_sRGB → SRGB_ALPHA_EXT (0x8C42) 作为 internalFormat 和 format
+            var _srgbExt2 = GameGlobal.__astcSrgbAlphaExt__;
+            var _subFormat = (_isSrgbAstcSub && _srgbExt2) ? _srgbExt2 : GLctx.RGBA;
+            var _phInternalFormat2 = (_isSrgbAstcSub && _srgbExt2) ? _srgbExt2 : GLctx.RGBA;
+            if (_texObj2) {
+              GLctx.bindTexture(_bindTarget2, _texObj2);
+              GLctx.texImage2D(_imgTarget2, level, _phInternalFormat2, width, height, 0,
+                               _subFormat, GLctx.UNSIGNED_BYTE, _zeros2);
+              GLctx.bindTexture(_bindTarget2, _prevBind2);
+            }
+            GameGlobal._webgpuASTCDecoder.decodeAndInjectToGLTexture(lastTid, astcBytes, width, height, blk[0], blk[1], {
+              target: target, level: level, xoffset: xoffset, yoffset: yoffset, isSub: true,
+              internalFormat: format
+            }).catch(function (e) {
+              if (GameGlobal.logmanager) {
+                GameGlobal.logmanager.warn("[WebGPU ASTC Sub] decodeAndInject failed:", e && e.message)
+              }
+            })
+          }
+          return
         }
         GLctx["compressedTexSubImage2D"](target, level, xoffset, yoffset, width, height, format, data ? HEAPU8.subarray(data, data + imageSize) : null)
     },

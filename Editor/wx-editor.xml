@@ -140,6 +140,12 @@
             在构建模板流程结束后
             </summary>
         </member>
+        <member name="M:WeChatWASM.ReplaceRules.RebuildRules">
+            <summary>
+            强制重新构建 rules 数组。每次构建/转换前应调用此方法，
+            确保读取到最新的 Editor 面板配置（尤其是 enablePCWebGPUAstc 等开关）。
+            </summary>
+        </member>
         <member name="T:WeChatWASM.WXAssetsTextTools">
             <summary>
             微信团队提供的资源纹理处理工具，可对微信小游戏首包资源、AssetsBundle进行专项的纹理资源处理操作
@@ -664,6 +670,7 @@
             是否开启 WebAssembly2023特性
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "F:WeChatWASM.CompileOptions.enablePCWebGPUAstc" -->
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">
             <summary>
             基本汉字 [0x4e00, 0x9fff] https://www.unicode.org/charts/PDF/U4E00.pdf

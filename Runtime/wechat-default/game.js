@@ -5,6 +5,10 @@ import './texture-config';
 import unityNamespace from './unity-namespace';
 import '.$DOTNET_RUNTIME_FOLD/$GAME_NAME.wasm.framework.unityweb';
 import './unity-sdk/index';
+// M4: PC WebGPU ASTC 解码器主包注入（副作用：挂 globalThis.WebGPUASTCDecoderSDK 等）
+// 注意：必须显式写 `/index`，微信小游戏 runtime 不支持目录 index 解析，写 './unity-sdk/pc_webgpu_astc'
+// 会被拼成 './unity-sdk/pc_webgpu_astc.js' 直接报 `module 'unity-sdk/pc_webgpu_astc.js' is not defined`。
+import { bootstrapWebGPUASTC } from './unity-sdk/pc_webgpu_astc/index';
 import checkVersion from './check-version';
 import { launchEventType, scaleMode } from './plugin-config';
 import { preloadWxCommonFont } from './unity-sdk/font/index';
@@ -37,8 +41,20 @@ const managerConfig = {
 };
 GameGlobal.managerConfig = managerConfig;
 // 版本检查
-checkVersion().then((enable) => {
+checkVersion().then(async (enable) => {
     if (enable) {
+        // ==== M4：PC + WebGPU 环境下预初始化 ASTC 解码 Pipeline ====
+        // 非 PC / 无 WebGPU / SDK 未就绪 → 直接返回 { enabled:false }，后续全部走原生降级
+        // 成功 → GameGlobal._webgpuASTCEnabled = true / _webgpuASTCDecoder 可用
+        try {
+            const r = await bootstrapWebGPUASTC({ timeoutMs: 2000 });
+            GameGlobal.logmanager.info('[WebGPU ASTC] bootstrap result:', r);
+        }
+        catch (e) {
+            // bootstrap 内已做 try/catch，这里只是终极保底，不能让启动流程因 WebGPU 失败而崩
+            GameGlobal.logmanager.warn('[WebGPU ASTC] bootstrap unexpected error:', e);
+        }
+        // ====
         // eslint-disable-next-line @typescript-eslint/naming-convention
         let UnityManager;
         try {
