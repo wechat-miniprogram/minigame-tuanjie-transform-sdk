@@ -73,7 +73,7 @@ namespace WeChatWASM
             {
                 config.packageConditions = new List<PackageCondition>
                 {
-                    new PackageCondition { condition = "checkVersion.isAndroid && wx.env.isUseAndroidBetterWorker", packageSuffix = "mt" }
+                    new PackageCondition { condition = "wx.env.isSupportStandardWorker", packageSuffix = "mt" }
                 };
             }
             // devPluginId 不通过 UI 管理，始终清空（由 CLI 参数传入）
@@ -241,9 +241,9 @@ namespace WeChatWASM
                     EditorGUILayout.BeginVertical("box");
 
                     EditorGUILayout.LabelField("条件表达式", EditorStyles.boldLabel);
-                    EditorGUILayout.LabelField("JavaScript表达式，返回true时选择对应包，例：checkVersion.isAndroid && wx.env.isUseAndroidBetterWorker", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField("JavaScript表达式，返回true时选择对应包，例：wx.env.isSupportStandardWorker", EditorStyles.miniLabel);
                     {
-                        var placeholder = "checkVersion.isAndroid && wx.env.isUseAndroidBetterWorker";
+                        var placeholder = "wx.env.isSupportStandardWorker";
                         var display = string.IsNullOrEmpty(condition.condition) ? placeholder : condition.condition;
                         var style = string.IsNullOrEmpty(condition.condition) ? new GUIStyle(EditorStyles.textField) { normal = { textColor = Color.gray } } : EditorStyles.textField;
                         var input = EditorGUILayout.TextField(display, style);
