@@ -3686,7 +3686,7 @@
         </member>
         <member name="F:WeChatWASM.LaunchOptionsGame.hostExtraData">
             <summary>
-            宿主传递的数据，第三方 app 中运行小游戏时返回
+            宿主传递的数据，第三方 app 中运行小游戏时返回。其中应有类型为 string 的 host_scene 字段，代表宿主app对应的场景值
             </summary>
         </member>
         <member name="F:WeChatWASM.LaunchOptionsGame.query">
@@ -3717,11 +3717,6 @@
         <member name="F:WeChatWASM.LaunchOptionsGame.shareTicket">
             <summary>
             shareTicket，详见[获取更多转发信息](#)
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.HostExtraData.host_scene">
-            <summary>
-            宿主app对应的场景值
             </summary>
         </member>
         <member name="F:WeChatWASM.ClientRect.bottom">
@@ -5370,6 +5365,21 @@
         <member name="F:WeChatWASM.WriteCharacteristicValueObject.callbackId">
             <summary>
             可选，处理回包时使用
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.EnterChatToolModeOption.chatToolRooms">
+            <summary>
+            聊天室 id，不传则拉起群选择框，可以传入多聊群的 opengid 值
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.EnterChatToolModeOption.selectLimit">
+            <summary>
+            多选模式下最多选择的群聊数量
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.EnterChatToolModeOption.singleChatRoom">
+            <summary>
+            是否单选群聊，true 为单选，false 为多选
             </summary>
         </member>
         <member name="F:WeChatWASM.FaceDetectOption.frameBuffer">

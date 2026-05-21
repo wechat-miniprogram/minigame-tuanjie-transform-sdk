@@ -84,15 +84,12 @@ export const ResType = {
         feedId: 'string',
     },
     LaunchOptionsGame: {
-        hostExtraData: 'HostExtraData',
+        hostExtraData: 'string',
         query: 'object',
         referrerInfo: 'EnterOptionsGameReferrerInfo',
         scene: 'number',
         chatType: 'number',
         shareTicket: 'string',
-    },
-    HostExtraData: {
-        host_scene: 'string',
     },
     ClientRect: {
         bottom: 'number',
