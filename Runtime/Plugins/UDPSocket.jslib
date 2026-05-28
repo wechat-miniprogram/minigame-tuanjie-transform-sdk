@@ -35,7 +35,7 @@ var WXUDPSocketLibrary =
         window.WXWASMSDK.WX_UDPSocketOnListening(_WXPointer_stringify_adaptor(id));
     },
     WX_UDPSocketOnMessage:function(id, needInfo) {
-        window.WXWASMSDK.WX_UDPSocketOnMessage(_WXPointer_stringify_adaptor(id), needInfo);
+        window.WXWASMSDK.WX_UDPSocketOnMessage(_WXPointer_stringify_adaptor(id), !!needInfo);
     },
     WX_UDPSocketSendString:function(id, data, param) {
         window.WXWASMSDK.WX_UDPSocketSendString(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(data), _WXPointer_stringify_adaptor(param));

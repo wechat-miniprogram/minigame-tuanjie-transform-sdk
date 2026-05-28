@@ -302,6 +302,7 @@ var WXAssetBundleLibrary = {
   },
 
   UnCleanbyPath: function (ptr, fromFile) {
+    fromFile = !!fromFile;
     var url = UTF8ToString(ptr);
     var path = WXFS.url2path(url);
     if(fromFile && !GameGlobal.manager.fs.accessSync(path)){

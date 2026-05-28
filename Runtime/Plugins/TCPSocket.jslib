@@ -50,7 +50,7 @@ var WXTCPSocketLibrary =
         window.WXWASMSDK.WX_TCPSocketOnError(_WXPointer_stringify_adaptor(id));
     },
     WX_TCPSocketOnMessage:function(id, needInfo) {
-        window.WXWASMSDK.WX_TCPSocketOnMessage(_WXPointer_stringify_adaptor(id), needInfo);
+        window.WXWASMSDK.WX_TCPSocketOnMessage(_WXPointer_stringify_adaptor(id), !!needInfo);
     },
     WX_RegisterTCPSocketOnMessageCallback:function(callback) {
         window.WXWASMSDK.WX_RegisterTCPSocketOnMessageCallback(callback);

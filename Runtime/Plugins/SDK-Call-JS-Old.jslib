@@ -126,7 +126,7 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WXAuthorize(_WXPointer_stringify_adaptor(scope), _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
     },
     WXCreateUserInfoButton: function (x, y, width, height, lang, withCredentials) {
-        var returnStr = window.WXWASMSDK.WXCreateUserInfoButton(x, y, width, height, _WXPointer_stringify_adaptor(lang), withCredentials);
+        var returnStr = window.WXWASMSDK.WXCreateUserInfoButton(x, y, width, height, _WXPointer_stringify_adaptor(lang), !!withCredentials);
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
@@ -148,7 +148,7 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WXUserInfoButtonOnTap(_WXPointer_stringify_adaptor(id));
     },
     WXOnShareAppMessage: function (conf, isPromise) {
-        return window.WXWASMSDK.WXOnShareAppMessage(_WXPointer_stringify_adaptor(conf), isPromise);
+        return window.WXWASMSDK.WXOnShareAppMessage(_WXPointer_stringify_adaptor(conf), !!isPromise);
     },
     WXOnShareAppMessageResolve: function (conf) {
         return window.WXWASMSDK.WXOnShareAppMessageResolve(_WXPointer_stringify_adaptor(conf));
@@ -324,14 +324,14 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WXReportUserBehaviorBranchAnalytics(_WXPointer_stringify_adaptor(branchId), _WXPointer_stringify_adaptor(branchDim), eventType);
     },
     WXCreateInnerAudioContext: function (src, loop, startTime, autoplay, volume, playbackRate, needDownload) {
-        var returnStr = window.WXWASMSDK.WXCreateInnerAudioContext(_WXPointer_stringify_adaptor(src), loop, startTime, autoplay, volume, playbackRate, needDownload);
+        var returnStr = window.WXWASMSDK.WXCreateInnerAudioContext(_WXPointer_stringify_adaptor(src), !!loop, startTime, !!autoplay, volume, playbackRate, !!needDownload);
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
     WXInnerAudioContextSetBool: function (id, k, v) {
-        window.WXWASMSDK.WXInnerAudioContextSetBool(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(k), v);
+        window.WXWASMSDK.WXInnerAudioContextSetBool(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(k), !!v);
     },
     WXInnerAudioContextSetString: function (id, k, v) {
         window.WXWASMSDK.WXInnerAudioContextSetString(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(k), _WXPointer_stringify_adaptor(v));
@@ -420,7 +420,7 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WXVideoAddListener(_WXPointer_stringify_adaptor(id), _WXPointer_stringify_adaptor(key));
     },
     WXVideoDestroy: function(id, isLast) {
-        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id), isLast);
+        window.WXWASMSDK.WXVideoDestroy(_WXPointer_stringify_adaptor(id), !!isLast);
     },
     WXVideoExitFullScreen: function(id) {
         window.WXWASMSDK.WXVideoExitFullScreen(_WXPointer_stringify_adaptor(id));
@@ -628,7 +628,7 @@ mergeInto(LibraryManager.library, {
         return buffer;
     },
     WXSetSyncReadCacheEnabled: function(enabled) {
-        window.WXWASMSDK.WXSetSyncReadCacheEnabled(enabled);
+        window.WXWASMSDK.WXSetSyncReadCacheEnabled(!!enabled);
     },
     WXGetPluginCachePath: function() {
         var returnStr = window.WXWASMSDK.WXGetPluginCachePath();
@@ -648,20 +648,20 @@ mergeInto(LibraryManager.library, {
        window.WXWASMSDK.WXUncaughtException(false);
     },
     WXMkdir:function(dirPath, recursive, s,  f,  c){
-        window.WXWASMSDK.WXMkdir(_WXPointer_stringify_adaptor(dirPath), recursive, _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
+        window.WXWASMSDK.WXMkdir(_WXPointer_stringify_adaptor(dirPath), !!recursive, _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
     },
     WXMkdirSync: function (dirPath, recursive) {
-        var returnStr = window.WXWASMSDK.WXMkdirSync(_WXPointer_stringify_adaptor(dirPath),recursive);
+        var returnStr = window.WXWASMSDK.WXMkdirSync(_WXPointer_stringify_adaptor(dirPath),!!recursive);
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
     WXRmdir: function(dirPath, recursive, s, f, c) {
-        window.WXWASMSDK.WXRmdir(_WXPointer_stringify_adaptor(dirPath), recursive, _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
+        window.WXWASMSDK.WXRmdir(_WXPointer_stringify_adaptor(dirPath), !!recursive, _WXPointer_stringify_adaptor(s), _WXPointer_stringify_adaptor(f), _WXPointer_stringify_adaptor(c));
     },
     WXRmdirSync: function(dirPath, recursive) {
-        var returnStr = window.WXWASMSDK.WXRmdirSync(_WXPointer_stringify_adaptor(dirPath),recursive);
+        var returnStr = window.WXWASMSDK.WXRmdirSync(_WXPointer_stringify_adaptor(dirPath),!!recursive);
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
@@ -927,7 +927,7 @@ mergeInto(LibraryManager.library, {
         return buffer;
     },
     WX_FileSystemManagerStatSync:function(path, recursive) {
-        var res = window.WXWASMSDK.WX_FileSystemManagerStatSync(_WXPointer_stringify_adaptor(path), recursive);
+        var res = window.WXWASMSDK.WX_FileSystemManagerStatSync(_WXPointer_stringify_adaptor(path), !!recursive);
         var bufferSize = lengthBytesUTF8(res) + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(res, buffer, bufferSize);
