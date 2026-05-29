@@ -94,4 +94,25 @@ export const ResTypeOther = {
         openlink: 'string',
         query: 'object',
     },
+    RequestGamePaymentSuccessCallbackResult: {
+        errMsg: 'string',
+        errCode: 'number',
+    },
+    RequestGamePaymentFailCallbackResult: {
+        errMsg: 'string',
+        errCode: 'number',
+    },
+    GetGamePaymentProductInfoSuccessCallbackResult: {
+        currencyCode: 'string',
+        infos: 'GetGamePaymentProductInfoResult[]',
+        errMsg: 'string',
+    },
+    GetGamePaymentProductInfoResult: {
+        quantity: 'number',
+        productId: 'string',
+        displayPrice: 'string',
+        currencySymbol: 'string',
+        displayTaxPrice: 'string',
+        taxIncluded: 'bool',
+    },
 };
