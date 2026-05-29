@@ -1574,6 +1574,11 @@
             原生模板广告组件的宽度
             </summary>
         </member>
+        <member name="F:WeChatWASM.CustomStyle.height">
+            <summary>
+            原生模板广告组件的高度（仅出海小游戏使用）
+            </summary>
+        </member>
         <member name="T:WeChatWASM.WXToTempFilePathSyncParam">
             <summary>
             将当前 Canvas 保存为一个临时文件的同步版本,详见 https://developers.weixin.qq.com/minigame/dev/api/render/canvas/Canvas.toTempFilePathSync.html
