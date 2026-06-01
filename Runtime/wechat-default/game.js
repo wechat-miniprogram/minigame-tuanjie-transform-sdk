@@ -33,7 +33,6 @@ const managerConfig = {
             enableMetal: $ENABLE_METAL,
         }
     },
-    useOffscreenCanvas: $USE_OFFSCREEN_CANVAS,
     PROFILER_UPLOAD_URL: '',
 };
 GameGlobal.managerConfig = managerConfig;
