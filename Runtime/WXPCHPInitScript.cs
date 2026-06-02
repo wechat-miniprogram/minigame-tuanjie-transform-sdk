@@ -131,8 +131,44 @@ namespace WeChatWASM
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
         private const int SW_HIDE = 0;
         private const int SW_SHOW = 5;
+
+        /// <summary>
+        /// 通过多种方式获取 Unity 窗口句柄（即使窗口被隐藏也能找到）
+        /// </summary>
+        private static IntPtr GetUnityWindowHandle()
+        {
+            // 1. 优先用缓存
+            if (_cachedWindowHandle != IntPtr.Zero)
+                return _cachedWindowHandle;
+
+            // 2. 尝试 Process.MainWindowHandle
+            var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            if (hwnd != IntPtr.Zero)
+                return hwnd;
+
+            // 3. 通过 Unity 固定窗口类名查找（窗口被 SW_HIDE 后 MainWindowHandle 返回 Zero，但 FindWindow 仍能找到）
+            hwnd = FindWindow("UnityWndClass", null);
+            if (hwnd != IntPtr.Zero)
+            {
+                Debug.Log($"[WXPCHPInitScript] 通过 FindWindow(\"UnityWndClass\") 获取到句柄: 0x{hwnd.ToInt64():X}");
+                return hwnd;
+            }
+
+            // 4. 通过产品名查找
+            hwnd = FindWindow(null, UnityEngine.Application.productName);
+            if (hwnd != IntPtr.Zero)
+            {
+                Debug.Log($"[WXPCHPInitScript] 通过 FindWindow(productName=\"{UnityEngine.Application.productName}\") 获取到句柄: 0x{hwnd.ToInt64():X}");
+                return hwnd;
+            }
+
+            return IntPtr.Zero;
+        }
 #endif
 
         #endregion
@@ -212,14 +248,21 @@ namespace WeChatWASM
         private static void HideWindowEarly()
         {
 #if UNITY_STANDALONE_WIN
+            // 强制窗口模式，防止 Unity 用注册表残留的全屏分辨率尝试独占全屏
+            Screen.fullScreenMode = FullScreenMode.Windowed;
+
             try
             {
-                var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                var hwnd = GetUnityWindowHandle();
                 if (hwnd != IntPtr.Zero)
                 {
                     ShowWindow(hwnd, SW_HIDE);
                     _cachedWindowHandle = hwnd;
                     Debug.Log($"[WXPCHPInitScript] BeforeSceneLoad: 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
+                }
+                else
+                {
+                    Debug.LogWarning("[WXPCHPInitScript] BeforeSceneLoad: 窗口句柄尚未就绪，将在 Awake 阶段重试");
                 }
             }
             catch (Exception e)
@@ -309,25 +352,17 @@ namespace WeChatWASM
 #if UNITY_STANDALONE_WIN
             try
             {
-                // 优先使用 BeforeSceneLoad 阶段已缓存的句柄
-                if (_cachedWindowHandle != IntPtr.Zero)
-                {
-                    WindowHandle = _cachedWindowHandle;
-                    Debug.Log($"[WXPCHPInitScript] HideGameWindow: 使用 BeforeSceneLoad 缓存句柄: 0x{WindowHandle.ToInt64():X}");
-                    return;
-                }
-
-                // fallback: BeforeSceneLoad 没拿到的情况
-                var hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                var hwnd = GetUnityWindowHandle();
                 if (hwnd != IntPtr.Zero)
                 {
                     WindowHandle = hwnd;
+                    _cachedWindowHandle = hwnd;
                     ShowWindow(hwnd, SW_HIDE);
-                    Debug.Log($"[WXPCHPInitScript] HideGameWindow: 窗口已隐藏并缓存句柄: 0x{hwnd.ToInt64():X}");
+                    Debug.Log($"[WXPCHPInitScript] HideGameWindow: 窗口已隐藏，句柄: 0x{hwnd.ToInt64():X}");
                 }
                 else
                 {
-                    Debug.LogWarning("[WXPCHPInitScript] HideGameWindow: MainWindowHandle 为空，窗口可能尚未创建");
+                    Debug.LogWarning("[WXPCHPInitScript] HideGameWindow: 无法获取窗口句柄");
                 }
             }
             catch (Exception e)
@@ -393,22 +428,21 @@ namespace WeChatWASM
                 Debug.Log("[WXPCHPInitScript] Step 4: 获取窗口句柄");
                 ShowStepInfo("步骤 4/5 - 获取窗口句柄", "正在获取游戏窗口句柄...");
 #if UNITY_STANDALONE_WIN
-                // 优先使用 HideGameWindow 阶段缓存的句柄
-                // （窗口被 SW_HIDE 后 MainWindowHandle 会返回 IntPtr.Zero）
+                // 通过多种策略获取窗口句柄（FindWindow 即使窗口被隐藏也能找到）
                 if (WindowHandle == IntPtr.Zero)
                 {
-                    WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                    WindowHandle = GetUnityWindowHandle();
                 }
                 if (WindowHandle == IntPtr.Zero)
                 {
-                    // 极端情况下主窗口句柄还未就绪，短暂等待后重试
-                    Debug.LogWarning("[WXPCHPInitScript] MainWindowHandle 为空，等待 200ms 后重试...");
+                    // 极端情况：窗口尚未创建，短暂等待后重试
+                    Debug.LogWarning("[WXPCHPInitScript] 窗口句柄为空，等待 200ms 后重试...");
                     System.Threading.Thread.Sleep(200);
-                    WindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                    WindowHandle = GetUnityWindowHandle();
                 }
                 if (WindowHandle == IntPtr.Zero)
                 {
-                    ShowError("获取窗口句柄失败：Process.MainWindowHandle 返回空。请确保游戏以窗口模式运行（非 -batchmode）");
+                    ShowError("获取窗口句柄失败：所有策略均无法获取窗口句柄。请确保游戏以窗口模式运行（非 -batchmode）");
                     return;
                 }
 #else
