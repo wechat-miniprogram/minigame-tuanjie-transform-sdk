@@ -379,14 +379,21 @@ namespace WeChatWASM
             {
                 // WxPerfJsBridge.jslib
                 var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
+                if (wxPerfJSBridgeImporter != null)
+                {
 #if PLATFORM_PLAYABLEADS
-				wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, config.CompileOptions.enablePerfAnalysis);
+				    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, config.CompileOptions.enablePerfAnalysis);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
+                    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
 #else
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
+                    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[0], config.CompileOptions.enablePerfAnalysis);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[0], config.CompileOptions.enablePerfAnalysis);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[0]}，跳过");
+                }
             }
 
             {
@@ -394,15 +401,21 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer();
 
                 var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
-
+                if (wxPerf2022Importer != null)
+                {
 #if PLATFORM_PLAYABLEADS
-				wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2022Plugin);
+				    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2022Plugin);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
+                    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
 #else
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
+                    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[1]}，跳过");
+                }
             }
 
             {
@@ -410,14 +423,21 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202102To202203();
 
                 var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
+                if (wxPerf2021Importer != null)
+                {
 #if PLATFORM_PLAYABLEADS
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2021Plugin);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
 #else
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[2]}，跳过");
+                }
             }
             AssetDatabase.Refresh();
         }
