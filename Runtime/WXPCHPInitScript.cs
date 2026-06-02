@@ -95,6 +95,12 @@ namespace WeChatWASM
     /// </summary>
     public class WXPCHPInitScript : MonoBehaviour
     {
+        /// <summary>
+        /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
+        /// </summary>
+        public const string PCHP_VERSION = "0.1.32";
+        public const string PCHP_BUILD_DATE = "2026-06-02";
+
         #region DLL Imports
 
         private const string DLL_NAME = "pchp_sdk.dll";
@@ -296,7 +302,7 @@ namespace WeChatWASM
 
         private void Awake()
         {
-            Debug.Log("[WXPCHPInitScript] ========== Awake 被调用 ==========");
+            Debug.Log($"[WXPCHPInitScript] ========== PC高性能模式 SDK v{PCHP_VERSION} (build {PCHP_BUILD_DATE}) ==========");
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 
