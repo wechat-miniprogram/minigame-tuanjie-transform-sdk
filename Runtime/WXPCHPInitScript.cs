@@ -129,6 +129,12 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
+        // DLL 搜索路径设置（解决 pchp_sdk.dll 不在 exe 同级目录的问题）
+#if UNITY_STANDALONE_WIN
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool SetDllDirectory(string lpPathName);
+#endif
+
         // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -383,6 +389,55 @@ namespace WeChatWASM
         #region Public Methods - SDK Lifecycle
 
         /// <summary>
+        /// 动态定位并设置 DLL 搜索路径
+        /// 微信 PC 高性能模式的目录结构：
+        ///   x64/runtime/pchp_sdk.dll
+        ///   x64/runtime/.../radium/game.exe (或 .app)
+        /// exe 不在 DLL 同级，需向上查找
+        /// </summary>
+        private void SetupDllSearchPath()
+        {
+#if UNITY_STANDALONE_WIN
+            try
+            {
+                string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                string searchDir = System.IO.Path.GetDirectoryName(exePath);
+                Debug.Log($"[WXPCHPInitScript] exe 路径: {exePath}");
+
+                // 从 exe 目录向上逐级查找 pchp_sdk.dll（最多 5 级）
+                const int maxDepth = 5;
+                for (int i = 0; i < maxDepth; i++)
+                {
+                    string dllPath = System.IO.Path.Combine(searchDir, DLL_NAME);
+                    Debug.Log($"[WXPCHPInitScript] 查找 DLL: {dllPath}");
+
+                    if (System.IO.File.Exists(dllPath))
+                    {
+                        bool result = SetDllDirectory(searchDir);
+                        Debug.Log($"[WXPCHPInitScript] ✅ 找到 DLL，SetDllDirectory(\"{searchDir}\") = {result}");
+                        return;
+                    }
+
+                    var parent = System.IO.Directory.GetParent(searchDir);
+                    if (parent == null) break;
+                    searchDir = parent.FullName;
+                }
+
+                Debug.LogWarning($"[WXPCHPInitScript] ⚠️ 向上 {maxDepth} 级均未找到 {DLL_NAME}，将依赖系统默认搜索路径");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}");
+            }
+#elif UNITY_STANDALONE_OSX
+            // macOS: dylib 搜索路径通常由 @rpath / DYLD_LIBRARY_PATH 控制
+            // 暂通过日志输出路径信息辅助排查
+            string appPath = Application.dataPath; // xxx.app/Contents/Data
+            Debug.Log($"[WXPCHPInitScript] macOS dataPath: {appPath}");
+#endif
+        }
+
+        /// <summary>
         /// 初始化SDK并建立连接
         /// </summary>
         public void Initialize()
@@ -395,7 +450,10 @@ namespace WeChatWASM
 
             Debug.Log("[WXPCHPInitScript] ========== 开始初始化 ==========");
             Debug.Log($"[WXPCHPInitScript] 当前工作目录: {System.IO.Directory.GetCurrentDirectory()}");
-            Debug.Log($"[WXPCHPInitScript] DLL 搜索路径: {DLL_NAME}");
+            Debug.Log($"[WXPCHPInitScript] DLL 名称: {DLL_NAME}");
+
+            // 动态定位 pchp_sdk.dll：从 exe 所在目录向上逐级查找
+            SetupDllSearchPath();
 
             ShowStepInfo("SDK 初始化开始", "即将执行 PC 高性能模式 SDK 初始化流程...\n\n共 5 个步骤：\n1. InitEmbeddedGameSDK\n2. RegisterAsyncMsgHandler\n3. EstablishConnection\n4. GetActiveWindow\n5. InitGameWindow");
 
