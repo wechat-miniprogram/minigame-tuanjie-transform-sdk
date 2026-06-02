@@ -130,10 +130,10 @@ namespace WeChatWASM
         private static extern bool Cleanup();
 
         // DLL 搜索路径设置（解决 pchp_sdk.dll 不在 exe 同级目录的问题）
-#if UNITY_STANDALONE_WIN
+        // 注意：不用 #if UNITY_STANDALONE_WIN 包裹，因为 Mac 编辑器交叉构建 Windows 包时
+        // 也需要这个声明。运行时通过 Application.platform 判断是否调用。
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool SetDllDirectory(string lpPathName);
-#endif
 
         // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
@@ -259,10 +259,10 @@ namespace WeChatWASM
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void HideWindowEarly()
         {
-#if UNITY_STANDALONE_WIN
-            // 最先设置 DLL 搜索路径，确保后续所有 DllImport("pchp_sdk.dll") 能找到
+            // 最先设置 DLL 搜索路径（内部自带运行时平台检测）
             SetupDllSearchPathStatic();
 
+#if UNITY_STANDALONE_WIN
             // 强制窗口模式，防止 Unity 用注册表残留的全屏分辨率尝试独占全屏
             Screen.fullScreenMode = FullScreenMode.Windowed;
 
@@ -397,7 +397,14 @@ namespace WeChatWASM
         /// </summary>
         private static void SetupDllSearchPathStatic()
         {
-#if UNITY_STANDALONE_WIN
+            // 运行时检测：只在 Windows 上执行 SetDllDirectory
+            if (Application.platform != RuntimePlatform.WindowsPlayer &&
+                Application.platform != RuntimePlatform.WindowsEditor)
+            {
+                Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: 非 Windows 平台({Application.platform})，跳过");
+                return;
+            }
+
             try
             {
                 string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
@@ -429,7 +436,6 @@ namespace WeChatWASM
             {
                 Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}");
             }
-#endif
         }
 
         /// <summary>
@@ -437,13 +443,18 @@ namespace WeChatWASM
         /// </summary>
         private void SetupDllSearchPath()
         {
-#if UNITY_STANDALONE_WIN
-            SetupDllSearchPathStatic();
-#elif UNITY_STANDALONE_OSX
-            // macOS: dylib 搜索路径通常由 @rpath / DYLD_LIBRARY_PATH 控制
-            string appPath = Application.dataPath;
-            Debug.Log($"[WXPCHPInitScript] macOS dataPath: {appPath}");
-#endif
+            if (Application.platform == RuntimePlatform.WindowsPlayer ||
+                Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                SetupDllSearchPathStatic();
+            }
+            else if (Application.platform == RuntimePlatform.OSXPlayer ||
+                     Application.platform == RuntimePlatform.OSXEditor)
+            {
+                // macOS: dylib 搜索路径通常由 @rpath / DYLD_LIBRARY_PATH 控制
+                string appPath = Application.dataPath;
+                Debug.Log($"[WXPCHPInitScript] macOS dataPath: {appPath}");
+            }
         }
 
         /// <summary>
