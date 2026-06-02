@@ -397,6 +397,7 @@ namespace WeChatWASM
         /// </summary>
         private static void SetupDllSearchPathStatic()
         {
+#if UNITY_STANDALONE_WIN
             try
             {
                 string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
@@ -428,6 +429,7 @@ namespace WeChatWASM
             {
                 Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}");
             }
+#endif
         }
 
         /// <summary>
