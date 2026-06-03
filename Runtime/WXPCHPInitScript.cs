@@ -99,7 +99,7 @@ namespace WeChatWASM
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
         public const string PCHP_VERSION = "0.1.33";
-        public const string PCHP_BUILD_DATE = "2026-06-03 17:20";
+        public const string PCHP_BUILD_DATE = "2026-06-03 17:37";
 
         #region DLL Imports
 
@@ -428,6 +428,54 @@ namespace WeChatWASM
                 Debug.Log($"[WXPCHPInitScript] Assembly.Location = {assemblyLocation}");
                 Debug.Log($"[WXPCHPInitScript] AppDomain.BaseDirectory = {baseDir}");
                 Debug.Log($"[WXPCHPInitScript] CurrentDirectory = {cwd}");
+
+                // === 诊断：打印命令行参数 ===
+                try
+                {
+                    string[] cmdArgs = System.Environment.GetCommandLineArgs();
+                    Debug.Log($"[WXPCHPInitScript] 命令行参数 ({cmdArgs.Length}个):");
+                    for (int i = 0; i < cmdArgs.Length; i++)
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   arg[{i}] = {cmdArgs[i]}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取命令行参数失败: {ex.Message}"); }
+
+                // === 诊断：打印所有环境变量 ===
+                try
+                {
+                    var envVars = System.Environment.GetEnvironmentVariables();
+                    Debug.Log($"[WXPCHPInitScript] 环境变量 ({envVars.Count}个):");
+                    foreach (System.Collections.DictionaryEntry entry in envVars)
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry.Key} = {entry.Value}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取环境变量失败: {ex.Message}"); }
+
+                // === 诊断：尝试直接 LoadLibrary 绝对路径 ===
+                // 如果命令行 arg[0] 能拿到 exe 真实路径，就能推导 DLL 位置
+                try
+                {
+                    string[] args = System.Environment.GetCommandLineArgs();
+                    if (args.Length > 0 && !string.IsNullOrEmpty(args[0]) && args[0] != "/" && !args[0].StartsWith("http"))
+                    {
+                        string exeDir = System.IO.Path.GetDirectoryName(args[0]);
+                        if (!string.IsNullOrEmpty(exeDir))
+                        {
+                            string dllFullPath = System.IO.Path.Combine(exeDir, "pchp_sdk.dll");
+                            Debug.Log($"[WXPCHPInitScript] 从 arg[0] 推导 DLL 路径: {dllFullPath}");
+                            if (System.IO.File.Exists(dllFullPath))
+                            {
+                                Debug.Log($"[WXPCHPInitScript] ✅ DLL 文件存在！尝试 SetDllDirectory...");
+                                bool result = SetDllDirectory(exeDir);
+                                Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{exeDir}\") = {result}");
+                                if (result) return;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] arg[0] 策略失败: {ex.Message}"); }
 
                 // === 策略 3：通过 %APPDATA% 环境变量尝试定位 ===
                 // 微信安装路径模式：%APPDATA%\Tencent\xwechat\radium\pchp\{appid}\
