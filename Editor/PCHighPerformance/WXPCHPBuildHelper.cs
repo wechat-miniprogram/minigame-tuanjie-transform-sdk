@@ -455,25 +455,50 @@ namespace WeChatWASM
         {
             const string DLL_NAME = "pchp_sdk.dll";
 
-            // 候选路径列表（优先级从高到低）
-            var candidates = new string[]
-            {
-                // SDK 内部 Plugins 目录
-                Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "Plugins", "Win64", DLL_NAME),
-                // 通用 Plugins 目录
-                Path.Combine(Application.dataPath, "Plugins", "x86_64", DLL_NAME),
-                Path.Combine(Application.dataPath, "Plugins", "Win64", DLL_NAME),
-                Path.Combine(Application.dataPath, "Plugins", DLL_NAME),
-                // 项目根目录
-                Path.Combine(Path.GetDirectoryName(Application.dataPath), DLL_NAME),
-                // StreamingAssets
-                Path.Combine(Application.streamingAssetsPath, DLL_NAME),
-            };
+            var candidates = new List<string>();
 
+            // === 1. 通过当前脚本路径定位 Package 内的 DLL ===
+            // 当 SDK 以 Package 形式安装时，代码在 Library/PackageCache/com.qq.weixin.minigame@xxx/ 下
+            // 通过 CallerFilePath 或 ScriptableObject 获取当前脚本路径，然后相对定位到 Runtime/Plugins/Win64/
+            string packageRoot = FindPackageRoot();
+            if (!string.IsNullOrEmpty(packageRoot))
+            {
+                candidates.Add(Path.Combine(packageRoot, "Runtime", "Plugins", "Win64", DLL_NAME));
+            }
+
+            // === 2. Assets 内的标准位置（SDK 以 Assets 形式存在时）===
+            candidates.Add(Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "Plugins", "Win64", DLL_NAME));
+            // 通用 Plugins 目录
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", "x86_64", DLL_NAME));
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", "Win64", DLL_NAME));
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", DLL_NAME));
+            // 项目根目录
+            candidates.Add(Path.Combine(Path.GetDirectoryName(Application.dataPath), DLL_NAME));
+            // StreamingAssets
+            candidates.Add(Path.Combine(Application.streamingAssetsPath, DLL_NAME));
+
+            // === 3. Library/PackageCache 暴力搜索（兜底）===
+            string packageCacheDir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Library", "PackageCache");
+            if (Directory.Exists(packageCacheDir))
+            {
+                // 搜索所有 com.qq.weixin.minigame* 开头的目录
+                try
+                {
+                    foreach (var dir in Directory.GetDirectories(packageCacheDir, "com.qq.weixin.minigame*"))
+                    {
+                        candidates.Add(Path.Combine(dir, "Runtime", "Plugins", "Win64", DLL_NAME));
+                    }
+                }
+                catch { }
+            }
+
+            // 逐个检查
             foreach (var path in candidates)
             {
+                Debug.Log($"[PC高性能模式] FindPCHPDllSource 检查: {path}");
                 if (File.Exists(path))
                 {
+                    Debug.Log($"[PC高性能模式] ✅ 找到 DLL: {path}");
                     return path;
                 }
             }
@@ -483,6 +508,36 @@ namespace WeChatWASM
             if (found.Length > 0)
             {
                 return found[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 查找当前 SDK 的 Package 根目录
+        /// 通过 UnityEditor.PackageManager 或脚本路径推导
+        /// </summary>
+        private static string FindPackageRoot()
+        {
+            // 方式 1：通过 Unity PackageManager API 查找已安装的包
+            try
+            {
+                string packagePath = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
+                    System.Reflection.Assembly.GetExecutingAssembly())?.resolvedPath;
+                if (!string.IsNullOrEmpty(packagePath))
+                {
+                    Debug.Log($"[PC高性能模式] Package 根目录 (via PackageInfo): {packagePath}");
+                    return packagePath;
+                }
+            }
+            catch { }
+
+            // 方式 2：通过 Packages/com.qq.weixin.minigame 路径（本地包引用时）
+            string localPackagePath = Path.GetFullPath("Packages/com.qq.weixin.minigame");
+            if (Directory.Exists(localPackagePath))
+            {
+                Debug.Log($"[PC高性能模式] Package 根目录 (via local): {localPackagePath}");
+                return localPackagePath;
             }
 
             return null;
