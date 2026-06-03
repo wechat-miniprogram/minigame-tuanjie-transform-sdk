@@ -397,26 +397,21 @@ namespace WeChatWASM
         /// </summary>
         private static void SetupDllSearchPathStatic()
         {
-            // 运行时检测：只在 Windows 上执行 SetDllDirectory
-            if (Application.platform != RuntimePlatform.WindowsPlayer &&
-                Application.platform != RuntimePlatform.WindowsEditor)
-            {
-                Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: 非 Windows 平台({Application.platform})，跳过");
-                return;
-            }
+            Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath 进入，platform={Application.platform}");
 
             try
             {
                 string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
                 string searchDir = System.IO.Path.GetDirectoryName(exePath);
-                Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: exe 路径 = {exePath}");
+                Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: exe={exePath}");
+                Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: dataPath={Application.dataPath}");
 
-                // 从 exe 目录向上逐级查找 pchp_sdk.dll（最多 5 级）
-                const int maxDepth = 5;
+                // 从 exe 目录向上逐级查找 pchp_sdk.dll（最多 8 级）
+                const int maxDepth = 8;
                 for (int i = 0; i < maxDepth; i++)
                 {
                     string dllPath = System.IO.Path.Combine(searchDir, DLL_NAME);
-                    Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: 检查 {dllPath}");
+                    Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: [{i}] 检查 {dllPath}");
 
                     if (System.IO.File.Exists(dllPath))
                     {
@@ -426,15 +421,39 @@ namespace WeChatWASM
                     }
 
                     var parent = System.IO.Directory.GetParent(searchDir);
+                    if (parent == null)
+                    {
+                        Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: [{i}] 已到根目录，停止");
+                        break;
+                    }
+                    searchDir = parent.FullName;
+                }
+
+                // exe 方向找不到，再试 Application.dataPath 方向
+                Debug.Log("[WXPCHPInitScript] SetupDllSearchPath: exe 方向未找到，尝试 dataPath 方向");
+                searchDir = Application.dataPath;
+                for (int i = 0; i < maxDepth; i++)
+                {
+                    string dllPath = System.IO.Path.Combine(searchDir, DLL_NAME);
+                    Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath: [dataPath-{i}] 检查 {dllPath}");
+
+                    if (System.IO.File.Exists(dllPath))
+                    {
+                        bool result = SetDllDirectory(searchDir);
+                        Debug.Log($"[WXPCHPInitScript] ✅ 从 dataPath 方向找到 DLL，SetDllDirectory(\"{searchDir}\") = {result}");
+                        return;
+                    }
+
+                    var parent = System.IO.Directory.GetParent(searchDir);
                     if (parent == null) break;
                     searchDir = parent.FullName;
                 }
 
-                Debug.LogWarning($"[WXPCHPInitScript] ⚠️ 向上 {maxDepth} 级均未找到 {DLL_NAME}，将依赖系统默认搜索路径");
+                Debug.LogWarning($"[WXPCHPInitScript] ⚠️ exe 和 dataPath 两个方向均未找到 {DLL_NAME}");
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}");
+                Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -443,18 +462,7 @@ namespace WeChatWASM
         /// </summary>
         private void SetupDllSearchPath()
         {
-            if (Application.platform == RuntimePlatform.WindowsPlayer ||
-                Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                SetupDllSearchPathStatic();
-            }
-            else if (Application.platform == RuntimePlatform.OSXPlayer ||
-                     Application.platform == RuntimePlatform.OSXEditor)
-            {
-                // macOS: dylib 搜索路径通常由 @rpath / DYLD_LIBRARY_PATH 控制
-                string appPath = Application.dataPath;
-                Debug.Log($"[WXPCHPInitScript] macOS dataPath: {appPath}");
-            }
+            SetupDllSearchPathStatic();
         }
 
         /// <summary>
