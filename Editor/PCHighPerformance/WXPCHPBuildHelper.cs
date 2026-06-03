@@ -404,8 +404,8 @@ namespace WeChatWASM
         /// 复制 pchp_sdk.dll 到构建产物目录
         /// 
         /// 放置策略：
-        /// 1. 复制到 {outputPath}/ （exe 同级目录，DLL 搜索的最高优先级）
-        /// 2. 复制到 {outputPath}/pchp_Data/Plugins/x86_64_pchp/ （SDK 专属目录，避免与游戏自身 Plugins 冲突）
+        /// 1. 复制到 {outputPath}/ （exe 同级目录，Windows 标准 DLL 搜索的最高优先级）
+        /// 2. 复制到 {outputPath}/pchp_Data/Plugins/x86_64/ （Mono 标准 native plugin 搜索路径）
         /// 
         /// DLL 源文件位置：Assets/WX-WASM-SDK-V2/Runtime/Plugins/Win64/pchp_sdk.dll
         /// </summary>
@@ -437,8 +437,9 @@ namespace WeChatWASM
             string destExeDir = Path.Combine(outputPath, DLL_NAME);
             CopyFileWithLog(dllSourcePath, destExeDir);
 
-            // 目标路径 2：pchp_Data/Plugins/x86_64_pchp/（SDK 专属目录，避免与游戏 x86_64 冲突）
-            string dataDir = Path.Combine(outputPath, "pchp_Data", "Plugins", "x86_64_pchp");
+            // 目标路径 2：pchp_Data/Plugins/x86_64/（Mono 标准 native plugin 搜索路径）
+            // 必须用标准目录名 x86_64，Mono runtime 的 DllImport 只认这个路径
+            string dataDir = Path.Combine(outputPath, "pchp_Data", "Plugins", "x86_64");
             if (!Directory.Exists(dataDir))
             {
                 Directory.CreateDirectory(dataDir);
