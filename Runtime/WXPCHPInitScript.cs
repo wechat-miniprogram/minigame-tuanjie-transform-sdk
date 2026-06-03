@@ -392,22 +392,19 @@ namespace WeChatWASM
         #region Public Methods - SDK Lifecycle
 
         /// <summary>
-        /// 通过 Windows API 获取当前模块的文件路径（不依赖 .NET Process 类）
-        /// </summary>
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern uint GetModuleFileName(System.IntPtr hModule, System.Text.StringBuilder lpFilename, uint nSize);
-
-        /// <summary>
         /// 静态方法：在 BeforeSceneLoad 阶段设置 DLL 搜索路径
         /// 必须在任何 [DllImport("pchp_sdk.dll")] 调用之前执行
         /// 
-        /// 核心问题：微信 PC 高性能模式下 Application.dataPath 返回 https:// URL，
-        /// Process.MainModule 也不可用。必须通过其他方式获取真实文件系统路径。
+        /// 微信 PC 高性能沙箱限制：
+        /// - Application.dataPath → https:// URL（不可用于文件 I/O）
+        /// - AppDomain.BaseDirectory → "/"
+        /// - kernel32.dll → 被拦截无法加载
+        /// - Process.MainModule → 不支持
+        /// - Directory.GetCurrentDirectory() → "/"
         /// 
-        /// 路径获取策略（按可靠性排序）：
-        /// 1. AppDomain.CurrentDomain.BaseDirectory（.NET 运行时提供）
-        /// 2. kernel32 GetModuleFileName（Windows 原生 API）
-        /// 3. Environment.CurrentDirectory（当前工作目录）
+        /// 唯一可靠策略：通过当前 managed assembly 的物理路径推导根目录
+        /// Assembly-CSharp.dll 位于 {root}/pchp_Data/Managed/Assembly-CSharp.dll
+        /// 从它往上走就能拿到真实文件系统路径
         /// </summary>
         private static void SetupDllSearchPathStatic()
         {
@@ -418,73 +415,74 @@ namespace WeChatWASM
                 // 候选搜索目录列表（优先级从高到低）
                 var candidateDirs = new System.Collections.Generic.List<string>();
 
-                // === 策略1：AppDomain.BaseDirectory（最可靠，不依赖 Unity API）===
-                string baseDir = System.AppDomain.CurrentDomain.BaseDirectory;
-                Debug.Log($"[WXPCHPInitScript] AppDomain.BaseDirectory = {baseDir}");
-                if (!string.IsNullOrEmpty(baseDir) && !baseDir.StartsWith("http"))
-                {
-                    // baseDir 通常是 exe 所在目录（带尾斜杠）
-                    candidateDirs.Add(baseDir.TrimEnd('\\', '/'));
-                    // {exe目录}/{ProductName}_Data/Plugins/x86_64_pchp/ （SDK 专属目录，避免与游戏冲突）
-                    candidateDirs.Add(System.IO.Path.Combine(baseDir, "pchp_Data", "Plugins", "x86_64_pchp"));
-                    candidateDirs.Add(System.IO.Path.Combine(baseDir, "pchp_Data", "Plugins", "x86_64"));
-                    candidateDirs.Add(System.IO.Path.Combine(baseDir, "pchp_Data", "Plugins"));
-                    candidateDirs.Add(System.IO.Path.Combine(baseDir, "pchp_Data"));
-                }
-
-                // === 策略2：GetModuleFileName（Windows 原生 API）===
+                // === 核心策略：通过 Assembly.Location 获取真实路径 ===
+                // 当前代码所在的 DLL 一定在 {root}/pchp_Data/Managed/ 下
+                string assemblyLocation = null;
                 try
                 {
-                    var sb = new System.Text.StringBuilder(512);
-                    uint len = GetModuleFileName(System.IntPtr.Zero, sb, 512);
-                    if (len > 0)
-                    {
-                        string exePath = sb.ToString();
-                        string exeFolder = System.IO.Path.GetDirectoryName(exePath);
-                        Debug.Log($"[WXPCHPInitScript] GetModuleFileName = {exePath}");
-                        if (!string.IsNullOrEmpty(exeFolder) && !candidateDirs.Contains(exeFolder))
-                        {
-                            candidateDirs.Add(exeFolder);
-                            candidateDirs.Add(System.IO.Path.Combine(exeFolder, "pchp_Data", "Plugins", "x86_64_pchp"));
-                            candidateDirs.Add(System.IO.Path.Combine(exeFolder, "pchp_Data", "Plugins", "x86_64"));
-                            candidateDirs.Add(System.IO.Path.Combine(exeFolder, "pchp_Data", "Plugins"));
-                            candidateDirs.Add(System.IO.Path.Combine(exeFolder, "pchp_Data"));
-                        }
-                    }
+                    assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                    Debug.Log($"[WXPCHPInitScript] Assembly.Location = {assemblyLocation}");
                 }
                 catch (Exception ex)
                 {
-                    Debug.Log($"[WXPCHPInitScript] GetModuleFileName 不可用: {ex.Message}");
+                    Debug.Log($"[WXPCHPInitScript] Assembly.Location 获取失败: {ex.Message}");
                 }
 
-                // === 策略3：当前工作目录 ===
-                string cwd = System.IO.Directory.GetCurrentDirectory();
-                Debug.Log($"[WXPCHPInitScript] CurrentDirectory = {cwd}");
-                if (!string.IsNullOrEmpty(cwd) && cwd != "/" && !cwd.StartsWith("http"))
+                if (!string.IsNullOrEmpty(assemblyLocation) && !assemblyLocation.StartsWith("http") && assemblyLocation != "/")
                 {
-                    if (!candidateDirs.Contains(cwd))
+                    // assemblyLocation = {root}/pchp_Data/Managed/Assembly-CSharp.dll
+                    // 往上 1 级 = {root}/pchp_Data/Managed/
+                    // 往上 2 级 = {root}/pchp_Data/
+                    // 往上 3 级 = {root}/
+                    string managedDir = System.IO.Path.GetDirectoryName(assemblyLocation); // Managed/
+                    string dataDir = System.IO.Directory.GetParent(managedDir)?.FullName;   // pchp_Data/
+                    string rootDir = dataDir != null ? System.IO.Directory.GetParent(dataDir)?.FullName : null; // {root}/
+
+                    Debug.Log($"[WXPCHPInitScript] 推导路径: managed={managedDir}, data={dataDir}, root={rootDir}");
+
+                    if (!string.IsNullOrEmpty(rootDir))
+                    {
+                        // exe 同级目录（最高优先级）
+                        candidateDirs.Add(rootDir);
+                    }
+                    if (!string.IsNullOrEmpty(dataDir))
+                    {
+                        // {root}/pchp_Data/Plugins/x86_64_pchp/ （SDK 专属目录）
+                        candidateDirs.Add(System.IO.Path.Combine(dataDir, "Plugins", "x86_64_pchp"));
+                        // {root}/pchp_Data/Plugins/x86_64/ （兼容）
+                        candidateDirs.Add(System.IO.Path.Combine(dataDir, "Plugins", "x86_64"));
+                        // {root}/pchp_Data/Plugins/
+                        candidateDirs.Add(System.IO.Path.Combine(dataDir, "Plugins"));
+                    }
+                }
+
+                // === 兜底策略：AppDomain.BaseDirectory（正常环境有效）===
+                string baseDir = System.AppDomain.CurrentDomain.BaseDirectory;
+                Debug.Log($"[WXPCHPInitScript] AppDomain.BaseDirectory = {baseDir}");
+                if (!string.IsNullOrEmpty(baseDir) && baseDir != "/" && !baseDir.StartsWith("http"))
+                {
+                    string trimmed = baseDir.TrimEnd('\\', '/');
+                    if (!candidateDirs.Contains(trimmed))
+                    {
+                        candidateDirs.Add(trimmed);
+                        candidateDirs.Add(System.IO.Path.Combine(trimmed, "pchp_Data", "Plugins", "x86_64_pchp"));
+                        candidateDirs.Add(System.IO.Path.Combine(trimmed, "pchp_Data", "Plugins", "x86_64"));
+                    }
+                }
+
+                // === 兜底策略：当前工作目录 ===
+                try
+                {
+                    string cwd = System.IO.Directory.GetCurrentDirectory();
+                    Debug.Log($"[WXPCHPInitScript] CurrentDirectory = {cwd}");
+                    if (!string.IsNullOrEmpty(cwd) && cwd != "/" && !cwd.StartsWith("http") && !candidateDirs.Contains(cwd))
                     {
                         candidateDirs.Add(cwd);
                         candidateDirs.Add(System.IO.Path.Combine(cwd, "pchp_Data", "Plugins", "x86_64_pchp"));
                         candidateDirs.Add(System.IO.Path.Combine(cwd, "pchp_Data", "Plugins", "x86_64"));
-                        candidateDirs.Add(System.IO.Path.Combine(cwd, "pchp_Data", "Plugins"));
-                        candidateDirs.Add(System.IO.Path.Combine(cwd, "pchp_Data"));
                     }
                 }
-
-                // === 策略4：如果 Application.dataPath 是本地路径，也加入 ===
-                string dataPath = Application.dataPath;
-                if (!string.IsNullOrEmpty(dataPath) && !dataPath.StartsWith("http"))
-                {
-                    candidateDirs.Add(System.IO.Path.Combine(dataPath, "Plugins", "x86_64"));
-                    candidateDirs.Add(System.IO.Path.Combine(dataPath, "Plugins"));
-                    candidateDirs.Add(dataPath);
-                    string parentDir = System.IO.Directory.GetParent(dataPath)?.FullName;
-                    if (!string.IsNullOrEmpty(parentDir))
-                    {
-                        candidateDirs.Add(parentDir);
-                    }
-                }
+                catch { }
 
                 // 逐个检查
                 foreach (var dir in candidateDirs)
@@ -501,30 +499,7 @@ namespace WeChatWASM
                     }
                 }
 
-                // 兜底：从每个有效根目录向上逐级查找
-                Debug.Log("[WXPCHPInitScript] SetupDllSearchPath: 标准位置未找到，向上逐级查找...");
-                foreach (var rootDir in candidateDirs)
-                {
-                    if (string.IsNullOrEmpty(rootDir)) continue;
-                    string searchDir = rootDir;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        var parent = System.IO.Directory.GetParent(searchDir);
-                        if (parent == null) break;
-                        searchDir = parent.FullName;
-
-                        string dllPath = System.IO.Path.Combine(searchDir, DLL_NAME);
-                        if (System.IO.File.Exists(dllPath))
-                        {
-                            bool result = SetDllDirectory(searchDir);
-                            Debug.Log($"[WXPCHPInitScript] ✅ 向上查找到 DLL，SetDllDirectory(\"{searchDir}\") = {result}");
-                            return;
-                        }
-                    }
-                    break; // 只对第一个有效目录向上查找
-                }
-
-                Debug.LogWarning($"[WXPCHPInitScript] ⚠️ 所有候选路径均未找到 {DLL_NAME}");
+                Debug.LogWarning($"[WXPCHPInitScript] ⚠️ 所有候选路径均未找到 {DLL_NAME}，候选列表: {string.Join(", ", candidateDirs)}");
             }
             catch (Exception e)
             {
