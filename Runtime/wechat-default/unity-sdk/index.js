@@ -1,4 +1,5 @@
 
+import './runner-hooks';
 import storage from './storage';
 import userInfo from './userinfo';
 import moduleHelper from './module-helper';
