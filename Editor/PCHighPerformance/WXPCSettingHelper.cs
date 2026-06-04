@@ -216,7 +216,10 @@ namespace WeChatWASM
                 if (report.summary.result == BuildResult.Succeeded)
                 {
                     Debug.Log($"[PC高性能模式] 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
-                    
+
+                    // 复制 pchp_sdk.dll 到构建产物目录
+                    WXPCHPBuildHelper.CopyPCHPNativeDllPublic(fullExportPath, buildTarget);
+
                     if (EditorUtility.DisplayDialog("构建成功",
                         $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {fullExportPath}",
                         "打开目录", "关闭"))

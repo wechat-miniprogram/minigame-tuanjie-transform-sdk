@@ -114,6 +114,9 @@ namespace WeChatWASM
                     Debug.Log($"[PC高性能模式] 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
                     Debug.Log($"[PC高性能模式] 输出路径: {pchpOutputPath}");
 
+                    // 复制 pchp_sdk.dll 到构建产物中（确保运行时能找到）
+                    CopyPCHPNativeDll(pchpOutputPath, buildTarget);
+
                     // 打包成 wxapkg 格式（先打包到临时位置）
                     string tempWxapkgPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, $"{PCHPOutputDir}_temp.wxapkg");
                     string finalWxapkgPath = Path.Combine(pchpOutputPath, $"{PCHPOutputDir}.wxapkg");
@@ -387,6 +390,173 @@ namespace WeChatWASM
                 }
             }
             return scenes.ToArray();
+        }
+
+        /// <summary>
+        /// 公开接口：复制 pchp_sdk.dll 到构建产物目录（供 WXPCSettingHelper 等外部调用）
+        /// </summary>
+        public static void CopyPCHPNativeDllPublic(string outputPath, BuildTarget buildTarget)
+        {
+            CopyPCHPNativeDll(outputPath, buildTarget);
+        }
+
+        /// <summary>
+        /// 复制 pchp_sdk.dll 到构建产物目录
+        /// 
+        /// 放置策略：
+        /// 1. 复制到 {outputPath}/ （exe 同级目录，Windows 标准 DLL 搜索的最高优先级）
+        /// 2. 复制到 {outputPath}/pchp_Data/Plugins/x86_64/ （Mono 标准 native plugin 搜索路径）
+        /// 
+        /// DLL 源文件位置：Assets/WX-WASM-SDK-V2/Runtime/Plugins/Win64/pchp_sdk.dll
+        /// </summary>
+        private static void CopyPCHPNativeDll(string outputPath, BuildTarget buildTarget)
+        {
+            if (buildTarget != BuildTarget.StandaloneWindows64 && buildTarget != BuildTarget.StandaloneWindows)
+            {
+                Debug.Log("[PC高性能模式] 非 Windows 构建，跳过 pchp_sdk.dll 复制");
+                return;
+            }
+
+            const string DLL_NAME = "pchp_sdk.dll";
+
+            // 查找 DLL 源文件（在 SDK 的 Plugins 目录下）
+            string dllSourcePath = FindPCHPDllSource();
+            if (string.IsNullOrEmpty(dllSourcePath))
+            {
+                Debug.LogWarning($"[PC高性能模式] ⚠️ 未找到 {DLL_NAME} 源文件，跳过复制。" +
+                    $"请将 {DLL_NAME} 放到以下任一位置：\n" +
+                    "  - Assets/WX-WASM-SDK-V2/Runtime/Plugins/Win64/pchp_sdk.dll\n" +
+                    "  - Assets/Plugins/x86_64/pchp_sdk.dll\n" +
+                    "  - 项目根目录/pchp_sdk.dll");
+                return;
+            }
+
+            Debug.Log($"[PC高性能模式] 找到 DLL 源文件: {dllSourcePath}");
+
+            // 目标路径 1：exe 同级目录（最高优先级，DllImport 默认搜索这里）
+            string destExeDir = Path.Combine(outputPath, DLL_NAME);
+            CopyFileWithLog(dllSourcePath, destExeDir);
+
+            // 目标路径 2：pchp_Data/Plugins/x86_64/（Mono 标准 native plugin 搜索路径）
+            // 必须用标准目录名 x86_64，Mono runtime 的 DllImport 只认这个路径
+            string dataDir = Path.Combine(outputPath, "pchp_Data", "Plugins", "x86_64");
+            if (!Directory.Exists(dataDir))
+            {
+                Directory.CreateDirectory(dataDir);
+            }
+            string destPluginDir = Path.Combine(dataDir, DLL_NAME);
+            CopyFileWithLog(dllSourcePath, destPluginDir);
+        }
+
+        /// <summary>
+        /// 在多个候选位置查找 pchp_sdk.dll 源文件
+        /// </summary>
+        private static string FindPCHPDllSource()
+        {
+            const string DLL_NAME = "pchp_sdk.dll";
+
+            var candidates = new List<string>();
+
+            // === 1. 通过当前脚本路径定位 Package 内的 DLL ===
+            // 当 SDK 以 Package 形式安装时，代码在 Library/PackageCache/com.qq.weixin.minigame@xxx/ 下
+            // 通过 CallerFilePath 或 ScriptableObject 获取当前脚本路径，然后相对定位到 Runtime/Plugins/Win64/
+            string packageRoot = FindPackageRoot();
+            if (!string.IsNullOrEmpty(packageRoot))
+            {
+                candidates.Add(Path.Combine(packageRoot, "Runtime", "Plugins", "Win64", DLL_NAME));
+            }
+
+            // === 2. Assets 内的标准位置（SDK 以 Assets 形式存在时）===
+            candidates.Add(Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "Plugins", "Win64", DLL_NAME));
+            // 通用 Plugins 目录
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", "x86_64", DLL_NAME));
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", "Win64", DLL_NAME));
+            candidates.Add(Path.Combine(Application.dataPath, "Plugins", DLL_NAME));
+            // 项目根目录
+            candidates.Add(Path.Combine(Path.GetDirectoryName(Application.dataPath), DLL_NAME));
+            // StreamingAssets
+            candidates.Add(Path.Combine(Application.streamingAssetsPath, DLL_NAME));
+
+            // === 3. Library/PackageCache 暴力搜索（兜底）===
+            string packageCacheDir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Library", "PackageCache");
+            if (Directory.Exists(packageCacheDir))
+            {
+                // 搜索所有 com.qq.weixin.minigame* 开头的目录
+                try
+                {
+                    foreach (var dir in Directory.GetDirectories(packageCacheDir, "com.qq.weixin.minigame*"))
+                    {
+                        candidates.Add(Path.Combine(dir, "Runtime", "Plugins", "Win64", DLL_NAME));
+                    }
+                }
+                catch { }
+            }
+
+            // 逐个检查
+            foreach (var path in candidates)
+            {
+                Debug.Log($"[PC高性能模式] FindPCHPDllSource 检查: {path}");
+                if (File.Exists(path))
+                {
+                    Debug.Log($"[PC高性能模式] ✅ 找到 DLL: {path}");
+                    return path;
+                }
+            }
+
+            // 兜底：搜索整个 Assets 目录
+            string[] found = Directory.GetFiles(Application.dataPath, DLL_NAME, SearchOption.AllDirectories);
+            if (found.Length > 0)
+            {
+                return found[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 查找当前 SDK 的 Package 根目录
+        /// 通过 UnityEditor.PackageManager 或脚本路径推导
+        /// </summary>
+        private static string FindPackageRoot()
+        {
+            // 方式 1：通过 Unity PackageManager API 查找已安装的包
+            try
+            {
+                string packagePath = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
+                    System.Reflection.Assembly.GetExecutingAssembly())?.resolvedPath;
+                if (!string.IsNullOrEmpty(packagePath))
+                {
+                    Debug.Log($"[PC高性能模式] Package 根目录 (via PackageInfo): {packagePath}");
+                    return packagePath;
+                }
+            }
+            catch { }
+
+            // 方式 2：通过 Packages/com.qq.weixin.minigame 路径（本地包引用时）
+            string localPackagePath = Path.GetFullPath("Packages/com.qq.weixin.minigame");
+            if (Directory.Exists(localPackagePath))
+            {
+                Debug.Log($"[PC高性能模式] Package 根目录 (via local): {localPackagePath}");
+                return localPackagePath;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 复制文件并输出日志
+        /// </summary>
+        private static void CopyFileWithLog(string source, string dest)
+        {
+            try
+            {
+                File.Copy(source, dest, true);
+                Debug.Log($"[PC高性能模式] ✅ 已复制 DLL: {dest}");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[PC高性能模式] ❌ 复制 DLL 失败 ({dest}): {e.Message}");
+            }
         }
     }
 }

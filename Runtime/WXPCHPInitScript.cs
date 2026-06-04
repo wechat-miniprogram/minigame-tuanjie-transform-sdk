@@ -1,7 +1,11 @@
 // WX_PCHP_ENABLED: PC高性能模式总开关
 // 路径A（转换工具链）: 由转换工具自动添加到 ScriptingDefineSymbols
 // 路径B（原生接入）: 开发者手动添加，或通过 Editor 菜单一键开启
-#if WX_PCHP_ENABLED
+//
+// 平台限制：此脚本只在 Standalone Windows 构建中生效
+// pchp_sdk.dll 是 Windows native DLL，需要在 EXE 进程中通过 LoadLibrary 加载
+// WebGL/WASM 构建不需要此脚本（WASM 侧通过小游戏插件 + XWebAPI.nativeGameSDK 通道通信）
+#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -14,130 +18,77 @@ namespace WeChatWASM
     #region Message Protocol Models
 
     /// <summary>
-    /// PC高性能方案通信协议 - 请求消息
-    /// C# -> DLL -> 内核 -> 基础库
+    /// PC高性能方案通信协议 - 下行指令（C# → JS）
+    /// 格式与 issue 协议对齐：{ callbackId, method, params }
     /// </summary>
     [Serializable]
-    public class PCHPRequestMessage
+    public class PCHPExeCommand
     {
         /// <summary>
-        /// 消息类型: "request" | "event_register" | "event_unregister"
+        /// C# 生成的唯一标识，用于结果回传配对
+        /// 格式: "{timestamp}-{counter}"，与 WebGL 模式一致
         /// </summary>
-        public string type;
+        public string callbackId;
 
         /// <summary>
-        /// 请求ID，用于匹配回调
+        /// wx API 名称（驼峰），如 "showToast", "login", "getSystemInfo"
         /// </summary>
-        public string requestId;
+        public string method;
 
         /// <summary>
-        /// API名称，如 "showToast", "login" 等
+        /// wx API 参数（JSON 字符串），不含 success/fail/complete
+        /// JS 侧收到后需 JSON.parse(params) 还原为对象
         /// </summary>
-        public string api;
-
-        /// <summary>
-        /// API参数，JSON格式
-        /// </summary>
-        public string data;
-
-        /// <summary>
-        /// 时间戳
-        /// </summary>
-        public long timestamp;
+        public string @params;
     }
 
     /// <summary>
-    /// PC高性能方案通信协议 - 响应消息
-    /// 基础库 -> 内核 -> DLL -> C#
+    /// PC高性能方案通信协议 - 上行响应（JS → C#）
+    /// 与 WebGL 模式的 WXJSCallback 完全对齐：{ callbackId, type, res }
+    /// 一次调用最多 3 次响应：success + complete，或 fail + complete
     /// </summary>
     [Serializable]
-    public class PCHPResponseMessage
+    public class PCHPExeCommandResponse
     {
         /// <summary>
-        /// 消息类型: "response" | "event"
+        /// 原样回传 C# 的 callbackId
         /// </summary>
-        public string type;
-
-        /// <summary>
-        /// 请求ID，与请求消息匹配
-        /// </summary>
-        public string requestId;
+        public string callbackId;
 
         /// <summary>
         /// 回调类型: "success" | "fail" | "complete"
+        /// 与 wx API 的回调对应，与 WebGL 模式 WXJSCallback.type 一致
         /// </summary>
-        public string callbackType;
+        public string type;
 
         /// <summary>
-        /// API名称（事件类型时使用）
+        /// 回调数据（JSON 字符串），C# 侧用 JsonMapper.ToObject&lt;T&gt;(res) 反序列化
+        /// 与 WebGL 模式 WXJSCallback.res 完全一致
         /// </summary>
-        public string api;
-
-        /// <summary>
-        /// 响应数据，JSON格式
-        /// </summary>
-        public string data;
-
-        /// <summary>
-        /// 错误信息（失败时）
-        /// </summary>
-        public string errMsg;
-
-        /// <summary>
-        /// 时间戳
-        /// </summary>
-        public long timestamp;
+        public string res;
     }
 
     /// <summary>
-    /// 通用回调结果
+    /// PC高性能方案通信协议 - 事件消息（JS → C# 主动推送）
+    /// 用于 onShow、onHide 等生命周期事件
     /// </summary>
     [Serializable]
-    public class PCHPGeneralCallbackResult
+    public class PCHPExeEventMessage
     {
-        public string errMsg;
-    }
+        /// <summary>
+        /// 固定为 "event"，C# 侧据此区分是 API 响应还是事件推送
+        /// </summary>
+        public string type;
 
-    /// <summary>
-    /// ShowToast 参数
-    /// </summary>
-    [Serializable]
-    public class PCHPShowToastOption
-    {
-        public string title;
-        public string icon;
-        public string image;
-        public int duration;
-        public bool mask;
-    }
+        /// <summary>
+        /// 事件名称，如 "onShow", "onHide", "onError"
+        /// </summary>
+        public string @event;
 
-    /// <summary>
-    /// ShowModal 参数
-    /// </summary>
-    [Serializable]
-    public class PCHPShowModalOption
-    {
-        public string title;
-        public string content;
-        public bool showCancel;
-        public string cancelText;
-        public string cancelColor;
-        public string confirmText;
-        public string confirmColor;
-        public bool editable;
-        public string placeholderText;
-    }
-
-    /// <summary>
-    /// ShowModal 成功回调结果
-    /// </summary>
-    [Serializable]
-    public class PCHPShowModalSuccessCallbackResult
-    {
-        public bool confirm;
-        public bool cancel;
-        public string content;
-        public string errMsg;
+        /// <summary>
+        /// 事件数据（JSON 字符串）
+        /// </summary>
+        public string res;
     }
 
     #endregion
@@ -148,9 +99,17 @@ namespace WeChatWASM
     /// </summary>
     public class WXPCHPInitScript : MonoBehaviour
     {
+        /// <summary>
+        /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
+        /// </summary>
+        public const string PCHP_VERSION = "0.1.34";
+        public const string PCHP_BUILD_DATE = "2026-06-04 11:30";
+
         #region DLL Imports
 
-        private const string DLL_NAME = "pchp_sdk.dll";
+        // DllImport 使用不带后缀的名称，让 Mono runtime 按标准路径搜索
+        // Mono 搜索顺序：{DataDir}/Plugins/x86_64/ → exe 同级 → PATH
+        private const string DLL_NAME = "pchp_sdk";
 
         // 初始化SDK
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -175,6 +134,12 @@ namespace WeChatWASM
         // 清理资源
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
+
+        // DLL 搜索路径设置（解决 pchp_sdk.dll 不在 exe 同级目录的问题）
+        // 注意：不用 #if UNITY_STANDALONE_WIN 包裹，因为 Mac 编辑器交叉构建 Windows 包时
+        // 也需要这个声明。运行时通过 Application.platform 判断是否调用。
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool SetDllDirectory(string lpPathName);
 
         // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
@@ -247,7 +212,7 @@ namespace WeChatWASM
         #region Callback Management
 
         /// <summary>
-        /// 回调信息封装
+        /// 回调信息封装（与 WebGL 模式的三回调机制一致）
         /// </summary>
         private class CallbackInfo
         {
@@ -255,20 +220,19 @@ namespace WeChatWASM
             public Action<string> OnFail;
             public Action<string> OnComplete;
             public string ApiName;
-            public long Timestamp;
         }
 
-        // 待处理的回调字典 <requestId, CallbackInfo>
+        // 待处理的回调字典 <callbackId, CallbackInfo>
         private readonly Dictionary<string, CallbackInfo> _pendingCallbacks = new Dictionary<string, CallbackInfo>();
 
         // 事件监听器字典 <eventName, List<Action<string>>>
         private readonly Dictionary<string, List<Action<string>>> _eventListeners = new Dictionary<string, List<Action<string>>>();
 
-        // 请求ID计数器
-        private int _requestIdCounter = 0;
+        // callbackId 计数器（格式: "{timestamp}-{counter}"，与 WebGL 模式一致）
+        private int _callbackIdCounter = 0;
 
-        // 线程安全的消息队列，用于主线程处理
-        private readonly ConcurrentQueue<PCHPResponseMessage> _messageQueue = new ConcurrentQueue<PCHPResponseMessage>();
+        // 线程安全的消息队列，用于主线程处理（存储原始 JSON 字符串）
+        private readonly ConcurrentQueue<string> _messageQueue = new ConcurrentQueue<string>();
 
         #endregion
 
@@ -301,6 +265,9 @@ namespace WeChatWASM
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void HideWindowEarly()
         {
+            // 最先设置 DLL 搜索路径（内部自带运行时平台检测）
+            SetupDllSearchPathStatic();
+
 #if UNITY_STANDALONE_WIN
             // 强制窗口模式，防止 Unity 用注册表残留的全屏分辨率尝试独占全屏
             Screen.fullScreenMode = FullScreenMode.Windowed;
@@ -350,7 +317,7 @@ namespace WeChatWASM
 
         private void Awake()
         {
-            Debug.Log("[WXPCHPInitScript] ========== Awake 被调用 ==========");
+            Debug.Log($"[WXPCHPInitScript] ========== PC高性能模式 SDK v{PCHP_VERSION} (build {PCHP_BUILD_DATE}) ==========");
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 
@@ -431,6 +398,240 @@ namespace WeChatWASM
         #region Public Methods - SDK Lifecycle
 
         /// <summary>
+        /// 静态方法：在 BeforeSceneLoad 阶段尝试设置 DLL 搜索路径
+        /// 
+        /// 微信 PC 高性能沙箱限制已知：
+        /// - Application.dataPath → https:// URL
+        /// - AppDomain.BaseDirectory → "/"
+        /// - Assembly.Location → "/wx.dll"（虚拟路径）
+        /// - kernel32 SetDllDirectory → 可能被拦截
+        /// - Directory.GetCurrentDirectory() → "/"
+        /// 
+        /// 核心加载策略（优先级）：
+        /// 1. Mono runtime 内置的 native plugin 搜索（pchp_Data/Plugins/x86_64/）
+        /// 2. Windows 标准 DLL 搜索（exe 同级目录）
+        /// 3. 通过 %APPDATA% 环境变量硬编码路径模式
+        /// 
+        /// 策略 1 和 2 由构建时 CopyPCHPNativeDll 保证文件在正确位置，
+        /// 不需要运行时手动设置路径——Mono 会自动找到。
+        /// 此函数仅做兜底尝试 + 诊断日志。
+        /// </summary>
+        private static void SetupDllSearchPathStatic()
+        {
+            Debug.Log($"[WXPCHPInitScript] SetupDllSearchPath 进入，platform={Application.platform}, dataPath={Application.dataPath}");
+
+            try
+            {
+                // 诊断信息（帮助排查问题）
+                string assemblyLocation = "";
+                try { assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location; } catch { }
+                string baseDir = System.AppDomain.CurrentDomain.BaseDirectory;
+                string cwd = "/";
+                try { cwd = System.IO.Directory.GetCurrentDirectory(); } catch { }
+
+                Debug.Log($"[WXPCHPInitScript] Assembly.Location = {assemblyLocation}");
+                Debug.Log($"[WXPCHPInitScript] AppDomain.BaseDirectory = {baseDir}");
+                Debug.Log($"[WXPCHPInitScript] CurrentDirectory = {cwd}");
+
+                // === 诊断：打印命令行参数 ===
+                try
+                {
+                    string[] cmdArgs = System.Environment.GetCommandLineArgs();
+                    Debug.Log($"[WXPCHPInitScript] 命令行参数 ({cmdArgs.Length}个):");
+                    for (int i = 0; i < cmdArgs.Length; i++)
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   arg[{i}] = {cmdArgs[i]}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取命令行参数失败: {ex.Message}"); }
+
+                // === 诊断：打印所有环境变量 ===
+                try
+                {
+                    var envVars = System.Environment.GetEnvironmentVariables();
+                    Debug.Log($"[WXPCHPInitScript] 环境变量 ({envVars.Count}个):");
+                    foreach (System.Collections.DictionaryEntry entry in envVars)
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry.Key} = {entry.Value}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取环境变量失败: {ex.Message}"); }
+
+                // === 诊断：尝试直接 LoadLibrary 绝对路径 ===
+                // 如果命令行 arg[0] 能拿到 exe 真实路径，就能推导 DLL 位置
+                try
+                {
+                    string[] args = System.Environment.GetCommandLineArgs();
+                    if (args.Length > 0 && !string.IsNullOrEmpty(args[0]) && args[0] != "/" && !args[0].StartsWith("http"))
+                    {
+                        string exeDir = System.IO.Path.GetDirectoryName(args[0]);
+                        if (!string.IsNullOrEmpty(exeDir))
+                        {
+                            string dllFullPath = System.IO.Path.Combine(exeDir, "pchp_sdk.dll");
+                            Debug.Log($"[WXPCHPInitScript] 从 arg[0] 推导 DLL 路径: {dllFullPath}");
+                            if (System.IO.File.Exists(dllFullPath))
+                            {
+                                Debug.Log($"[WXPCHPInitScript] ✅ DLL 文件存在！尝试 SetDllDirectory...");
+                                bool result = SetDllDirectory(exeDir);
+                                Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{exeDir}\") = {result}");
+                                if (result) return;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] arg[0] 策略失败: {ex.Message}"); }
+
+                // === 诊断：探测 VFS 文件系统，找出 DLL 实际映射位置 ===
+                try
+                {
+                    // 列出根目录
+                    Debug.Log("[WXPCHPInitScript] === VFS 根目录 / 内容 ===");
+                    foreach (var entry in System.IO.Directory.GetFileSystemEntries("/"))
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 / 失败: {ex.Message}"); }
+
+                try
+                {
+                    // 列出当前目录 ./ 
+                    Debug.Log("[WXPCHPInitScript] === VFS 当前目录 ./ 内容 ===");
+                    foreach (var entry in System.IO.Directory.GetFileSystemEntries("."))
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 ./ 失败: {ex.Message}"); }
+
+                // 搜索常见 native lib 目录
+                string[] probeDirs = new string[] { "/", ".", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
+                foreach (var dir in probeDirs)
+                {
+                    try
+                    {
+                        if (System.IO.Directory.Exists(dir))
+                        {
+                            var files = System.IO.Directory.GetFiles(dir);
+                            if (files.Length > 0 && files.Length <= 50)
+                            {
+                                Debug.Log($"[WXPCHPInitScript] === {dir} 下的文件 ({files.Length}个) ===");
+                                foreach (var f in files) Debug.Log($"[WXPCHPInitScript]   {f}");
+                            }
+                            else
+                            {
+                                Debug.Log($"[WXPCHPInitScript] {dir} 有 {files.Length} 个文件");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log($"[WXPCHPInitScript] {dir} 目录不存在");
+                        }
+                    }
+                    catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 探测 {dir} 失败: {ex.Message}"); }
+                }
+
+                // 直接尝试各种可能的路径检查文件是否存在
+                string[] dllProbes = new string[]
+                {
+                    "./pchp_sdk.dll", "/pchp_sdk.dll",
+                    "./pchp_Data/Plugins/x86_64/pchp_sdk.dll",
+                    "./pchp_Data/Plugins/pchp_sdk.dll",
+                    "pchp_sdk.dll",
+                    "./libpchp_sdk.so", "/libpchp_sdk.so",
+                    "./pchp_sdk.so", "/pchp_sdk.so",
+                    "./pchp_Data/Plugins/x86_64/libpchp_sdk.so",
+                };
+                Debug.Log("[WXPCHPInitScript] === DLL 路径探测 ===");
+                foreach (var probe in dllProbes)
+                {
+                    bool exists = false;
+                    try { exists = System.IO.File.Exists(probe); } catch { }
+                    if (exists) Debug.Log($"[WXPCHPInitScript] ✅ 存在: {probe}");
+                    else Debug.Log($"[WXPCHPInitScript] ❌ 不存在: {probe}");
+                }
+
+                // === 策略 3：通过 %APPDATA% 环境变量尝试定位 ===
+                // 微信安装路径模式：%APPDATA%\Tencent\xwechat\radium\pchp\{appid}\
+                // 这是最后的兜底——如果 Mono 自己的搜索机制就能找到，这步不需要
+                string appData = null;
+                try { appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData); } catch { }
+                Debug.Log($"[WXPCHPInitScript] APPDATA = {appData}");
+
+                if (!string.IsNullOrEmpty(appData) && appData != "/" && !appData.StartsWith("http"))
+                {
+                    // 尝试通过已知微信路径模式查找
+                    string radiumPath = System.IO.Path.Combine(appData, "Tencent", "xwechat", "radium", "pchp");
+                    Debug.Log($"[WXPCHPInitScript] 检查微信安装路径: {radiumPath}");
+
+                    if (System.IO.Directory.Exists(radiumPath))
+                    {
+                        // 遍历 appid 目录
+                        try
+                        {
+                            foreach (var appDir in System.IO.Directory.GetDirectories(radiumPath))
+                            {
+                                // 检查 exe 同级
+                                string dllAtRoot = System.IO.Path.Combine(appDir, "pchp_sdk.dll");
+                                if (System.IO.File.Exists(dllAtRoot))
+                                {
+                                    try
+                                    {
+                                        bool result = SetDllDirectory(appDir);
+                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA策略命中，SetDllDirectory(\"{appDir}\") = {result}");
+                                        return;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
+                                    }
+                                }
+
+                                // 检查 Plugins/x86_64/
+                                string dllAtPlugins = System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll");
+                                if (System.IO.File.Exists(dllAtPlugins))
+                                {
+                                    string pluginDir = System.IO.Path.GetDirectoryName(dllAtPlugins);
+                                    try
+                                    {
+                                        bool result = SetDllDirectory(pluginDir);
+                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA/Plugins策略命中，SetDllDirectory(\"{pluginDir}\") = {result}");
+                                        return;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Log($"[WXPCHPInitScript] 遍历微信目录异常: {ex.Message}");
+                        }
+                    }
+                }
+
+                // 如果走到这里，说明所有主动策略都失败了
+                // 但不必恐慌——Mono runtime 的 DllImport 会按内置规则搜索 pchp_Data/Plugins/x86_64/
+                // 只要构建时正确放置了 DLL，Mono 应该能自己找到
+                Debug.Log($"[WXPCHPInitScript] ℹ️ 主动路径设置未成功，依赖 Mono 内置 native plugin 搜索机制（pchp_Data/Plugins/x86_64/）");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SetupDllSearchPath 异常: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 实例方法包装（Initialize 中调用，确保冗余设置）
+        /// </summary>
+        private void SetupDllSearchPath()
+        {
+            SetupDllSearchPathStatic();
+        }
+
+        /// <summary>
         /// 初始化SDK并建立连接
         /// </summary>
         public void Initialize()
@@ -443,7 +644,10 @@ namespace WeChatWASM
 
             Debug.Log("[WXPCHPInitScript] ========== 开始初始化 ==========");
             Debug.Log($"[WXPCHPInitScript] 当前工作目录: {System.IO.Directory.GetCurrentDirectory()}");
-            Debug.Log($"[WXPCHPInitScript] DLL 搜索路径: {DLL_NAME}");
+            Debug.Log($"[WXPCHPInitScript] DLL 名称: {DLL_NAME}");
+
+            // 动态定位 pchp_sdk.dll：从 exe 所在目录向上逐级查找
+            SetupDllSearchPath();
 
             ShowStepInfo("SDK 初始化开始", "即将执行 PC 高性能模式 SDK 初始化流程...\n\n共 5 个步骤：\n1. InitEmbeddedGameSDK\n2. RegisterAsyncMsgHandler\n3. EstablishConnection\n4. GetActiveWindow\n5. InitGameWindow");
 
@@ -547,119 +751,231 @@ namespace WeChatWASM
 
         /// <summary>
         /// 调用微信API（通用方法）
+        /// 协议格式: { callbackId, method, params }
+        /// params 为 JSON 字符串（JsonMapper.ToJson 的直接产物）
         /// </summary>
-        /// <param name="apiName">API名称，如 "showToast"</param>
-        /// <param name="data">API参数对象</param>
-        /// <param name="onSuccess">成功回调</param>
-        /// <param name="onFail">失败回调</param>
-        /// <param name="onComplete">完成回调</param>
-        /// <returns>请求ID</returns>
-        public string CallWXAPI(string apiName, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
+        /// <param name="method">API名称（驼峰），如 "showToast"</param>
+        /// <param name="data">API参数对象，将被序列化为 JSON 字符串</param>
+        /// <param name="onSuccess">成功回调，参数为 res JSON 字符串</param>
+        /// <param name="onFail">失败回调，参数为 res JSON 字符串</param>
+        /// <param name="onComplete">完成回调，参数为 res JSON 字符串</param>
+        /// <returns>callbackId</returns>
+        public string CallWXAPI(string method, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
         {
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {apiName}");
-                onFail?.Invoke(JsonMapper.ToJson(new PCHPGeneralCallbackResult { errMsg = "SDK not initialized" }));
-                onComplete?.Invoke(JsonMapper.ToJson(new PCHPGeneralCallbackResult { errMsg = "SDK not initialized" }));
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                string errRes = "{\"errMsg\":\"SDK not initialized\"}";
+                onFail?.Invoke(errRes);
+                onComplete?.Invoke(errRes);
                 return null;
             }
 
-            string requestId = GenerateRequestId();
-            string dataJson = data != null ? JsonMapper.ToJson(data) : "{}";
+            string callbackId = GenerateCallbackId();
+            string paramsJson = data != null ? JsonMapper.ToJson(data) : "{}";
 
             // 注册回调
-            var callbackInfo = new CallbackInfo
+            _pendingCallbacks[callbackId] = new CallbackInfo
             {
                 OnSuccess = onSuccess,
                 OnFail = onFail,
                 OnComplete = onComplete,
-                ApiName = apiName,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            };
-            _pendingCallbacks[requestId] = callbackInfo;
-
-            // 构建请求消息
-            var request = new PCHPRequestMessage
-            {
-                type = "request",
-                requestId = requestId,
-                api = apiName,
-                data = dataJson,
-                timestamp = callbackInfo.Timestamp
+                ApiName = method
             };
 
-            string requestJson = JsonMapper.ToJson(request);
-            Debug.Log($"[WXPCHPInitScript] 发送API请求: {apiName}, requestId: {requestId}");
-
-            if (!SendMessageInternal(requestJson))
+            // 构建下行指令: { callbackId, method, params }
+            var command = new PCHPExeCommand
             {
-                _pendingCallbacks.Remove(requestId);
-                onFail?.Invoke(JsonMapper.ToJson(new PCHPGeneralCallbackResult { errMsg = "Failed to send message" }));
-                onComplete?.Invoke(JsonMapper.ToJson(new PCHPGeneralCallbackResult { errMsg = "Failed to send message" }));
+                callbackId = callbackId,
+                method = method,
+                @params = paramsJson
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] 发送API请求: {method}, callbackId: {callbackId}");
+
+            if (!SendMessageInternal(commandJson))
+            {
+                _pendingCallbacks.Remove(callbackId);
+                string errRes = "{\"errMsg\":\"Failed to send message\"}";
+                onFail?.Invoke(errRes);
+                onComplete?.Invoke(errRes);
                 return null;
             }
 
-            return requestId;
+            return callbackId;
         }
 
         /// <summary>
-        /// 显示消息提示框
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OneWayCallback 类 API）
+        /// 使用外部已分配的 callbackId，不自行管理回调，通过统一委托回传结果
         /// </summary>
-        public void ShowToast(PCHPShowToastOption option, Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
+        /// <param name="method">API名称（驼峰），如 "login"</param>
+        /// <param name="callbackId">WXSDKManagerHandler 已分配的 callbackId</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串</param>
+        /// <param name="onResponse">统一回调，参数为 WXJSCallback 格式的 JSON: { callbackId, type, res }</param>
+        public void CallWXAPIBridge(string method, string callbackId, string paramsJson, Action<string> onResponse)
         {
-            CallWXAPI("showToast", option,
-                res => success?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => fail?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => complete?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res))
-            );
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                // 构造 fail + complete 回调给上层
+                string errRes = "{\"errMsg\":\"" + method + ":fail SDK not initialized\"}";
+                string failMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = errRes });
+                onResponse?.Invoke(failMsg);
+                onResponse?.Invoke(compMsg);
+                return;
+            }
+
+            // 注册回调（统一 onResponse 分发 success/fail/complete）
+            _pendingCallbacks[callbackId] = new CallbackInfo
+            {
+                OnSuccess = (res) => {
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "success", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                OnFail = (res) => {
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                OnComplete = (res) => {
+                    string msg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = res });
+                    onResponse?.Invoke(msg);
+                },
+                ApiName = method
+            };
+
+            // 构建下行指令
+            var command = new PCHPExeCommand
+            {
+                callbackId = callbackId,
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送API请求: {method}, callbackId: {callbackId}");
+
+            if (!SendMessageInternal(commandJson))
+            {
+                _pendingCallbacks.Remove(callbackId);
+                string errRes = "{\"errMsg\":\"" + method + ":fail send message failed\"}";
+                string failMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "fail", res = errRes });
+                string compMsg = JsonMapper.ToJson(new PCHPExeCommandResponse { callbackId = callbackId, type = "complete", res = errRes });
+                onResponse?.Invoke(failMsg);
+                onResponse?.Invoke(compMsg);
+            }
         }
 
         /// <summary>
-        /// 隐藏消息提示框
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OneWayNoCallback 类 API）
+        /// 只发消息，不注册回调
         /// </summary>
-        public void HideToast(Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
+        /// <param name="method">API名称</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串，可为 null</param>
+        public void CallWXAPINoCallback(string method, string paramsJson = null)
         {
-            CallWXAPI("hideToast", null,
-                res => success?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => fail?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => complete?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res))
-            );
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                return;
+            }
+
+            var command = new PCHPExeCommand
+            {
+                callbackId = GenerateCallbackId(),
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送无回调API请求: {method}");
+            SendMessageInternal(commandJson);
         }
 
         /// <summary>
-        /// 显示模态对话框
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（SyncFunction 类 API）
+        /// 由于 PCHP 通道是异步的，同步 API 通过阻塞等待实现
         /// </summary>
-        public void ShowModal(PCHPShowModalOption option, Action<PCHPShowModalSuccessCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
+        /// <param name="method">API名称</param>
+        /// <param name="paramsJson">已序列化的 JSON 参数字符串</param>
+        /// <param name="timeoutMs">超时时间（毫秒）</param>
+        /// <returns>API 返回的 JSON 字符串</returns>
+        public string CallWXAPISyncBridge(string method, string paramsJson = null, int timeoutMs = 5000)
         {
-            CallWXAPI("showModal", option,
-                res => success?.Invoke(JsonMapper.ToObject<PCHPShowModalSuccessCallbackResult>(res)),
-                res => fail?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => complete?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res))
-            );
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                return "";
+            }
+
+            string callbackId = GenerateCallbackId();
+            string result = null;
+            bool completed = false;
+
+            _pendingCallbacks[callbackId] = new CallbackInfo
+            {
+                OnSuccess = (res) => { result = res; completed = true; },
+                OnFail = (res) => { result = res; completed = true; },
+                OnComplete = (res) => { /* success/fail 已经设置了 result */ },
+                ApiName = method
+            };
+
+            var command = new PCHPExeCommand
+            {
+                callbackId = callbackId,
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] Bridge发送同步API请求: {method}, callbackId: {callbackId}");
+
+            if (!SendMessageInternal(commandJson))
+            {
+                _pendingCallbacks.Remove(callbackId);
+                return "";
+            }
+
+            // 阻塞等待结果（注意：需要在非主线程调用或接受帧阻塞）
+            var startTime = DateTime.UtcNow;
+            while (!completed && (DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
+            {
+                // 手动 pump 消息队列以处理响应
+                if (_messageQueue.TryDequeue(out var messageJson))
+                {
+                    try { ProcessIncomingMessage(messageJson); } catch { }
+                }
+                System.Threading.Thread.Sleep(1);
+            }
+
+            if (!completed)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] 同步API超时: {method}");
+                _pendingCallbacks.Remove(callbackId);
+            }
+
+            return result ?? "";
         }
 
         /// <summary>
-        /// 显示 loading 提示框
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OnEvent 事件注册）
         /// </summary>
-        public void ShowLoading(string title, bool mask = false, Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
+        /// <param name="eventName">事件名称，如 "OnShow"</param>
+        /// <param name="callback">回调函数，参数为事件数据 JSON 字符串</param>
+        public void RegisterEventBridge(string eventName, Action<string> callback)
         {
-            CallWXAPI("showLoading", new { title, mask },
-                res => success?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => fail?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => complete?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res))
-            );
+            RegisterEventListener(eventName, callback);
         }
 
         /// <summary>
-        /// 隐藏 loading 提示框
+        /// 桥接方法：供 WXSDKManagerHandler 生成代码调用（OffEvent 事件注销）
         /// </summary>
-        public void HideLoading(Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
+        /// <param name="eventName">事件名称</param>
+        public void UnregisterEventBridge(string eventName)
         {
-            CallWXAPI("hideLoading", null,
-                res => success?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => fail?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res)),
-                res => complete?.Invoke(JsonMapper.ToObject<PCHPGeneralCallbackResult>(res))
-            );
+            UnregisterEventListener(eventName);
         }
 
         #endregion
@@ -670,23 +986,21 @@ namespace WeChatWASM
         /// 注册事件监听器
         /// </summary>
         /// <param name="eventName">事件名称，如 "onShow", "onHide"</param>
-        /// <param name="callback">回调函数</param>
+        /// <param name="callback">回调函数，参数为事件数据 JSON 字符串</param>
         public void RegisterEventListener(string eventName, Action<string> callback)
         {
             if (!_eventListeners.ContainsKey(eventName))
             {
                 _eventListeners[eventName] = new List<Action<string>>();
 
-                // 发送事件注册消息到基础库
-                var request = new PCHPRequestMessage
+                // 通知 JS 侧注册事件监听（复用下行指令格式）
+                var command = new PCHPExeCommand
                 {
-                    type = "event_register",
-                    requestId = GenerateRequestId(),
-                    api = eventName,
-                    data = "{}",
-                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    callbackId = GenerateCallbackId(),
+                    method = "_eventRegister",
+                    @params = $"{{\"event\":\"{eventName}\"}}"
                 };
-                SendMessageInternal(JsonMapper.ToJson(request));
+                SendMessageInternal(JsonMapper.ToJson(command));
             }
 
             _eventListeners[eventName].Add(callback);
@@ -718,18 +1032,16 @@ namespace WeChatWASM
                 }
             }
 
-            // 如果没有监听器了，通知基础库取消注册
+            // 如果没有监听器了，通知 JS 侧取消注册
             if (!_eventListeners.ContainsKey(eventName))
             {
-                var request = new PCHPRequestMessage
+                var command = new PCHPExeCommand
                 {
-                    type = "event_unregister",
-                    requestId = GenerateRequestId(),
-                    api = eventName,
-                    data = "{}",
-                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    callbackId = GenerateCallbackId(),
+                    method = "_eventUnregister",
+                    @params = $"{{\"event\":\"{eventName}\"}}"
                 };
-                SendMessageInternal(JsonMapper.ToJson(request));
+                SendMessageInternal(JsonMapper.ToJson(command));
             }
 
             Debug.Log($"[WXPCHPInitScript] 移除事件监听: {eventName}");
@@ -793,11 +1105,11 @@ namespace WeChatWASM
         #region Private Methods
 
         /// <summary>
-        /// 生成唯一请求ID
+        /// 生成唯一 callbackId（格式: "{timestamp}-{counter}"，与 WebGL 模式一致）
         /// </summary>
-        private string GenerateRequestId()
+        private string GenerateCallbackId()
         {
-            return $"pchp_{++_requestIdCounter}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            return $"{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{++_callbackIdCounter}";
         }
 
         /// <summary>
@@ -885,11 +1197,11 @@ namespace WeChatWASM
         /// </summary>
         private void ProcessMessageQueue()
         {
-            while (_messageQueue.TryDequeue(out var response))
+            while (_messageQueue.TryDequeue(out var messageJson))
             {
                 try
                 {
-                    ProcessResponse(response);
+                    ProcessIncomingMessage(messageJson);
                 }
                 catch (Exception e)
                 {
@@ -899,41 +1211,20 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 处理响应消息
+        /// 处理上行消息（统一入口）
+        /// 根据消息内容区分：API 响应 vs 事件推送
         /// </summary>
-        private void ProcessResponse(PCHPResponseMessage response)
+        private void ProcessIncomingMessage(string messageJson)
         {
-            if (response.type == "response")
-            {
-                // 处理API回调
-                if (_pendingCallbacks.TryGetValue(response.requestId, out var callbackInfo))
-                {
-                    Debug.Log($"[WXPCHPInitScript] 收到API响应: {callbackInfo.ApiName}, callbackType: {response.callbackType}");
+            // 先尝试解析为事件消息（检查 type == "event"）
+            var jsonData = JsonMapper.ToObject(messageJson);
 
-                    switch (response.callbackType)
-                    {
-                        case "success":
-                            callbackInfo.OnSuccess?.Invoke(response.data ?? "{}");
-                            break;
-                        case "fail":
-                            callbackInfo.OnFail?.Invoke(response.data ?? $"{{\"errMsg\":\"{response.errMsg}\"}}");
-                            break;
-                        case "complete":
-                            callbackInfo.OnComplete?.Invoke(response.data ?? "{}");
-                            // complete 后移除回调
-                            _pendingCallbacks.Remove(response.requestId);
-                            break;
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"[WXPCHPInitScript] 未找到对应的回调: requestId={response.requestId}");
-                }
-            }
-            else if (response.type == "event")
+            if (jsonData.ContainsKey("type") && (string)jsonData["type"] == "event")
             {
-                // 处理事件通知
-                string eventName = response.api;
+                // 事件消息: { type: "event", event: "onShow", res: "..." }
+                string eventName = jsonData.ContainsKey("event") ? (string)jsonData["event"] : "";
+                string res = jsonData.ContainsKey("res") ? (string)jsonData["res"] : "{}";
+
                 if (_eventListeners.TryGetValue(eventName, out var listeners))
                 {
                     Debug.Log($"[WXPCHPInitScript] 收到事件: {eventName}");
@@ -941,7 +1232,7 @@ namespace WeChatWASM
                     {
                         try
                         {
-                            listener?.Invoke(response.data ?? "{}");
+                            listener?.Invoke(res);
                         }
                         catch (Exception e)
                         {
@@ -950,10 +1241,46 @@ namespace WeChatWASM
                     }
                 }
             }
+            else if (jsonData.ContainsKey("callbackId"))
+            {
+                // API 响应: { callbackId, type: "success"|"fail"|"complete", res: "..." }
+                string callbackId = (string)jsonData["callbackId"];
+                string type = jsonData.ContainsKey("type") ? (string)jsonData["type"] : "";
+                string res = jsonData.ContainsKey("res") ? (string)jsonData["res"] : "{}";
+
+                if (_pendingCallbacks.TryGetValue(callbackId, out var callbackInfo))
+                {
+                    Debug.Log($"[WXPCHPInitScript] 收到API响应: {callbackInfo.ApiName}, type: {type}");
+
+                    switch (type)
+                    {
+                        case "success":
+                            callbackInfo.OnSuccess?.Invoke(res);
+                            break;
+                        case "fail":
+                            callbackInfo.OnFail?.Invoke(res);
+                            break;
+                        case "complete":
+                            callbackInfo.OnComplete?.Invoke(res);
+                            // complete 后移除回调（与 WebGL 模式行为一致）
+                            _pendingCallbacks.Remove(callbackId);
+                            break;
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[WXPCHPInitScript] 未找到对应的回调: callbackId={callbackId}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] 收到未知格式消息: {messageJson}");
+            }
         }
 
         /// <summary>
         /// 异步消息处理回调（从DLL回调，可能在非主线程）
+        /// 只做最小工作：拷贝数据 + 入队，解析留给主线程
         /// </summary>
         [AOT.MonoPInvokeCallback(typeof(AsyncMsgHandlerDelegate))]
         private static void HandleAsyncMessage(IntPtr data, int len)
@@ -973,24 +1300,10 @@ namespace WeChatWASM
                     // 触发原始消息事件
                     instance.OnMessageReceived?.Invoke(buffer);
 
-                    // 解析消息
+                    // 转为字符串，加入消息队列（主线程处理）
                     string message = System.Text.Encoding.UTF8.GetString(buffer);
                     Debug.Log($"[WXPCHPInitScript] 收到原始消息: {message}");
-
-                    try
-                    {
-                        // 尝试解析为响应消息
-                        var response = JsonMapper.ToObject<PCHPResponseMessage>(message);
-                        if (response != null && !string.IsNullOrEmpty(response.type))
-                        {
-                            // 加入消息队列，在主线程中处理
-                            instance._messageQueue.Enqueue(response);
-                        }
-                    }
-                    catch (Exception parseEx)
-                    {
-                        Debug.LogWarning($"[WXPCHPInitScript] 消息解析失败，可能是非标准格式: {parseEx.Message}");
-                    }
+                    instance._messageQueue.Enqueue(message);
                 }
             }
             catch (Exception e)
@@ -1034,56 +1347,21 @@ namespace WeChatWASM
         public bool IsSupported => _initScript != null && _initScript.IsInitialized && _initScript.IsConnected;
 
         /// <summary>
-        /// 调用微信API
+        /// 调用微信API（通用方法）
         /// </summary>
-        public string CallWXAPI(string apiName, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
+        /// <param name="method">API名称（驼峰），如 "showToast"</param>
+        /// <param name="data">API参数对象</param>
+        /// <param name="onSuccess">成功回调，参数为 res JSON 字符串</param>
+        /// <param name="onFail">失败回调，参数为 res JSON 字符串</param>
+        /// <param name="onComplete">完成回调，参数为 res JSON 字符串</param>
+        public string CallWXAPI(string method, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
         {
             if (_initScript == null)
             {
                 Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
                 return null;
             }
-            return _initScript.CallWXAPI(apiName, data, onSuccess, onFail, onComplete);
-        }
-
-        /// <summary>
-        /// 显示 Toast
-        /// </summary>
-        public void ShowToast(PCHPShowToastOption option, Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
-        {
-            _initScript?.ShowToast(option, success, fail, complete);
-        }
-
-        /// <summary>
-        /// 隐藏 Toast
-        /// </summary>
-        public void HideToast(Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
-        {
-            _initScript?.HideToast(success, fail, complete);
-        }
-
-        /// <summary>
-        /// 显示模态对话框
-        /// </summary>
-        public void ShowModal(PCHPShowModalOption option, Action<PCHPShowModalSuccessCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
-        {
-            _initScript?.ShowModal(option, success, fail, complete);
-        }
-
-        /// <summary>
-        /// 显示 Loading
-        /// </summary>
-        public void ShowLoading(string title, bool mask = false, Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
-        {
-            _initScript?.ShowLoading(title, mask, success, fail, complete);
-        }
-
-        /// <summary>
-        /// 隐藏 Loading
-        /// </summary>
-        public void HideLoading(Action<PCHPGeneralCallbackResult> success = null, Action<PCHPGeneralCallbackResult> fail = null, Action<PCHPGeneralCallbackResult> complete = null)
-        {
-            _initScript?.HideLoading(success, fail, complete);
+            return _initScript.CallWXAPI(method, data, onSuccess, onFail, onComplete);
         }
 
         /// <summary>
@@ -1111,4 +1389,4 @@ namespace WeChatWASM
         }
     }
 }
-#endif // WX_PCHP_ENABLED
+#endif // WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
