@@ -1216,19 +1216,19 @@ namespace WeChatWASM
         ///     });
         /// }
         /// </example>
-#if WX_PCHP_ENABLED
+#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
         public static WXPCHighPerformanceManager GetPCHighPerformanceManager()
         {
             return WXPCHighPerformanceManager.GetInstance();
         }
 #else
         /// <summary>
-        /// PC高性能模式管理器（需启用 WX_PCHP_ENABLED 宏）
-        /// 未启用时返回 null
+        /// PC高性能模式管理器（需启用 WX_PCHP_ENABLED 宏且在 Standalone Windows 平台）
+        /// 非 Windows Standalone 环境返回 null
         /// </summary>
         public static object GetPCHighPerformanceManager()
         {
-            Debug.LogWarning("[WX] GetPCHighPerformanceManager 需要启用 WX_PCHP_ENABLED 宏（仅 Standalone 平台可用）");
+            Debug.LogWarning("[WX] GetPCHighPerformanceManager 仅在 Standalone Windows 平台可用");
             return null;
         }
 #endif

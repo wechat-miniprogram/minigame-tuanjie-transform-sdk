@@ -1,7 +1,11 @@
 // WX_PCHP_ENABLED: PC高性能模式总开关
 // 路径A（转换工具链）: 由转换工具自动添加到 ScriptingDefineSymbols
 // 路径B（原生接入）: 开发者手动添加，或通过 Editor 菜单一键开启
-#if WX_PCHP_ENABLED
+//
+// 平台限制：此脚本只在 Standalone Windows 构建中生效
+// pchp_sdk.dll 是 Windows native DLL，需要在 EXE 进程中通过 LoadLibrary 加载
+// WebGL/WASM 构建不需要此脚本（WASM 侧通过小游戏插件 + XWebAPI.nativeGameSDK 通道通信）
+#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -98,8 +102,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.33";
-        public const string PCHP_BUILD_DATE = "2026-06-03 17:37";
+        public const string PCHP_VERSION = "0.1.34";
+        public const string PCHP_BUILD_DATE = "2026-06-04 11:30";
 
         #region DLL Imports
 
@@ -476,6 +480,76 @@ namespace WeChatWASM
                     }
                 }
                 catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] arg[0] 策略失败: {ex.Message}"); }
+
+                // === 诊断：探测 VFS 文件系统，找出 DLL 实际映射位置 ===
+                try
+                {
+                    // 列出根目录
+                    Debug.Log("[WXPCHPInitScript] === VFS 根目录 / 内容 ===");
+                    foreach (var entry in System.IO.Directory.GetFileSystemEntries("/"))
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 / 失败: {ex.Message}"); }
+
+                try
+                {
+                    // 列出当前目录 ./ 
+                    Debug.Log("[WXPCHPInitScript] === VFS 当前目录 ./ 内容 ===");
+                    foreach (var entry in System.IO.Directory.GetFileSystemEntries("."))
+                    {
+                        Debug.Log($"[WXPCHPInitScript]   {entry}");
+                    }
+                }
+                catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 ./ 失败: {ex.Message}"); }
+
+                // 搜索常见 native lib 目录
+                string[] probeDirs = new string[] { "/", ".", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
+                foreach (var dir in probeDirs)
+                {
+                    try
+                    {
+                        if (System.IO.Directory.Exists(dir))
+                        {
+                            var files = System.IO.Directory.GetFiles(dir);
+                            if (files.Length > 0 && files.Length <= 50)
+                            {
+                                Debug.Log($"[WXPCHPInitScript] === {dir} 下的文件 ({files.Length}个) ===");
+                                foreach (var f in files) Debug.Log($"[WXPCHPInitScript]   {f}");
+                            }
+                            else
+                            {
+                                Debug.Log($"[WXPCHPInitScript] {dir} 有 {files.Length} 个文件");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log($"[WXPCHPInitScript] {dir} 目录不存在");
+                        }
+                    }
+                    catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 探测 {dir} 失败: {ex.Message}"); }
+                }
+
+                // 直接尝试各种可能的路径检查文件是否存在
+                string[] dllProbes = new string[]
+                {
+                    "./pchp_sdk.dll", "/pchp_sdk.dll",
+                    "./pchp_Data/Plugins/x86_64/pchp_sdk.dll",
+                    "./pchp_Data/Plugins/pchp_sdk.dll",
+                    "pchp_sdk.dll",
+                    "./libpchp_sdk.so", "/libpchp_sdk.so",
+                    "./pchp_sdk.so", "/pchp_sdk.so",
+                    "./pchp_Data/Plugins/x86_64/libpchp_sdk.so",
+                };
+                Debug.Log("[WXPCHPInitScript] === DLL 路径探测 ===");
+                foreach (var probe in dllProbes)
+                {
+                    bool exists = false;
+                    try { exists = System.IO.File.Exists(probe); } catch { }
+                    if (exists) Debug.Log($"[WXPCHPInitScript] ✅ 存在: {probe}");
+                    else Debug.Log($"[WXPCHPInitScript] ❌ 不存在: {probe}");
+                }
 
                 // === 策略 3：通过 %APPDATA% 环境变量尝试定位 ===
                 // 微信安装路径模式：%APPDATA%\Tencent\xwechat\radium\pchp\{appid}\
@@ -1315,4 +1389,4 @@ namespace WeChatWASM
         }
     }
 }
-#endif // WX_PCHP_ENABLED
+#endif // WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
