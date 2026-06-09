@@ -10,14 +10,11 @@
   - [ ] **方案 B（推荐）**：将 PC 高性能模式拆成独立 Unity Package，不依赖小游戏子平台加载（v0.2 目标）
   - [ ] **方案 C（折中）**：提供独立 `.unitypackage` 安装包，绕过 UPM 子平台系统
 
-### PCHPBuildPreProcessor 首次构建宏时序问题
-- **现状**：`EnsurePCHPDefineSymbol()` 在 `IPreprocessBuildWithReport.OnPreprocessBuild` 中执行，即 Build 时才添加 `WX_PCHP_ENABLED` 宏
-- **问题**：首次 Build 时宏刚写入 → 触发 Domain Reload 重编译，但本次 Build 使用的仍是旧编译结果（宏未生效），`WXPCHPInitScript` 中被 `#if WX_PCHP_ENABLED` 包裹的 `[RuntimeInitializeOnLoadMethod]` 不会被编译进去 → **第一次 Build 的产物 SDK 不会自动初始化，需要 Build 两次才生效**
-- **影响**：路径B 开发者首次构建时 SDK 静默失效，难以排查
-- **方案选项**：
-  - [ ] **方案 A**：在 PC 高性能面板的"生成并转换"按钮点击时就提前写入宏（Build 前），而非在 PreProcessor 中写
-  - [ ] **方案 B**：PreProcessor 检测到宏不存在时，添加宏后抛出 `BuildFailedException` 中断本次构建，提示用户重新 Build
-  - [ ] **方案 C**：去掉 `RuntimeInitializeOnLoadMethod` 上的 `#if WX_PCHP_ENABLED` 条件编译，改用运行时判断（如检查宏对应的 `Scripting Define` 是否存在）
+### ~~PCHPBuildPreProcessor 首次构建宏时序问题~~ ✅ 已修复
+- **修复方案**：采用方案 A —— 在 `BuildPlayer()` 之前（`SwitchActiveBuildTarget` 之前）就调用 `EnsurePCHPDefineSymbol()`
+  - 路径A (`WXPCHPBuildHelper.BuildPCHighPerformance`)：新增 `EnsurePCHPDefineSymbol(buildTarget)` 在 try 块开头
+  - 路径B (`WXPCSettingHelper`)：原本已在 Step 1 正确处理
+  - `PCHPBuildPreProcessor`：保留作为兜底（手动 Build 时仍能补宏，第二次生效）
 
 ## 🟡 中优先级
 

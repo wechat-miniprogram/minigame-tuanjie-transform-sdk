@@ -69,6 +69,10 @@ namespace WeChatWASM
 
             try
             {
+                // 在切换平台之前确保宏已定义，这样 SwitchActiveBuildTarget 触发的
+                // Domain Reload 重编译时，WX_PCHP_ENABLED 宏就已经在 ScriptingDefineSymbols 中了
+                EnsurePCHPDefineSymbol(buildTarget);
+
                 // 切换构建目标（如果需要）
                 if (originalTarget != buildTarget)
                 {
@@ -297,6 +301,50 @@ namespace WeChatWASM
             }
         }
 #endif
+
+        /// <summary>
+        /// 确保 Standalone 平台的 ScriptingDefineSymbols 包含 WX_PCHP_ENABLED
+        /// 必须在 SwitchActiveBuildTarget 之前调用，这样切换平台触发的 Domain Reload
+        /// 重编译脚本时宏就已经生效，首次构建即可正确编译 WXPCHPInitScript
+        /// </summary>
+        private static void EnsurePCHPDefineSymbol(BuildTarget buildTarget)
+        {
+            const string PCHP_DEFINE_SYMBOL = "WX_PCHP_ENABLED";
+
+            // 仅对 Standalone 平台操作
+            if (buildTarget != BuildTarget.StandaloneWindows64 &&
+                buildTarget != BuildTarget.StandaloneWindows &&
+                buildTarget != BuildTarget.StandaloneOSX)
+            {
+                return;
+            }
+
+            var targetGroup = BuildTargetGroup.Standalone;
+#if UNITY_2023_1_OR_NEWER
+            var namedTarget = UnityEditor.Build.NamedBuildTarget.Standalone;
+            var defines = PlayerSettings.GetScriptingDefineSymbols(namedTarget);
+#else
+            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+#endif
+
+            if (!defines.Contains(PCHP_DEFINE_SYMBOL))
+            {
+                var newDefines = string.IsNullOrEmpty(defines)
+                    ? PCHP_DEFINE_SYMBOL
+                    : defines + ";" + PCHP_DEFINE_SYMBOL;
+
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(namedTarget, newDefines);
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
+#endif
+                Debug.Log($"[PC高性能模式] 已自动添加 {PCHP_DEFINE_SYMBOL} 到 Standalone ScriptingDefineSymbols");
+            }
+            else
+            {
+                Debug.Log($"[PC高性能模式] {PCHP_DEFINE_SYMBOL} 宏已存在，跳过");
+            }
+        }
 
         /// <summary>
         /// 配置 Player Settings 用于 PC 高性能构建
