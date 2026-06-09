@@ -1,9 +1,7 @@
-// WX_PCHP_ENABLED: PC高性能模式总开关（唯一编译门控）
-// 此宏仅被添加到 BuildTargetGroup.Standalone 的 ScriptingDefineSymbols 中
-// 路径A（转换工具链）: WXPCHPBuildHelper.EnsurePCHPDefineSymbol() 自动添加
-// 路径B（独立构建窗口）: WXPCSettingHelper.EnsurePCHPDefineSymbol() 自动添加
-// PCHPBuildPreProcessor: 兜底——手动 Build 时补宏
-#if WX_PCHP_ENABLED
+// WX_PCHP_ENABLED: PC高性能模式总开关
+// 双重门控：即使 WX_PCHP_ENABLED 被错误添加到 WebGL/MiniGame 平台，
+// 第二个条件也能阻止此文件参与 WASM 编译（避免在 WASM 沙箱里触发 DllImport）
+#if WX_PCHP_ENABLED && !UNITY_WEBGL && !WEIXINMINIGAME
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -138,6 +136,15 @@ namespace WeChatWASM
         // 也需要这个声明。运行时通过 Application.platform 判断是否调用。
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool SetDllDirectory(string lpPathName);
+
+        // 手动加载 DLL（绕过 Mono VFS 的文件可见性限制）
+        // 微信沙箱的 VFS 层会隐藏 .dll 文件（File.Exists 返回 false），
+        // 但 kernel32.LoadLibrary 走 Windows 原生路径，不受 VFS 限制
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string lpLibFileName);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetLastError();
 
         // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
@@ -455,8 +462,8 @@ namespace WeChatWASM
                 }
                 catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取环境变量失败: {ex.Message}"); }
 
-                // === 诊断：尝试直接 LoadLibrary 绝对路径 ===
-                // 如果命令行 arg[0] 能拿到 exe 真实路径，就能推导 DLL 位置
+                // === 策略 2：从 arg[0] 推导 exe 目录，直接 LoadLibrary ===
+                // 不依赖 File.Exists（被 VFS 屏蔽），直接尝试 LoadLibrary
                 try
                 {
                     string[] args = System.Environment.GetCommandLineArgs();
@@ -465,15 +472,43 @@ namespace WeChatWASM
                         string exeDir = System.IO.Path.GetDirectoryName(args[0]);
                         if (!string.IsNullOrEmpty(exeDir))
                         {
-                            string dllFullPath = System.IO.Path.Combine(exeDir, "pchp_sdk.dll");
-                            Debug.Log($"[WXPCHPInitScript] 从 arg[0] 推导 DLL 路径: {dllFullPath}");
-                            if (System.IO.File.Exists(dllFullPath))
+                            string[] exeDirCandidates = new string[]
                             {
-                                Debug.Log($"[WXPCHPInitScript] ✅ DLL 文件存在！尝试 SetDllDirectory...");
+                                System.IO.Path.Combine(exeDir, "pchp_sdk.dll"),
+                                System.IO.Path.Combine(exeDir, "pchp_Data", "pchp_sdk.dll"),
+                                System.IO.Path.Combine(exeDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll"),
+                            };
+                            foreach (var candidate in exeDirCandidates)
+                            {
+                                Debug.Log($"[WXPCHPInitScript] arg[0] 策略尝试 LoadLibrary: {candidate}");
+                                try
+                                {
+                                    IntPtr handle = LoadLibrary(candidate);
+                                    if (handle != IntPtr.Zero)
+                                    {
+                                        Debug.Log($"[WXPCHPInitScript] ✅ arg[0] LoadLibrary 成功！路径: {candidate}");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        uint err = GetLastError();
+                                        Debug.Log($"[WXPCHPInitScript] ❌ arg[0] LoadLibrary 失败，错误码: {err}");
+                                    }
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] arg[0] LoadLibrary 异常: {innerEx.Message}");
+                                }
+                            }
+
+                            // LoadLibrary 失败则尝试 SetDllDirectory
+                            try
+                            {
                                 bool result = SetDllDirectory(exeDir);
                                 Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{exeDir}\") = {result}");
                                 if (result) return;
                             }
+                            catch { }
                         }
                     }
                 }
@@ -554,57 +589,73 @@ namespace WeChatWASM
                     else Debug.Log($"[WXPCHPInitScript] ❌ 不存在: {probe}");
                 }
 
-                // === 策略 3：通过 %APPDATA% 环境变量尝试定位 ===
-                // 微信安装路径模式：%APPDATA%\Tencent\xwechat\radium\pchp\{appid}\
-                // 这是最后的兜底——如果 Mono 自己的搜索机制就能找到，这步不需要
+                // === 策略 3：通过 %APPDATA% 构造绝对路径 + LoadLibrary 强制加载 ===
+                // 微信沙箱 VFS 会隐藏 .dll 文件（File.Exists 返回 false），
+                // 但 kernel32.LoadLibrary 走 Windows 原生文件系统，不受 VFS 限制。
+                // 因此不能依赖 File.Exists 判断，直接暴力 LoadLibrary 所有候选路径。
                 string appData = null;
                 try { appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData); } catch { }
                 Debug.Log($"[WXPCHPInitScript] APPDATA = {appData}");
 
                 if (!string.IsNullOrEmpty(appData) && appData != "/" && !appData.StartsWith("http"))
                 {
-                    // 尝试通过已知微信路径模式查找
                     string radiumPath = System.IO.Path.Combine(appData, "Tencent", "xwechat", "radium", "pchp");
                     Debug.Log($"[WXPCHPInitScript] 检查微信安装路径: {radiumPath}");
 
                     if (System.IO.Directory.Exists(radiumPath))
                     {
-                        // 遍历 appid 目录
                         try
                         {
                             foreach (var appDir in System.IO.Directory.GetDirectories(radiumPath))
                             {
-                                // 检查 exe 同级
-                                string dllAtRoot = System.IO.Path.Combine(appDir, "pchp_sdk.dll");
-                                if (System.IO.File.Exists(dllAtRoot))
+                                // 构造所有可能的 DLL 绝对路径（不依赖 File.Exists）
+                                string[] candidatePaths = new string[]
                                 {
+                                    System.IO.Path.Combine(appDir, "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll"),
+                                };
+
+                                foreach (var candidatePath in candidatePaths)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] 尝试 LoadLibrary: {candidatePath}");
                                     try
                                     {
-                                        bool result = SetDllDirectory(appDir);
-                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA策略命中，SetDllDirectory(\"{appDir}\") = {result}");
-                                        return;
+                                        IntPtr handle = LoadLibrary(candidatePath);
+                                        if (handle != IntPtr.Zero)
+                                        {
+                                            Debug.Log($"[WXPCHPInitScript] ✅ LoadLibrary 成功！路径: {candidatePath}, handle: {handle}");
+                                            // LoadLibrary 成功后，后续 DllImport("pchp_sdk") 就能自动找到已加载的模块
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            uint err = GetLastError();
+                                            Debug.Log($"[WXPCHPInitScript] ❌ LoadLibrary 失败，错误码: {err}, 路径: {candidatePath}");
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
-                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
+                                        Debug.Log($"[WXPCHPInitScript] LoadLibrary 异常: {ex.Message}, 路径: {candidatePath}");
                                     }
                                 }
 
-                                // 检查 Plugins/x86_64/
-                                string dllAtPlugins = System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll");
-                                if (System.IO.File.Exists(dllAtPlugins))
+                                // LoadLibrary 全失败了，最后尝试 SetDllDirectory 兜底
+                                try
                                 {
-                                    string pluginDir = System.IO.Path.GetDirectoryName(dllAtPlugins);
-                                    try
+                                    string pluginDir = System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64");
+                                    bool result = SetDllDirectory(pluginDir);
+                                    Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{pluginDir}\") = {result}");
+                                    if (result)
                                     {
-                                        bool result = SetDllDirectory(pluginDir);
-                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA/Plugins策略命中，SetDllDirectory(\"{pluginDir}\") = {result}");
+                                        Debug.Log($"[WXPCHPInitScript] ✅ SetDllDirectory 兜底成功");
                                         return;
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
-                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
                                 }
                             }
                         }
@@ -616,8 +667,6 @@ namespace WeChatWASM
                 }
 
                 // 如果走到这里，说明所有主动策略都失败了
-                // 但不必恐慌——Mono runtime 的 DllImport 会按内置规则搜索 pchp_Data/Plugins/x86_64/
-                // 只要构建时正确放置了 DLL，Mono 应该能自己找到
                 Debug.Log($"[WXPCHPInitScript] ℹ️ 主动路径设置未成功，依赖 Mono 内置 native plugin 搜索机制（pchp_Data/Plugins/x86_64/）");
             }
             catch (Exception e)

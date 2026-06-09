@@ -186,6 +186,10 @@ namespace WeChatWASM
         /// </summary>
         public static void RestoreToMiniGamePlatform()
         {
+            // 防御性清理：确保 WebGL/MiniGame 平台的 defines 中不包含 WX_PCHP_ENABLED
+            // 避免因 Unity Editor defines 残留/泄漏导致 WXPCHPInitScript 被编译进 WASM
+            CleanPCHPDefineFromNonStandalonePlatforms();
+
 #if TUANJIE_2022_3_OR_NEWER
             // 团结引擎：切换到 WeixinMiniGame 平台
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame)
@@ -204,6 +208,60 @@ namespace WeChatWASM
                 EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
             }
 #endif
+        }
+
+        /// <summary>
+        /// 从非 Standalone 平台的 ScriptingDefineSymbols 中移除 WX_PCHP_ENABLED
+        /// 防止宏泄漏到 WebGL/MiniGame 导致 WXPCHPInitScript 被编译进 WASM
+        /// </summary>
+        private static void CleanPCHPDefineFromNonStandalonePlatforms()
+        {
+            const string PCHP_DEFINE_SYMBOL = "WX_PCHP_ENABLED";
+
+            // 需要清理的平台列表
+            BuildTargetGroup[] groupsToClean = new BuildTargetGroup[]
+            {
+                BuildTargetGroup.WebGL,
+#if TUANJIE_2022_3_OR_NEWER
+                BuildTargetGroup.WeixinMiniGame,
+#endif
+            };
+
+            foreach (var group in groupsToClean)
+            {
+                try
+                {
+#if UNITY_2023_1_OR_NEWER
+                    var namedTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(group);
+                    var defines = PlayerSettings.GetScriptingDefineSymbols(namedTarget);
+#else
+                    var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+#endif
+                    if (string.IsNullOrEmpty(defines) || !defines.Contains(PCHP_DEFINE_SYMBOL))
+                        continue;
+
+                    // 移除宏
+                    var parts = defines.Split(';');
+                    var cleaned = new System.Collections.Generic.List<string>();
+                    foreach (var part in parts)
+                    {
+                        if (part.Trim() != PCHP_DEFINE_SYMBOL)
+                            cleaned.Add(part);
+                    }
+                    var newDefines = string.Join(";", cleaned.ToArray());
+
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.SetScriptingDefineSymbols(namedTarget, newDefines);
+#else
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(group, newDefines);
+#endif
+                    Debug.Log($"[PC高性能模式] 已从 {group} 平台清除 WX_PCHP_ENABLED 宏（防止 WASM 编译污染）");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[PC高性能模式] 清理 {group} 平台 defines 异常: {e.Message}");
+                }
+            }
         }
 
 #if TUANJIE_2022_3_OR_NEWER
