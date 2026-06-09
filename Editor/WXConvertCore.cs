@@ -1828,7 +1828,7 @@ namespace WeChatWASM
                 if (WXPCHPBuildHelper.IsPCHighPerformanceEnabled() && gameJson.ContainsKey("plugins"))
                 {
                     var pchpPlugin = new JsonData();
-                    pchpPlugin["version"] = "0.0.2";
+                    pchpPlugin["version"] = "0.0.3";
                     pchpPlugin["provider"] = "wxda43d86614939198";
                     var contexts = new JsonData();
                     var ctx = new JsonData();

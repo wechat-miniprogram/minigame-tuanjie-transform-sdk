@@ -220,11 +220,54 @@ namespace WeChatWASM
                     // 复制 pchp_sdk.dll 到构建产物目录
                     WXPCHPBuildHelper.CopyPCHPNativeDllPublic(fullExportPath, buildTarget);
 
-                    if (EditorUtility.DisplayDialog("构建成功",
-                        $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {fullExportPath}",
-                        "打开目录", "关闭"))
+                    // 打包成 wxapkg 格式（与路径A一致的流程）
+                    EditorUtility.DisplayProgressBar("PC高性能模式", "正在打包 wxapkg...", 0.8f);
+                    string wxapkgOutputDir = fullExportPath; // wxapkg 最终放置目录
+                    string tempWxapkgPath = Path.Combine(Path.GetDirectoryName(fullExportPath), $"{WXPCHPBuildHelper.PCHPOutputDir}_temp.wxapkg");
+                    string finalWxapkgPath = Path.Combine(wxapkgOutputDir, $"{WXPCHPBuildHelper.PCHPOutputDir}.wxapkg");
+
+                    Debug.Log($"[PC高性能模式] 开始打包 wxapkg...");
+
+                    if (WXApkgPacker.Pack(fullExportPath, tempWxapkgPath))
                     {
-                        EditorUtility.RevealInFinder(fullExportPath);
+                        // 删除原始构建材料
+                        Debug.Log($"[PC高性能模式] 清理原始构建材料...");
+                        Directory.Delete(fullExportPath, true);
+
+                        // 重新创建目录并移动 wxapkg
+                        Directory.CreateDirectory(wxapkgOutputDir);
+                        File.Move(tempWxapkgPath, finalWxapkgPath);
+
+                        // 创建空的 game.js（小游戏子包入口占位）
+                        string gameJsPath = Path.Combine(wxapkgOutputDir, "game.js");
+                        File.WriteAllText(gameJsPath, "");
+                        Debug.Log($"[PC高性能模式] 已创建 game.js: {gameJsPath}");
+
+                        Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
+                        EditorUtility.ClearProgressBar();
+
+                        if (EditorUtility.DisplayDialog("构建成功",
+                            $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {wxapkgOutputDir}\n\n产物:\n• {WXPCHPBuildHelper.PCHPOutputDir}.wxapkg\n• game.js",
+                            "打开目录", "关闭"))
+                        {
+                            EditorUtility.RevealInFinder(wxapkgOutputDir);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
+                        if (File.Exists(tempWxapkgPath))
+                        {
+                            File.Delete(tempWxapkgPath);
+                        }
+                        EditorUtility.ClearProgressBar();
+
+                        if (EditorUtility.DisplayDialog("构建成功（未打包）",
+                            $"PC高性能模式构建完成，但 wxapkg 打包失败。\n\n原始构建产物保留在: {fullExportPath}",
+                            "打开目录", "关闭"))
+                        {
+                            EditorUtility.RevealInFinder(fullExportPath);
+                        }
                     }
                 }
                 else

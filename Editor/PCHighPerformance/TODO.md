@@ -16,6 +16,19 @@
   - 路径B (`WXPCSettingHelper`)：原本已在 Step 1 正确处理
   - `PCHPBuildPreProcessor`：保留作为兜底（手动 Build 时仍能补宏，第二次生效）
 
+### WXPCHighPerformanceManager 条件编译导致游戏侧代码无法直接引用
+- **现状**：`WXPCHPInitScript.cs` 整个文件被 `#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)` 包裹，其中包含 `WXPCHighPerformanceManager` 类
+- **问题**：开发者的游戏工程 Active Platform 通常是 MiniGame/WebGL（做小游戏），此时 `UNITY_STANDALONE_WIN` 为 false → `WXPCHighPerformanceManager` 类在编辑器编译时不存在 → 游戏脚本直接引用会报 CS0103
+- **构建时能跑通的原因**：SDK 构建 EXE 时会 `SwitchActiveBuildTarget(Standalone)` → Domain Reload 重编译 → 此时宏生效 → 类存在 → 构建产物中包含该类
+- **开发体验问题**：开发者在编辑器里写代码时红线报错、自动补全不工作、无法直接引用该类型
+- **期望**：开发者能直接写 `var mgr = WXPCHighPerformanceManager.GetInstance();` 而不需要反射或条件编译
+- **方案方向**：
+  - [ ] **方案 A（Facade 空壳）**：提供一个无条件编译的 Facade/Stub 类，在任何平台都能编译。非 Standalone 运行时方法返回 null/noop；Standalone 运行时委托给真实实现
+  - [ ] **方案 B（拆分文件）**：将 `WXPCHighPerformanceManager` 公开 API 部分拆到一个不带条件编译的文件中，仅将 P/Invoke 和 native 交互部分保留条件编译
+  - [ ] **方案 C（partial class + 条件实现）**：公开接口 partial 类无条件编译，实现部分在 `#if UNITY_STANDALONE_WIN` 文件中补全
+- **临时 workaround**：游戏侧用反射调用（已在 ShowToastDemo.cs 中验证可行）
+- **关联**：与"路径B 平台依赖问题"同源——根因都是 Active Platform ≠ Standalone
+
 ## 🟡 中优先级
 
 ### 清理 WXPCHPInitScript 中的 ShowStepInfo 调用
