@@ -286,7 +286,9 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 确保 WX_PCHP_ENABLED 宏已定义
+        /// 确保 WX_PCHP_ENABLED 宏已定义。
+        /// 如果宏是新增的，会强制同步触发脚本重编译（RequestScriptCompilation），
+        /// 确保后续 BuildPlayer 时 WXPCHPInitScript 已存在于编译结果中。
         /// </summary>
         private void EnsurePCHPDefineSymbol()
         {
@@ -309,7 +311,19 @@ namespace WeChatWASM
 #else
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
 #endif
-                Debug.Log("[PC高性能模式] 已自动添加 WX_PCHP_ENABLED 宏");
+                Debug.Log("[PC高性能模式] 已自动添加 WX_PCHP_ENABLED 宏，强制触发脚本重编译...");
+
+                // 关键：SetScriptingDefineSymbols 触发的 domain reload 是异步的（帧末尾执行）。
+                // 如果当前 Active Platform 已经是 Standalone（不会触发 SwitchActiveBuildTarget），
+                // 则必须手动强制同步重编译，否则 BuildPlayer 时 WXPCHPInitScript 类不存在。
+                UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+
+                // 等待编译完成（阻塞直到 domain reload 结束）
+                // AssetDatabase.Refresh 会同步处理挂起的 import/compile 请求
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+
+                Debug.Log("[PC高性能模式] 脚本重编译完成");
             }
         }
 

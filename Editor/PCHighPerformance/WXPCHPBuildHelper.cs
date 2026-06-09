@@ -339,6 +339,17 @@ namespace WeChatWASM
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
 #endif
                 Debug.Log($"[PC高性能模式] 已自动添加 {PCHP_DEFINE_SYMBOL} 到 Standalone ScriptingDefineSymbols");
+
+                // 防御性处理：如果后续不会触发 SwitchActiveBuildTarget（已经在 Standalone），
+                // 需要强制同步重编译，否则 BuildPlayer 时宏未生效
+                if (EditorUserBuildSettings.activeBuildTarget == buildTarget)
+                {
+                    Debug.Log($"[PC高性能模式] 当前已在目标平台，强制触发脚本重编译...");
+                    UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                    Debug.Log($"[PC高性能模式] 脚本重编译完成");
+                }
             }
             else
             {

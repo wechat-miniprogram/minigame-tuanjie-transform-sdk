@@ -1,11 +1,9 @@
-// WX_PCHP_ENABLED: PC高性能模式总开关
-// 路径A（转换工具链）: 由转换工具自动添加到 ScriptingDefineSymbols
-// 路径B（原生接入）: 开发者手动添加，或通过 Editor 菜单一键开启
-//
-// 平台限制：此脚本只在 Standalone Windows 构建中生效
-// pchp_sdk.dll 是 Windows native DLL，需要在 EXE 进程中通过 LoadLibrary 加载
-// WebGL/WASM 构建不需要此脚本（WASM 侧通过小游戏插件 + XWebAPI.nativeGameSDK 通道通信）
-#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+// WX_PCHP_ENABLED: PC高性能模式总开关（唯一编译门控）
+// 此宏仅被添加到 BuildTargetGroup.Standalone 的 ScriptingDefineSymbols 中
+// 路径A（转换工具链）: WXPCHPBuildHelper.EnsurePCHPDefineSymbol() 自动添加
+// 路径B（独立构建窗口）: WXPCSettingHelper.EnsurePCHPDefineSymbol() 自动添加
+// PCHPBuildPreProcessor: 兜底——手动 Build 时补宏
+#if WX_PCHP_ENABLED
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -1389,4 +1387,4 @@ namespace WeChatWASM
         }
     }
 }
-#endif // WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+#endif // WX_PCHP_ENABLED
