@@ -1216,7 +1216,7 @@ namespace WeChatWASM
         ///     });
         /// }
         /// </example>
-#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+#if WX_PCHP_ENABLED && !UNITY_WEBGL && !WEIXINMINIGAME && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
         public static WXPCHighPerformanceManager GetPCHighPerformanceManager()
         {
             return WXPCHighPerformanceManager.GetInstance();
