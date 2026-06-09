@@ -1,9 +1,9 @@
 // WX_PCHP_ENABLED: PC高性能模式总开关
 // 编译条件说明：
 //   - UNITY_EDITOR: Editor 下始终编译（开发调试需要）
-//   - UNITY_STANDALONE: 实际 Standalone 构建时编译
+//   - UNITY_STANDALONE: 实际 Standalone 构建时编译（含 Win/Mac/Linux）
 //   - 排除 WebGL/MiniGame 实际构建（避免 DllImport 进 WASM）
-#if WX_PCHP_ENABLED && (UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX)
+#if WX_PCHP_ENABLED && (UNITY_EDITOR || UNITY_STANDALONE)
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;

@@ -108,6 +108,37 @@ namespace WeChatWASM
                 // 构建选项
                 var buildOptions = BuildOptions.None;
 
+                // [诊断] 构建前打印关键状态，确认宏和平台配置
+                Debug.Log($"[PC高性能模式] [诊断] === 构建前状态 ===");
+                Debug.Log($"[PC高性能模式] [诊断] Active BuildTarget: {EditorUserBuildSettings.activeBuildTarget}");
+                Debug.Log($"[PC高性能模式] [诊断] Target BuildTarget: {buildTarget}");
+#if UNITY_2023_1_OR_NEWER
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                Debug.Log($"[PC高性能模式] [诊断] Standalone Defines: {diagDefines}");
+                Debug.Log($"[PC高性能模式] [诊断] Contains WX_PCHP_ENABLED: {diagDefines.Contains("WX_PCHP_ENABLED")}");
+
+                // [诊断] 检查 WXPCHPInitScript 类型是否存在（验证编译结果）
+                var pchpType = System.Type.GetType("WeChatWASM.WXPCHighPerformanceManager, Wx");
+                if (pchpType == null)
+                {
+                    // 遍历所有 Assembly 查找
+                    foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        pchpType = asm.GetType("WeChatWASM.WXPCHighPerformanceManager");
+                        if (pchpType != null) break;
+                    }
+                }
+                Debug.Log($"[PC高性能模式] [诊断] WXPCHighPerformanceManager type found: {pchpType != null}");
+                if (pchpType == null)
+                {
+                    Debug.LogError("[PC高性能模式] [诊断] ⚠️ WXPCHighPerformanceManager 类型在当前 Domain 中不存在！");
+                    Debug.LogError("[PC高性能模式] [诊断] 这意味着 WX_PCHP_ENABLED 宏在当前编译中未生效，构建产物将缺少 PCHP 类");
+                    Debug.LogError("[PC高性能模式] [诊断] 可能原因：切换平台后 Domain Reload 未完成 / Assembly 缓存未更新");
+                }
+
                 // 执行构建
                 Debug.Log($"[PC高性能模式] 执行构建，输出: {executablePath}");
                 var report = BuildPipeline.BuildPlayer(scenes, executablePath, buildTarget, buildOptions);

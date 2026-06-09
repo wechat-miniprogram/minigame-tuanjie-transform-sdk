@@ -209,6 +209,32 @@ namespace WeChatWASM
                 EditorUtility.DisplayProgressBar("PC高性能模式", "正在构建 Standalone...", 0.5f);
                 Debug.Log($"[PC高性能模式] 开始构建，输出: {executablePath}");
 
+                // [诊断] 构建前打印关键状态
+                Debug.Log($"[PC高性能模式] [诊断] === 构建前状态 ===");
+                Debug.Log($"[PC高性能模式] [诊断] Active BuildTarget: {EditorUserBuildSettings.activeBuildTarget}");
+                Debug.Log($"[PC高性能模式] [诊断] Target BuildTarget: {buildTarget}");
+#if UNITY_2023_1_OR_NEWER
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                Debug.Log($"[PC高性能模式] [诊断] Standalone Defines: {diagDefines}");
+                Debug.Log($"[PC高性能模式] [诊断] Contains WX_PCHP_ENABLED: {diagDefines.Contains("WX_PCHP_ENABLED")}");
+
+                // [诊断] 检查类型是否存在
+                System.Type pchpDiagType = null;
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    pchpDiagType = asm.GetType("WeChatWASM.WXPCHighPerformanceManager");
+                    if (pchpDiagType != null) break;
+                }
+                Debug.Log($"[PC高性能模式] [诊断] WXPCHighPerformanceManager in current domain: {pchpDiagType != null}");
+                if (pchpDiagType == null)
+                {
+                    Debug.LogError("[PC高性能模式] [诊断] ⚠️ 当前 Domain 中找不到 WXPCHighPerformanceManager！EXE 将缺少 PCHP 类");
+                    Debug.LogError("[PC高性能模式] [诊断] 建议：手动切换 Active Target 到 Standalone 后等待编译完成再构建");
+                }
+
                 var report = BuildPipeline.BuildPlayer(scenes, executablePath, buildTarget, BuildOptions.None);
 
                 EditorUtility.ClearProgressBar();
