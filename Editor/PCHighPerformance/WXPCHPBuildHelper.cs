@@ -505,6 +505,12 @@ namespace WeChatWASM
             }
             string destPluginDir = Path.Combine(dataDir, DLL_NAME);
             CopyFileWithLog(dllSourcePath, destPluginDir);
+
+            // 目标路径 3：pchp_Data/ 根目录（微信沙箱 VFS 的工作目录 ./ 实际对应 pchp_Data/）
+            // 微信 PC 客户端解包 wxapkg 后，EXE 的工作目录指向 pchp_Data/ 内部，
+            // Mono DllImport 会先搜索当前工作目录，所以必须在这里放一份
+            string destDataRoot = Path.Combine(outputPath, "pchp_Data", DLL_NAME);
+            CopyFileWithLog(dllSourcePath, destDataRoot);
         }
 
         /// <summary>

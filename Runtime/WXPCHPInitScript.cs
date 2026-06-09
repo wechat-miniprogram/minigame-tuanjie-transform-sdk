@@ -503,7 +503,8 @@ namespace WeChatWASM
                 catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 ./ 失败: {ex.Message}"); }
 
                 // 搜索常见 native lib 目录
-                string[] probeDirs = new string[] { "/", ".", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
+                // 注意：微信沙箱 VFS 的工作目录 ./ 实际就是 pchp_Data/（非 exe 同级）
+                string[] probeDirs = new string[] { "/", ".", "./Plugins", "./Plugins/x86_64", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
                 foreach (var dir in probeDirs)
                 {
                     try
@@ -530,14 +531,18 @@ namespace WeChatWASM
                 }
 
                 // 直接尝试各种可能的路径检查文件是否存在
+                // VFS 的 ./ = pchp_Data/，所以 ./Plugins/x86_64/ = 原 pchp_Data/Plugins/x86_64/
                 string[] dllProbes = new string[]
                 {
                     "./pchp_sdk.dll", "/pchp_sdk.dll",
+                    "./Plugins/x86_64/pchp_sdk.dll",
+                    "./Plugins/pchp_sdk.dll",
                     "./pchp_Data/Plugins/x86_64/pchp_sdk.dll",
                     "./pchp_Data/Plugins/pchp_sdk.dll",
                     "pchp_sdk.dll",
                     "./libpchp_sdk.so", "/libpchp_sdk.so",
                     "./pchp_sdk.so", "/pchp_sdk.so",
+                    "./Plugins/x86_64/libpchp_sdk.so",
                     "./pchp_Data/Plugins/x86_64/libpchp_sdk.so",
                 };
                 Debug.Log("[WXPCHPInitScript] === DLL 路径探测 ===");
