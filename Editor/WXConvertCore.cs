@@ -293,7 +293,16 @@ namespace WeChatWASM
                 }
 
                 // 路径A（转换工具链）：构建完成后恢复到小游戏平台
-                WXPCHPBuildHelper.RestoreToMiniGamePlatform();
+                // 如果构建进入了两阶段异步模式（等待 Domain Reload），不在此处恢复平台
+                // 恢复操作将在 WXPCHPBuildHelper.OnDomainReload 中异步完成
+                if (!WXPCHPBuildHelper.IsBuildDeferred)
+                {
+                    WXPCHPBuildHelper.RestoreToMiniGamePlatform();
+                }
+                else
+                {
+                    Debug.Log("[微信小游戏] PC高性能构建进入异步模式，平台恢复将在编译完成后自动执行");
+                }
             }
 
             return WXExportError.SUCCEED;
