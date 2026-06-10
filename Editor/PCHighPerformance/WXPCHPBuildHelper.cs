@@ -32,6 +32,8 @@ namespace WeChatWASM
         // SessionState keys（跨 Domain Reload 持久化构建参数）
         private const string SESSION_KEY_PENDING_EXPORT_PATH = "PCHP_PendingBuild_ExportPath";
         private const string SESSION_KEY_PENDING_TARGET = "PCHP_PendingBuild_Target";
+        private const string SESSION_KEY_RETRY_COUNT = "PCHP_PendingBuild_RetryCount";
+        private const int MAX_RETRY_COUNT = 3; // 最多重试 3 次 Domain Reload
 
         /// <summary>
         /// 上次 BuildPCHighPerformance 调用是否进入了异步两阶段模式
@@ -55,24 +57,83 @@ namespace WeChatWASM
                 SessionState.EraseString(SESSION_KEY_PENDING_EXPORT_PATH);
                 SessionState.EraseInt(SESSION_KEY_PENDING_TARGET);
 
+                // 重试计数检查
+                int retryCount = SessionState.GetInt(SESSION_KEY_RETRY_COUNT, 0);
+                SessionState.EraseInt(SESSION_KEY_RETRY_COUNT);
+                if (retryCount >= MAX_RETRY_COUNT)
+                {
+                    Debug.LogError($"[PC高性能模式] ❌ 已重试 {retryCount} 次仍未成功，放弃自动构建。");
+                    Debug.LogError("[PC高性能模式] 请手动操作：切换到 Standalone 平台，确认 Scripting Define Symbols 包含 WX_PCHP_ENABLED，等编译完成后重新导出。");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败",
+                        $"已尝试 {retryCount} 次 Domain Reload 但 PCHP 类型始终未编译成功。\n\n" +
+                        "请手动切换到 File > Build Settings > PC Standalone，\n" +
+                        "确认 Player Settings 中 Scripting Define Symbols 包含 WX_PCHP_ENABLED，\n" +
+                        "等待编译完成后再次点击导出。", "确定");
+                    return;
+                }
+
                 var buildTarget = (BuildTarget)pendingTarget;
-                Debug.Log($"[PC高性能模式] Domain Reload 完成，恢复构建: exportPath={pendingExportPath}, target={buildTarget}");
+                Debug.Log($"[PC高性能模式] Domain Reload 完成 (retry={retryCount})，恢复构建: exportPath={pendingExportPath}, target={buildTarget}");
+
+                // 捕获 retryCount 到闭包
+                int currentRetry = retryCount;
 
                 // 用 delayCall 确保 Editor 完全初始化后再执行
                 EditorApplication.delayCall += () =>
                 {
-                    // 再次验证宏是否已生效
+                    // 验证 active platform 已经是 Standalone
+                    Debug.Log($"[PC高性能模式] [Phase2 恢复] active={EditorUserBuildSettings.activeBuildTarget}, expected={buildTarget}, retry={currentRetry}");
+                    if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
+                    {
+                        Debug.LogError($"[PC高性能模式] Domain Reload 后 active platform ({EditorUserBuildSettings.activeBuildTarget}) 仍不是 {buildTarget}！");
+                        Debug.LogError("[PC高性能模式] 再次尝试切换平台...");
+                        // 再存一次 SessionState，等下一轮 Reload（递增 retry）
+                        SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                        SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                        SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
+                        return;
+                    }
+
+                    // 再次验证 PCHP 类型是否已生效
                     var pchpType = FindPCHPManagerType();
                     if (pchpType == null)
                     {
-                        Debug.LogError("[PC高性能模式] Domain Reload 后 WXPCHighPerformanceManager 仍不存在！构建中止。");
-                        Debug.LogError("[PC高性能模式] 请手动在 Player Settings > Scripting Define Symbols 中添加 WX_PCHP_ENABLED，等待编译完成后重试。");
-                        EditorUtility.DisplayDialog("PC高性能模式构建失败",
-                            "WX_PCHP_ENABLED 宏写入后重编译未成功生成 PCHP 类型。\n\n" +
-                            "请手动操作：\n" +
-                            "1. Edit > Project Settings > Player > Scripting Define Symbols\n" +
-                            "2. 确认 Standalone 平台包含 WX_PCHP_ENABLED\n" +
-                            "3. 等待编译完成后再次点击导出", "确定");
+                        Debug.LogError("[PC高性能模式] Domain Reload 后 WXPCHighPerformanceManager 仍不存在！");
+                        Debug.LogError("[PC高性能模式] 可能原因：宏写入了但编译器未使用新 defines 重编译 Wx assembly");
+
+                        // 检查 defines 是否确实包含宏
+                        string currentDefines = "";
+#if UNITY_2023_1_OR_NEWER
+                        currentDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                        currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                        Debug.LogError($"[PC高性能模式] 当前 Standalone defines: {currentDefines}");
+
+                        if (!currentDefines.Contains("WX_PCHP_ENABLED"))
+                        {
+                            Debug.LogError("[PC高性能模式] 宏丢失！重新写入并触发编译...");
+                            var newDefines = string.IsNullOrEmpty(currentDefines) ? "WX_PCHP_ENABLED" : currentDefines + ";WX_PCHP_ENABLED";
+#if UNITY_2023_1_OR_NEWER
+                            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone, newDefines);
+#else
+                            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
+#endif
+                            // 保存 SessionState 等待下一轮（递增 retry）
+                            SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                            SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                            SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                            CompilationPipeline.RequestScriptCompilation();
+                            return;
+                        }
+
+                        // 宏存在但类型不存在——可能是 Unity 编译器缓存问题，强制重编译
+                        Debug.LogError("[PC高性能模式] 宏存在但类型未编译，强制 RequestScriptCompilation...");
+                        SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                        SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                        SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                        CompilationPipeline.RequestScriptCompilation();
                         return;
                     }
 
@@ -119,15 +180,19 @@ namespace WeChatWASM
                 buildTarget = BuildTarget.StandaloneWindows64;
             }
 
-            // 阶段1：确保宏已定义
+            // 阶段1：确保 (a)宏已定义 (b)当前 active platform 是 Standalone (c)PCHP类型已编译
             bool macroReady = EnsurePCHPDefineSymbol(buildTarget);
-
-            // 额外检查：宏存在但类型不存在（上次添加宏后未完成 Reload 就被中断了）
+            bool platformReady = EditorUserBuildSettings.activeBuildTarget == buildTarget;
             bool typeExists = FindPCHPManagerType() != null;
 
-            if (!macroReady || !typeExists)
+            Debug.Log($"[PC高性能模式] [Phase1 检查] macroReady={macroReady}, platformReady={platformReady}, typeExists={typeExists}, activeBuildTarget={EditorUserBuildSettings.activeBuildTarget}, targetBuildTarget={buildTarget}");
+
+            // 三个条件必须全部满足才能同步构建
+            // 核心原因：BuildPlayer 在 active platform 非 Standalone 时，可能使用缓存编译产物
+            // 导致 WX_PCHP_ENABLED 宏不生效（已知 Unity bug）
+            if (!macroReady || !platformReady || !typeExists)
             {
-                // 需要等 Domain Reload 重编译后再构建
+                // 需要切换平台 + 重编译后再构建
                 // 持久化构建参数到 SessionState（跨 Domain Reload 保持）
                 SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, exportBasePath);
                 SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
@@ -135,16 +200,20 @@ namespace WeChatWASM
 
                 if (!macroReady)
                 {
-                    Debug.Log("[PC高性能模式] ⏳ WX_PCHP_ENABLED 宏刚写入，等待脚本重编译后自动继续构建...");
+                    Debug.Log("[PC高性能模式] ⏳ WX_PCHP_ENABLED 宏刚写入，需要重编译...");
                 }
-                else
+                if (!platformReady)
                 {
-                    Debug.Log("[PC高性能模式] ⏳ 宏已存在但 PCHP 类型未编译，触发重编译...");
+                    Debug.Log($"[PC高性能模式] ⏳ 当前 active platform ({EditorUserBuildSettings.activeBuildTarget}) 不是 {buildTarget}，需要切换平台...");
+                }
+                if (!typeExists)
+                {
+                    Debug.Log("[PC高性能模式] ⏳ PCHP 类型未编译（当前 platform 下条件编译排除了它）...");
                 }
                 Debug.Log("[PC高性能模式] 构建参数已保存到 SessionState，Domain Reload 后将自动恢复构建");
 
-                // 触发平台切换 + 重编译
-                if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
+                // 触发平台切换（会自动带上重编译）
+                if (!platformReady)
                 {
                     Debug.Log($"[PC高性能模式] 切换构建目标: {EditorUserBuildSettings.activeBuildTarget} -> {buildTarget}");
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
@@ -153,7 +222,7 @@ namespace WeChatWASM
                 }
                 else
                 {
-                    // 已经在 Standalone，手动触发重编译
+                    // 已经在正确平台，但宏刚写入需要重编译
                     Debug.Log("[PC高性能模式] 当前已在 Standalone，手动触发脚本重编译...");
                     CompilationPipeline.RequestScriptCompilation();
                     // RequestScriptCompilation 也会触发 Domain Reload
@@ -162,9 +231,9 @@ namespace WeChatWASM
                 return true; // 返回 true 表示流程正常启动（将异步完成）
             }
 
-            // 宏已就绪 + 类型已编译，直接执行阶段2
+            // 三条件全满足，直接执行阶段2
             IsBuildDeferred = false;
-            Debug.Log("[PC高性能模式] 宏已就绪且类型已编译，直接执行构建...");
+            Debug.Log("[PC高性能模式] ✅ 宏就绪 + 平台正确 + 类型已编译，直接执行构建...");
             return ExecuteBuildPhase2(exportBasePath, buildTarget);
         }
 
@@ -183,15 +252,13 @@ namespace WeChatWASM
 
             try
             {
-                // 切换构建目标（如果需要，理论上此时应该已经在 Standalone）
+                // Phase 2 执行时 active target 必须已经是 Standalone（Phase 1 保证）
+                // 如果仍然不匹配说明有逻辑错误，直接报错而非再次 Switch（避免触发 Domain Reload）
                 if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
                 {
-                    Debug.Log($"[PC高性能模式] 切换构建目标: {EditorUserBuildSettings.activeBuildTarget} -> {buildTarget}");
-                    if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget))
-                    {
-                        Debug.LogError("[PC高性能模式] 切换构建目标失败");
-                        return false;
-                    }
+                    Debug.LogError($"[PC高性能模式] ❌ Phase 2 执行时 active target ({EditorUserBuildSettings.activeBuildTarget}) != 期望 ({buildTarget})，这不应该发生！");
+                    Debug.LogError("[PC高性能模式] 请重新点击导出，让两阶段流程从头执行");
+                    return false;
                 }
 
                 // 配置 Player Settings
