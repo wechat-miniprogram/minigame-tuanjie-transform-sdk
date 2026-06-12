@@ -108,6 +108,69 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.checkIsSupportFacialRecognition(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/face/wx.checkIsSupportFacialRecognition.html)
+        /// 需要基础库： `3.8.12`
+        /// 检查当前设备是否支持人脸识别能力
+        /// **示例代码**
+        /// ```js
+        /// wx.checkIsSupportFacialRecognition({
+        /// success() {
+        /// // 支持人脸识别
+        /// },
+        /// fail() {
+        /// // 不支持人脸识别
+        /// },
+        /// })
+        /// ```
+        /// </summary>
+        public static void CheckIsSupportFacialRecognition(CheckIsSupportFacialRecognitionOption callback)
+        {
+            WXSDKManagerHandler.Instance.CheckIsSupportFacialRecognition(callback);
+        }
+
+        /// <summary>
+        /// [wx.checkIsSupportMidasPayment(Object object)](https://developers.weixin.qq.com/minigame/dev/api/midas-payment/wx.checkIsSupportMidasPayment.html)
+        /// 需要基础库： `3.10.3`
+        /// 检查当前环境是否支持虚拟支付。使用前请注意阅读[相关说明](https://developers.weixin.qq.com/minigame/dev/guide/open-ability/virtual-payment/virtual-payment2.html)。
+        /// **平台支持说明**
+        /// - Android、Windows、OHOS 平台：默认支持虚拟支付，接口直接返回支持
+        /// - iOS 平台：需满足以下环境要求才可能支持虚拟支付
+        /// - 操作系统要求：使用 iPhone 或者 iPad，iOS 15 及以上版本
+        /// - 基础库版本要求：3.10.3 及以上
+        /// - 客户端版本要求：8.0.68 及以上
+        /// - 苹果支付不支持使用沙箱环境，仅支持使用现网环境
+        /// **注意事项**
+        /// 若该 API 都不存在，则 iOS 一定不支持虚拟支付，请保持旧版本逻辑。
+        /// **示例代码**
+        /// ```js
+        /// if (wx.checkIsSupportMidasPayment) {
+        /// wx.checkIsSupportMidasPayment({
+        /// success(res) {
+        /// console.log('支持检查结果:', res)
+        /// if (res.data.allow_pay) {
+        /// console.log('当前环境支持支付')
+        /// // 可以继续调用支付相关接口
+        /// } else {
+        /// console.log('当前环境不支持支付')
+        /// // 请自行适配用户提示文案
+        /// }
+        /// },
+        /// fail(err) {
+        /// console.error('检查支持情况失败:', err)
+        /// },
+        /// complete() {
+        /// console.log('检查完成')
+        /// }
+        /// })
+        /// }
+        /// ```
+        /// </summary>
+        public static void CheckIsSupportMidasPayment(CheckIsSupportMidasPaymentOption callback)
+        {
+            WXSDKManagerHandler.Instance.CheckIsSupportMidasPayment(callback);
+        }
+
+        /// <summary>
         /// [wx.checkSession(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/login/wx.checkSession.html)
         /// 检查登录态 session_key 是否过期。
         /// session_key 具有唯一性，在使用小程序时，同一用户在同一时刻仅有一个有效的 session_key。
@@ -1731,40 +1794,120 @@ namespace WeChatWASM
         /// <summary>
         /// [wx.requestFacialRecognition(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/account-info/wx.requestFacialRecognition.html)
         /// 需要基础库： `3.11.2`
-        /// 发起人脸识别验证，用于对可疑用户进行身份验证和防沉迷检查。该接口会调起微信的人脸识别系统，验证用户身份以确保游戏安全和合规性。
+        /// 腾讯游戏人脸识别验证功能是基于健康系统防沉迷体系，用于识别疑似未成年人冒用成年人账号游玩游戏的行为，是防止未成年人沉迷网络游戏的一项重要措施。本接口是为开通虚拟支付功能的小游戏开发者提供的，此接口是基于人脸识别的未成年人身份核验接口。本次识别是根据用户在腾讯健康系统中留存的实名信息进行验证，结果将直接返回至开发者。
+        /// **接口限额**
+        /// - 超出限额后将返回错误码 2002008（频率控制）
+        /// - 1天内全部游戏对一个用户只能调起1次人脸识别
+        /// - 若用户人脸识别通过：7天内不能再被弹出人脸识别
+        /// - 根据小游戏评级每个月限制使用次数，一旦发现恶意滥用接口，会取消使用资格。具体使用次数如下：
+        /// - S级：300次/月
+        /// - A级：100次/月
+        /// - B级：30次/月
         /// **处理流程**
-        /// 1. 开发者调用 `wx.requestFacialRecognition` 发起人脸识别。
-        /// 2. 系统根据策略判定是否需要展示授权弹窗。
-        /// - 若判定为"不展示弹窗"：立即回调结果，示例：`{ errCode: 0, errMsg: '本用户7天内人脸识别已通过' }`
-        /// - 若判定为"需展示弹窗"：进入步骤 3。
-        /// 3. 系统展示授权弹窗。
-        /// - 玩家拒绝：立即回调 `fail`，`errCode = 2002006`
-        /// - 玩家同意：进入步骤 4。
-        /// 4. 系统开始进行人脸识别验证
-        /// - 玩家在跳转页面中完成活体/人脸识别；关闭页面返回游戏。
-        /// 5. 系统回调最终识别结果返回
+        /// <img src="https://mmgame.qpic.cn/image/2034b86e1e8f3541629d4b4d16cf41ff84fd99efe25f4fac181603edd8a29e14/0" width="600" alt="人脸识别流程图" />
         /// **示例代码**
         /// ```js
+        /// // 实际业务场景：防沉迷身份验证
+        /// function checkUserIdentity() {
         /// wx.requestFacialRecognition({
         /// success(res) {
-        /// // 人脸识别通过或 7 天内已通过
-        /// // 形如：{ errCode: 0, errMsg: 'ok' }
-        /// console.log('requestFacialRecognition success:', res)
+        /// // 场景 1：本次人脸识别通过
+        /// // res = { errCode: 0, errMsg: 'ok' }
+        /// console.log('人脸识别成功:', res)
+        /// // 允许继续游戏
+        /// startGame()
         /// },
         /// fail(err) {
-        /// // 失败或受限等场景
-        /// console.log('requestFacialRecognition fail:', err)
+        /// console.error('人脸识别失败:', err)
+        /// let tipMessage = ''
+        /// let shouldBlock = false  // 是否需要阻断游戏
+        /// // 根据错误码进行不同处理
+        /// switch (err.errCode) {
+        /// case 2002004:
+        /// // 人脸识别失败（需要阻断）
+        /// // err = { errCode: 2002004, errMsg: '人脸识别失败' }
+        /// tipMessage = '识别失败，请稍后重试'
+        /// shouldBlock = true
+        /// break
+        /// case 2002006:
+        /// // 用户取消/超时/不同意，导致未完成人脸识别（需要阻断）
+        /// // err = { errCode: 2002006, errMsg: '用户取消' }
+        /// tipMessage = '您已取消验证，无法继续游戏'
+        /// shouldBlock = true
+        /// break
+        /// case 2002007:
+        /// // 本用户7天内人脸识别已通过（可以继续游戏）
+        /// // err = { errCode: 2002007, errMsg: '本用户7天内人脸识别已通过，通过日期为2024-01-15' }
+        /// tipMessage = '您已完成验证'
+        /// shouldBlock = false
+        /// break
+        /// case 2002008:
+        /// // 频率控制：本日已调起过人脸识别 or 本月调用次数已达上限（可以继续游戏）
+        /// // err = { errCode: 2002008, errMsg: '本日已调起过人脸识别' }
+        /// // 或 err = { errCode: 2002008, errMsg: '本月调用次数已达上限' }
+        /// tipMessage = '今日验证次数已达上限'
+        /// shouldBlock = false
+        /// break
+        /// case 2002009:
+        /// // 无权限发起人脸识别（可以继续游戏）
+        /// // err = { errCode: 2002009, errMsg: '无权限发起人脸识别' }
+        /// tipMessage = '暂无权限使用此功能'
+        /// shouldBlock = false
+        /// break
+        /// default:
+        /// // 系统异常等其他错误（可以继续游戏，避免影响正常用户）
+        /// tipMessage = '系统异常，请稍后重试'
+        /// shouldBlock = false
+        /// }
+        /// if (tipMessage) {
+        /// wx.showModal({
+        /// title: '提示',
+        /// content: tipMessage,
+        /// showCancel: false
+        /// })
+        /// }
+        /// if (shouldBlock) {
+        /// // 仅对识别失败(2002004)和用户取消(2002006)阻断游戏
+        /// restrictGameFeatures()
+        /// } else {
+        /// // 其他情况允许继续游戏
+        /// startGame()
+        /// }
         /// },
         /// complete(res) {
         /// // 无论成功失败均会触发
-        /// console.log('requestFacialRecognition complete:', res)
+        /// console.log('人脸识别流程结束:', res)
         /// }
         /// })
+        /// }
         /// ```
         /// </summary>
         public static void RequestFacialRecognition(RequestFacialRecognitionOption callback)
         {
             WXSDKManagerHandler.Instance.RequestFacialRecognition(callback);
+        }
+
+        /// <summary>
+        /// [wx.requestFacialVerify(Object object)](https://developers.weixin.qq.com/minigame/dev/api/open-api/face/wx.requestFacialVerify.html)
+        /// 需要基础库： `3.8.12`
+        /// 对用户实名信息进行基于生物识别的人脸核身验证
+        /// **示例代码**
+        /// ```js
+        /// wx.requestFacialVerify({
+        /// // 人脸核身会话唯一标识
+        /// verifyId: 'xxx',
+        /// success() {
+        /// // 人脸核身验证成功，需要通知小程序后台根据本次人脸核身会话唯一标识 verifyId 字段调用微信后台 queryVerifyInfo 接口查询人脸核身真实验证结果。
+        /// },
+        /// fail() {
+        /// // 人脸核身验证失败
+        /// },
+        /// })
+        /// ```
+        /// </summary>
+        public static void RequestFacialVerify(RequestFacialVerifyOption callback)
+        {
+            WXSDKManagerHandler.Instance.RequestFacialVerify(callback);
         }
 
         /// <summary>
@@ -3105,6 +3248,7 @@ namespace WeChatWASM
         /// 监听搜索到新设备的事件
         /// **注意**
         /// - 若在 [wx.onBluetoothDeviceFound](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth/wx.onBluetoothDeviceFound.html) 回调了某个设备，则此设备会添加到 [wx.getBluetoothDevices](https://developers.weixin.qq.com/minigame/dev/api/device/bluetooth/wx.getBluetoothDevices.html) 接口获取到的数组中。
+        /// - 地址变化这个是鸿蒙系统特性，小程序可以不缓存地址，重新搜索连接。
         /// **示例代码**
         /// [在微信开发者工具中查看示例](https://developers.weixin.qq.com/s/pQU51zmz7a3K)
         /// ```js

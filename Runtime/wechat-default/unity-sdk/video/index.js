@@ -340,7 +340,15 @@ function jsVideoAllAudioTracksAreDisabled(v) {
 function _JS_Video_Play(video, muted) {
     debugLog('_JS_Video_Play', video, muted);
     const v = videoInstances[video];
-    v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
+    const shouldMute = muted || jsVideoAllAudioTracksAreDisabled(v);
+    v.muted = shouldMute;
+    
+    if (!isWebVideo) {
+        const decoder = v.videoDecoder;
+        if (decoder && decoder.mute) {
+            decoder.mute(shouldMute);
+        }
+    }
     v.play();
     _JS_Video_SetLoop(video, v.loop);
 }
@@ -367,7 +375,15 @@ function _JS_Video_SetErrorHandler(video, ref, onerror) {
 function _JS_Video_SetMute(video, muted) {
     debugLog('_JS_Video_SetMute', video, muted);
     const v = videoInstances[video];
-    v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
+    const shouldMute = muted || jsVideoAllAudioTracksAreDisabled(v);
+    v.muted = shouldMute;
+    
+    if (!isWebVideo) {
+        const decoder = v.videoDecoder;
+        if (decoder && decoder.mute) {
+            decoder.mute(shouldMute);
+        }
+    }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_Video_SetPlaybackRate(video, rate) {
@@ -415,6 +431,13 @@ function _JS_Video_SetSeekedOnceHandler(video, ref, onseeked) {
 function _JS_Video_SetVolume(video, volume) {
     debugLog('_JS_Video_SetVolume');
     videoInstances[video].volume = volume;
+    
+    if (!isWebVideo) {
+        const decoder = videoInstances[video].videoDecoder;
+        if (decoder && decoder.player) {
+            decoder.player.volume = volume;
+        }
+    }
 }
 function _JS_Video_Time(video) {
     return videoInstances[video].currentTime;
