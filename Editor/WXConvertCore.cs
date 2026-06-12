@@ -2128,9 +2128,7 @@ namespace WeChatWASM
                 // Perfstream，暂时设为false
                 "false",
                 config.CompileOptions.enableEmscriptenGLX ? "true" : "false",
-                config.CompileOptions.enableiOSMetal ? "true" : "false",
-                config.SDKOptions.useAudioWorkerAndroidOnly ? "true" : "false",
-                config.SDKOptions.useAudioWorker ? "true" : "false"
+                config.CompileOptions.enableiOSMetal ? "true" : "false"
             });
 
             List<Rule> replaceList = new List<Rule>(replaceArrayList);

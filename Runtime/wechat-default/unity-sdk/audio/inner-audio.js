@@ -4,7 +4,6 @@ import { isSupportPlayBackRate } from '../../check-version';
 import { audios, localAudioMap, downloadingAudioMap, innerAudioVolume, WEBAudio } from './store';
 import { createInnerAudio, destroyInnerAudio, printErrMsg } from './utils';
 import { IGNORE_ERROR_MSG, INNER_AUDIO_UNDEFINED_MSG } from './const';
-import workerApis, { isWorkerReady } from './inner-audio-worker';
 const funs = {
     
     getFullUrl(v) {
@@ -162,7 +161,7 @@ function checkHasAudio(id) {
     console.error(INNER_AUDIO_UNDEFINED_MSG, id);
     return false;
 }
-const legacyApis = {
+export default {
     // 创建audio对象
     WXCreateInnerAudioContext(src, loop, startTime, autoplay, volume, playbackRate, needDownload) {
         const { audio: getAudio, id } = createInnerAudio();
@@ -381,9 +380,3 @@ const legacyApis = {
         });
     },
 };
-
-const exportApis = isWorkerReady()
-    ? Object.assign({}, legacyApis, workerApis)
-    : legacyApis;
-console.warn('[audio] route:', isWorkerReady() ? 'worker' : 'legacy');
-export default exportApis;

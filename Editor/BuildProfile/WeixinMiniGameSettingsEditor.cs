@@ -94,10 +94,6 @@ namespace WeChatWASM
                 formCheckbox("useMiniGameChat", "使用社交组件");
                 formCheckbox("preloadWXFont", "预加载微信字体(?)", "在game.js执行开始时预载微信系统字体，运行期间可使用WX.GetWXFont获取微信字体");
                 formCheckbox("disableMultiTouch", "禁止多点触控");
-                formCheckbox("useAudioWorker", "音频Worker播放(?)", "InnerAudio自动转发到独立Worker线程播放，降低主线程音频开销");
-                EditorGUI.BeginDisabledGroup(!getDataCheckbox("useAudioWorker"));
-                formCheckbox("useAudioWorkerAndroidOnly", "仅Android(?)", "开启时仅在Android且基础库≥3.14.3生效；关闭时通过wx.env.isSupportStandardWorker判断，可支持更多平台");
-                EditorGUI.EndDisabledGroup();
 
                 EditorGUILayout.EndVertical();
             }
@@ -290,8 +286,6 @@ namespace WeChatWASM
             setData("useMiniGameChat", SDKOptions.FindPropertyRelative("UseMiniGameChat").boolValue);
             setData("preloadWXFont", SDKOptions.FindPropertyRelative("PreloadWXFont").boolValue);
             setData("disableMultiTouch", SDKOptions.FindPropertyRelative("disableMultiTouch").boolValue);
-            setData("useAudioWorker", SDKOptions.FindPropertyRelative("useAudioWorker").boolValue);
-            setData("useAudioWorkerAndroidOnly", SDKOptions.FindPropertyRelative("useAudioWorkerAndroidOnly").boolValue);
             setData("bgImageSrc", ProjectConf.FindPropertyRelative("bgImageSrc").stringValue);
             tex = AssetDatabase.LoadAssetAtPath<Texture>(ProjectConf.FindPropertyRelative("bgImageSrc").stringValue);
             setData("memorySize", ProjectConf.FindPropertyRelative("MemorySize").intValue.ToString());
@@ -379,8 +373,6 @@ namespace WeChatWASM
             SDKOptions.FindPropertyRelative("UseMiniGameChat").boolValue = getDataCheckbox("useMiniGameChat");
             SDKOptions.FindPropertyRelative("PreloadWXFont").boolValue = getDataCheckbox("preloadWXFont");
             SDKOptions.FindPropertyRelative("disableMultiTouch").boolValue = getDataCheckbox("disableMultiTouch");
-            SDKOptions.FindPropertyRelative("useAudioWorker").boolValue = getDataCheckbox("useAudioWorker");
-            SDKOptions.FindPropertyRelative("useAudioWorkerAndroidOnly").boolValue = getDataCheckbox("useAudioWorkerAndroidOnly");
             ProjectConf.FindPropertyRelative("bgImageSrc").stringValue = getDataInput("bgImageSrc");
             ProjectConf.FindPropertyRelative("MemorySize").intValue = int.Parse(getDataInput("memorySize"));
             ProjectConf.FindPropertyRelative("HideAfterCallMain").boolValue = getDataCheckbox("hideAfterCallMain");

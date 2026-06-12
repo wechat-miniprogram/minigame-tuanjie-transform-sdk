@@ -558,16 +558,6 @@
             是否禁止多点触控
             </summary>
         </member>
-        <member name="F:WeChatWASM.SDKOptions.useAudioWorker">
-            <summary>
-            是否使用音频Worker播放
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.SDKOptions.useAudioWorkerAndroidOnly">
-            <summary>
-            音频Worker是否仅限Android（true=仅Android且基础库≥3.14.3，false=使用wx.env.isSupportStandardWorker判断）
-            </summary>
-        </member>
         <member name="F:WeChatWASM.CompileOptions.DevelopBuild">
             <summary>
             Development Build

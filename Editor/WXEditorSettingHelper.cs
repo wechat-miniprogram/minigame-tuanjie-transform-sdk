@@ -167,10 +167,6 @@ namespace WeChatWASM
                 this.formCheckbox("useMiniGameChat", "使用社交组件");
                 this.formCheckbox("preloadWXFont", "预加载微信字体(?)", "在game.js执行开始时预载微信系统字体，运行期间可使用WX.GetWXFont获取微信字体");
                 this.formCheckbox("disableMultiTouch", "禁用多点触控");
-                this.formCheckbox("useAudioWorker", "音频Worker播放(?)", "InnerAudio自动转发到独立Worker线程播放，降低主线程音频开销");
-                EditorGUI.BeginDisabledGroup(!this.getDataCheckbox("useAudioWorker"));
-                this.formCheckbox("useAudioWorkerAndroidOnly", "仅Android(?)", "开启时仅在Android且基础库≥3.14.3生效；关闭时通过wx.env.isSupportStandardWorker判断，可支持更多平台");
-                EditorGUI.EndDisabledGroup();
 
                 EditorGUILayout.EndVertical();
             }
@@ -460,8 +456,6 @@ namespace WeChatWASM
             this.setData("useMiniGameChat", config.SDKOptions.UseMiniGameChat);
             this.setData("preloadWXFont", config.SDKOptions.PreloadWXFont);
             this.setData("disableMultiTouch", config.SDKOptions.disableMultiTouch);
-            this.setData("useAudioWorker", config.SDKOptions.useAudioWorker);
-            this.setData("useAudioWorkerAndroidOnly", config.SDKOptions.useAudioWorkerAndroidOnly);
             this.setData("bgImageSrc", config.ProjectConf.bgImageSrc);
             tex = AssetDatabase.LoadAssetAtPath<Texture>(config.ProjectConf.bgImageSrc);
             this.setData("memorySize", config.ProjectConf.MemorySize.ToString());
@@ -542,8 +536,6 @@ namespace WeChatWASM
             config.SDKOptions.UseMiniGameChat = this.getDataCheckbox("useMiniGameChat");
             config.SDKOptions.PreloadWXFont = this.getDataCheckbox("preloadWXFont");
             config.SDKOptions.disableMultiTouch = this.getDataCheckbox("disableMultiTouch");
-            config.SDKOptions.useAudioWorker = this.getDataCheckbox("useAudioWorker");
-            config.SDKOptions.useAudioWorkerAndroidOnly = this.getDataCheckbox("useAudioWorkerAndroidOnly");
             config.ProjectConf.bgImageSrc = this.getDataInput("bgImageSrc");
             config.ProjectConf.MemorySize = int.Parse(this.getDataInput("memorySize"));
             config.ProjectConf.HideAfterCallMain = this.getDataCheckbox("hideAfterCallMain");

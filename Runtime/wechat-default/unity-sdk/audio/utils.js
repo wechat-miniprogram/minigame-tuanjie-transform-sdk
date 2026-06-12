@@ -15,7 +15,9 @@ export const resumeWebAudio = () => {
 };
 export const createInnerAudio = () => {
     const id = uid();
-    const audio = (isSupportCacheAudio && WEBAudio.audioCache.length ? WEBAudio.audioCache.shift() : wx.createInnerAudioContext());
+    const audio = (isSupportCacheAudio && WEBAudio.audioCache.length ? WEBAudio.audioCache.shift() : wx.createInnerAudioContext({
+        useWebAudioImplement: true
+    }));
     if (audio) {
         audios[id] = audio;
     }

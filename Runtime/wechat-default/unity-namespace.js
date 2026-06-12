@@ -65,11 +65,6 @@ const unityNamespace = {
     unityHeapReservedMemory: $UnityHeapReservedMemory,
     // 是否向Perfstream上报数据
     sendData2PerfStream: $SEND_DATA_TO_PERF_STREAM,
-    // 是否使用音频Worker播放
-    // 音频Worker是否仅限Android
-    useAudioWorkerAndroidOnly: $USE_AUDIO_WORKER_ANDROID_ONLY,
-    // 是否使用音频Worker播放
-    useAudioWorker: $USE_AUDIO_WORKER,
 };
 // 最佳实践检测配置
 unityNamespace.monitorConfig = {
