@@ -1539,7 +1539,7 @@ const isWK = false;
                         if (ArrayBuffer.isView(data)) {
                             data = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
                         }
-                        if (typeof data !== 'string' && !(data instanceof ArrayBuffer)) {
+                        if (typeof data !== 'string' && !(data instanceof ArrayBuffer) && !((typeof data) === 'object')) {
                             throw new TypeError(`Failed to send message: The data ${data} is invalid`);
                         }
                         const socketTask = _socketTask.get(this);
