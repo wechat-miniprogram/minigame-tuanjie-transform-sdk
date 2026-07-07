@@ -816,9 +816,11 @@ namespace WeChatWASM
         /// <returns>callbackId</returns>
         public string CallWXAPI(string method, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
         {
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI ENTER: method={method}, IsInitialized={IsInitialized}, IsConnected={IsConnected}, hasSuccess={onSuccess != null}, hasFail={onFail != null}, hasComplete={onComplete != null}");
+
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                Debug.LogWarning($"[WXPCHPInitScript] ✗ SDK未初始化或未连接，无法调用 {method}");
                 string errRes = "{\"errMsg\":\"SDK not initialized\"}";
                 onFail?.Invoke(errRes);
                 onComplete?.Invoke(errRes);
@@ -827,6 +829,7 @@ namespace WeChatWASM
 
             string callbackId = GenerateCallbackId();
             string paramsJson = data != null ? JsonMapper.ToJson(data) : "{}";
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: callbackId={callbackId}, paramsJson={paramsJson}");
 
             // 注册回调
             _pendingCallbacks[callbackId] = new CallbackInfo
@@ -836,6 +839,7 @@ namespace WeChatWASM
                 OnComplete = onComplete,
                 ApiName = method
             };
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: 已注册回调到 _pendingCallbacks (当前待处理数: {_pendingCallbacks.Count})");
 
             // 构建下行指令: { callbackId, method, params }
             var command = new PCHPExeCommand
@@ -846,10 +850,11 @@ namespace WeChatWASM
             };
 
             string commandJson = JsonMapper.ToJson(command);
-            Debug.Log($"[WXPCHPInitScript] 发送API请求: {method}, callbackId: {callbackId}");
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: 即将发送指令 JSON: {commandJson}");
 
             if (!SendMessageInternal(commandJson))
             {
+                Debug.LogError($"[WXPCHPInitScript] ✗ CallWXAPI 发送失败: method={method}, callbackId={callbackId}");
                 _pendingCallbacks.Remove(callbackId);
                 string errRes = "{\"errMsg\":\"Failed to send message\"}";
                 onFail?.Invoke(errRes);
@@ -857,6 +862,7 @@ namespace WeChatWASM
                 return null;
             }
 
+            Debug.Log($"[WXPCHPInitScript] ✓ CallWXAPI EXIT: method={method}, callbackId={callbackId} 已成功投递到 native 层");
             return callbackId;
         }
 
