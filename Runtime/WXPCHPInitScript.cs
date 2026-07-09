@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.34-diag.1";
-        public const string PCHP_BUILD_DATE = "2026-07-09 17:34 (diag:SendMsgAsync+HandleAsyncMessage logs)";
+        public const string PCHP_VERSION = "0.1.34-diag.2";
+        public const string PCHP_BUILD_DATE = "2026-07-09 19:58 (diag2:runInBackground+Focus/Pause hooks)";
 
         #region DLL Imports
 
@@ -328,6 +328,14 @@ namespace WeChatWASM
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 
+            // ★ PC 高性能模式必备：窗口失焦后保持主循环运行
+            // Unity Standalone 默认 runInBackground=false，失焦时 Update 会暂停，
+            // 导致消息队列不处理、按钮点不动、异步回调不触发。
+            // PC HP 模式下 Unity 窗口被 SW_HIDE 隐藏，焦点实际由微信客户端外壳持有，
+            // 必须显式开启后台运行。
+            Application.runInBackground = true;
+            Debug.Log($"[WXPCHPInitScript] Application.runInBackground = true (PC HP 模式必备)");
+
             // 立即隐藏窗口，防止 Unity 独立窗口暴露在桌面上
             // 后续由微信客户端通过 InitGameWindow 接管窗口显示
             HideGameWindow();
@@ -351,6 +359,24 @@ namespace WeChatWASM
         {
             // 在主线程中处理消息队列
             ProcessMessageQueue();
+        }
+
+        /// <summary>
+        /// 焦点变化回调——用于诊断 PC HP 模式下"按钮失焦后点不动"的问题。
+        /// Unity 窗口被 SW_HIDE 后，焦点状态由微信客户端外壳窗口决定，
+        /// 这里记录 isFocused 变化，便于定位是否因失焦导致主循环/输入中断。
+        /// </summary>
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            Debug.Log($"[WXPCHPInitScript] OnApplicationFocus(hasFocus={hasFocus}) | runInBackground={Application.runInBackground} | isFocused={Application.isFocused}");
+        }
+
+        /// <summary>
+        /// 暂停回调——PC HP 模式下若被系统挂起（如锁屏、切到锁屏界面）会触发。
+        /// </summary>
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            Debug.Log($"[WXPCHPInitScript] OnApplicationPause(pauseStatus={pauseStatus}) | runInBackground={Application.runInBackground}");
         }
 
         private void OnDestroy()
