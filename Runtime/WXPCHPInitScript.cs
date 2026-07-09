@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.34";
-        public const string PCHP_BUILD_DATE = "2026-06-04 11:30";
+        public const string PCHP_VERSION = "0.1.34-diag.1";
+        public const string PCHP_BUILD_DATE = "2026-07-09 17:34 (diag:SendMsgAsync+HandleAsyncMessage logs)";
 
         #region DLL Imports
 
