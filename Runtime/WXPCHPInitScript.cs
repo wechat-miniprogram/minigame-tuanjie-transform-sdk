@@ -1130,13 +1130,13 @@ namespace WeChatWASM
         {
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning("[WXPCHPInitScript] SDK未初始化或未连接");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessage ✗ SDK未初始化或未连接");
                 return false;
             }
 
             if (data == null || data.Length == 0)
             {
-                Debug.LogWarning("[WXPCHPInitScript] 发送的数据为空");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessage ✗ 发送的数据为空");
                 return false;
             }
 
@@ -1146,7 +1146,9 @@ namespace WeChatWASM
                 try
                 {
                     Marshal.Copy(data, 0, ptr, data.Length);
-                    return SendMsgAsync(ptr, data.Length);
+                    bool ok = SendMsgAsync(ptr, data.Length);
+                    Debug.Log($"[WXPCHPInitScript] ▶ SendMsgAsync 返回={ok}, len={data.Length}, ptr=0x{ptr.ToInt64():X}");
+                    return ok;
                 }
                 finally
                 {
@@ -1155,7 +1157,7 @@ namespace WeChatWASM
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 发送消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] SendMessage ✗ 发送消息异常: {e.Message}");
                 return false;
             }
         }
@@ -1179,18 +1181,20 @@ namespace WeChatWASM
         {
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning("[WXPCHPInitScript] SDK未初始化或未连接");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessageInternal ✗ SDK未初始化或未连接");
                 return false;
             }
 
             try
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
-                return SendMessage(data);
+                bool ok = SendMessage(data);
+                Debug.Log($"[WXPCHPInitScript] ▶ SendMessageInternal 结果={ok}, payloadLen={data.Length}");
+                return ok;
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 发送消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] SendMessageInternal ✗ 发送消息异常: {e.Message}");
                 return false;
             }
         }
@@ -1347,8 +1351,11 @@ namespace WeChatWASM
         {
             if (data == IntPtr.Zero || len <= 0)
             {
+                Debug.LogWarning($"[WXPCHPInitScript] HandleAsyncMessage 收到空数据: data={data}, len={len}");
                 return;
             }
+
+            Debug.Log($"[WXPCHPInitScript] ◀ HandleAsyncMessage 收到 native 回调: len={len}, ptr=0x{data.ToInt64():X}");
 
             try
             {
@@ -1362,13 +1369,17 @@ namespace WeChatWASM
 
                     // 转为字符串，加入消息队列（主线程处理）
                     string message = System.Text.Encoding.UTF8.GetString(buffer);
-                    Debug.Log($"[WXPCHPInitScript] 收到原始消息: {message}");
+                    Debug.Log($"[WXPCHPInitScript] ◀ 收到原始消息: {message}");
                     instance._messageQueue.Enqueue(message);
+                }
+                else
+                {
+                    Debug.LogWarning("[WXPCHPInitScript] HandleAsyncMessage: instance 为 null，消息丢弃");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 处理消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] HandleAsyncMessage ✗ 处理消息异常: {e.Message}");
             }
         }
 
