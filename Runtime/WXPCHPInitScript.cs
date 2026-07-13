@@ -133,6 +133,18 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
+        // 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        // 当宿主/原生 UI 需要覆盖 PCHP 窗口时设为 false；恢复游戏输入/光标行为时设回 true。
+        // 返回 true 表示请求已成功投递到浏览器进程。
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private static extern bool PinupNativeWindow([MarshalAs(UnmanagedType.U1)] bool pinup);
+
+        // 查询当前原生窗口的置顶状态，默认为 true。
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private static extern bool IsNativeWindowPinup();
+
         // DLL 搜索路径设置（解决 pchp_sdk.dll 不在 exe 同级目录的问题）
         // 注意：不用 #if UNITY_STANDALONE_WIN 包裹，因为 Mac 编辑器交叉构建 Windows 包时
         // 也需要这个声明。运行时通过 Application.platform 判断是否调用。
@@ -827,6 +839,75 @@ namespace WeChatWASM
 
         #endregion
 
+        #region Public Methods - Window Control
+
+        /// <summary>
+        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        /// 典型用法：弹出 toast / 原生 UI 前 pinup=false 让宿主覆盖游戏窗口，
+        /// UI 关闭后 pinup=true 恢复游戏输入与光标行为。
+        /// </summary>
+        /// <param name="pinup">true=置顶（默认值）；false=允许宿主 UI 覆盖</param>
+        /// <returns>true=请求已投递到浏览器进程；false=平台不支持或调用失败</returns>
+        /// <remarks>
+        /// 设计说明：
+        /// 1. 本方法是纯窗口层级控制，不依赖 Mojo 通道（IsConnected）；
+        ///    也不需要 InitEmbeddedGameSDK 完成（IsInitialized），只要 DLL 已加载即可。
+        ///    因此不做 IsInitialized/IsConnected 守卫，让"游戏 loading 阶段就想 pinup=false"的场景可用。
+        /// 2. 返回值仅表示请求已投递，浏览器侧实际窗口层级变更是异步的。
+        ///    若后续操作强依赖层级已变更（例如紧接着 ShowWindow），调用方需自行做时序同步。
+        /// 3. DllNotFoundException 会被 catch 兜底，非 Windows 平台或 DLL 缺失时返回 false 且不崩游戏。
+        /// </remarks>
+        public bool SetNativeWindowPinup(bool pinup)
+        {
+            Debug.Log($"[WXPCHPInitScript] ▶ SetNativeWindowPinup({pinup})");
+            try
+            {
+                bool queued = PinupNativeWindow(pinup);
+                Debug.Log($"[WXPCHPInitScript] ✓ SetNativeWindowPinup({pinup}) → queued={queued}");
+                return queued;
+            }
+            catch (DllNotFoundException)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SetNativeWindowPinup({pinup}) 跳过：pchp_sdk.dll 未加载（当前平台 {Application.platform}）");
+                return false;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[WXPCHPInitScript] ✗ SetNativeWindowPinup({pinup}) 异常: {e.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 查询当前原生窗口的置顶请求状态。默认值为 true。
+        /// </summary>
+        /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
+        /// <remarks>
+        /// 与 <see cref="SetNativeWindowPinup"/> 一致，不做 IsInitialized 守卫。
+        /// DLL 未加载时返回默认值 true（对齐 DLL 侧默认行为）。
+        /// </remarks>
+        public bool IsNativeWindowPinupEnabled()
+        {
+            try
+            {
+                bool v = IsNativeWindowPinup();
+                Debug.Log($"[WXPCHPInitScript] ✓ IsNativeWindowPinupEnabled → {v}");
+                return v;
+            }
+            catch (DllNotFoundException)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] IsNativeWindowPinupEnabled 跳过：pchp_sdk.dll 未加载（当前平台 {Application.platform}），返回默认值 true");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[WXPCHPInitScript] ✗ IsNativeWindowPinupEnabled 异常: {e.Message}");
+                return true;
+            }
+        }
+
+        #endregion
+
         #region Public Methods - WX API Calls
 
         /// <summary>
@@ -1483,6 +1564,35 @@ namespace WeChatWASM
         public bool SendRawMessage(string message)
         {
             return _initScript?.SendRawMessage(message) ?? false;
+        }
+
+        /// <summary>
+        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有子 HWND 之上。
+        /// 弹出原生 UI（toast 等）前置 false 让宿主覆盖游戏窗口，关闭后置 true。
+        /// </summary>
+        /// <param name="pinup">true=置顶（默认）；false=允许宿主 UI 覆盖</param>
+        /// <returns>true=请求已投递到浏览器进程；false=不支持或调用失败</returns>
+        /// <remarks>
+        /// 返回值仅表示请求已投递，浏览器侧窗口层级变更是异步的。
+        /// 调用方若需严格的时序保证，应自行做同步等待。
+        /// </remarks>
+        public bool SetNativeWindowPinup(bool pinup)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogWarning("[WXPCHighPerformanceManager] InitScript 未初始化，SetNativeWindowPinup 失败");
+                return false;
+            }
+            return _initScript.SetNativeWindowPinup(pinup);
+        }
+
+        /// <summary>
+        /// 查询当前原生窗口的置顶请求状态（默认 true）。
+        /// </summary>
+        /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
+        public bool IsNativeWindowPinupEnabled()
+        {
+            return _initScript?.IsNativeWindowPinupEnabled() ?? true;
         }
     }
 }
