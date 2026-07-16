@@ -95,18 +95,26 @@ unityNamespace.isWXAssetBundle = function (path) {
     return unityNamespace.WXAssetBundles.has(unityNamespace.PathInFileOS(path));
 };
 unityNamespace.PathInFileOS = function (path) {
-    return path.replace(`${wx.env.USER_DATA_PATH}/__GAME_FILE_CACHE`, '');
+    if (!path)
+        return '';
+    return path
+        .replace(`${wx.env.USER_DATA_PATH}/__GAME_FILE_CACHE`, '')
+        .replace(/^\/__GAME_FILE_CACHE/, '');
 };
 unityNamespace.WXAssetBundles = new Map();
 // 清理缓存时是否可被自动清理；返回true可自动清理；返回false不可自动清理
 unityNamespace.isErasableFile = function (info) {
+    // 新版本传 info.relativePath 并且保留了 /__GAME_FILE_CACHE 前缀 (info.path 兼容老版本)
+    const rawPath = (info && (info.path || info.relativePath)) || '';
+    // 统一用 PathInFileOS 归一化为 WXAssetBundles 内部 key 形态
+    const key = unityNamespace.PathInFileOS(rawPath);
     // 用于特定AssetBundle的缓存保持
-    if (unityNamespace.WXAssetBundles.has(info.path)) {
+    if (unityNamespace.WXAssetBundles.has(key)) {
         return false;
     }
     // 达到缓存上限时，不会被自动清理的文件
     const inErasableIdentifier = [];
-    if (inErasableIdentifier.some(identifier => info.path.includes(identifier))) {
+    if (inErasableIdentifier.some(identifier => rawPath.includes(identifier))) {
         return false;
     }
     return true;
