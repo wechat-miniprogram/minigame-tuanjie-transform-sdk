@@ -10,14 +10,24 @@
   - [ ] **方案 B（推荐）**：将 PC 高性能模式拆成独立 Unity Package，不依赖小游戏子平台加载（v0.2 目标）
   - [ ] **方案 C（折中）**：提供独立 `.unitypackage` 安装包，绕过 UPM 子平台系统
 
-### PCHPBuildPreProcessor 首次构建宏时序问题
-- **现状**：`EnsurePCHPDefineSymbol()` 在 `IPreprocessBuildWithReport.OnPreprocessBuild` 中执行，即 Build 时才添加 `WX_PCHP_ENABLED` 宏
-- **问题**：首次 Build 时宏刚写入 → 触发 Domain Reload 重编译，但本次 Build 使用的仍是旧编译结果（宏未生效），`WXPCHPInitScript` 中被 `#if WX_PCHP_ENABLED` 包裹的 `[RuntimeInitializeOnLoadMethod]` 不会被编译进去 → **第一次 Build 的产物 SDK 不会自动初始化，需要 Build 两次才生效**
-- **影响**：路径B 开发者首次构建时 SDK 静默失效，难以排查
-- **方案选项**：
-  - [ ] **方案 A**：在 PC 高性能面板的"生成并转换"按钮点击时就提前写入宏（Build 前），而非在 PreProcessor 中写
-  - [ ] **方案 B**：PreProcessor 检测到宏不存在时，添加宏后抛出 `BuildFailedException` 中断本次构建，提示用户重新 Build
-  - [ ] **方案 C**：去掉 `RuntimeInitializeOnLoadMethod` 上的 `#if WX_PCHP_ENABLED` 条件编译，改用运行时判断（如检查宏对应的 `Scripting Define` 是否存在）
+### ~~PCHPBuildPreProcessor 首次构建宏时序问题~~ ✅ 已修复
+- **修复方案**：采用方案 A —— 在 `BuildPlayer()` 之前（`SwitchActiveBuildTarget` 之前）就调用 `EnsurePCHPDefineSymbol()`
+  - 路径A (`WXPCHPBuildHelper.BuildPCHighPerformance`)：新增 `EnsurePCHPDefineSymbol(buildTarget)` 在 try 块开头
+  - 路径B (`WXPCSettingHelper`)：原本已在 Step 1 正确处理
+  - `PCHPBuildPreProcessor`：保留作为兜底（手动 Build 时仍能补宏，第二次生效）
+
+### WXPCHighPerformanceManager 条件编译导致游戏侧代码无法直接引用
+- **现状**：`WXPCHPInitScript.cs` 整个文件被 `#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)` 包裹，其中包含 `WXPCHighPerformanceManager` 类
+- **问题**：开发者的游戏工程 Active Platform 通常是 MiniGame/WebGL（做小游戏），此时 `UNITY_STANDALONE_WIN` 为 false → `WXPCHighPerformanceManager` 类在编辑器编译时不存在 → 游戏脚本直接引用会报 CS0103
+- **构建时能跑通的原因**：SDK 构建 EXE 时会 `SwitchActiveBuildTarget(Standalone)` → Domain Reload 重编译 → 此时宏生效 → 类存在 → 构建产物中包含该类
+- **开发体验问题**：开发者在编辑器里写代码时红线报错、自动补全不工作、无法直接引用该类型
+- **期望**：开发者能直接写 `var mgr = WXPCHighPerformanceManager.GetInstance();` 而不需要反射或条件编译
+- **方案方向**：
+  - [ ] **方案 A（Facade 空壳）**：提供一个无条件编译的 Facade/Stub 类，在任何平台都能编译。非 Standalone 运行时方法返回 null/noop；Standalone 运行时委托给真实实现
+  - [ ] **方案 B（拆分文件）**：将 `WXPCHighPerformanceManager` 公开 API 部分拆到一个不带条件编译的文件中，仅将 P/Invoke 和 native 交互部分保留条件编译
+  - [ ] **方案 C（partial class + 条件实现）**：公开接口 partial 类无条件编译，实现部分在 `#if UNITY_STANDALONE_WIN` 文件中补全
+- **临时 workaround**：游戏侧用反射调用（已在 ShowToastDemo.cs 中验证可行）
+- **关联**：与"路径B 平台依赖问题"同源——根因都是 Active Platform ≠ Standalone
 
 ## 🟡 中优先级
 

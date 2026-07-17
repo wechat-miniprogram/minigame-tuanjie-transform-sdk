@@ -1,11 +1,9 @@
 // WX_PCHP_ENABLED: PC高性能模式总开关
-// 路径A（转换工具链）: 由转换工具自动添加到 ScriptingDefineSymbols
-// 路径B（原生接入）: 开发者手动添加，或通过 Editor 菜单一键开启
-//
-// 平台限制：此脚本只在 Standalone Windows 构建中生效
-// pchp_sdk.dll 是 Windows native DLL，需要在 EXE 进程中通过 LoadLibrary 加载
-// WebGL/WASM 构建不需要此脚本（WASM 侧通过小游戏插件 + XWebAPI.nativeGameSDK 通道通信）
-#if WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+// 编译条件说明：
+//   - UNITY_EDITOR: Editor 下始终编译（开发调试需要）
+//   - UNITY_STANDALONE: 实际 Standalone 构建时编译（含 Win/Mac/Linux）
+//   - 排除 WebGL/MiniGame 实际构建（避免 DllImport 进 WASM）
+#if WX_PCHP_ENABLED && (UNITY_EDITOR || UNITY_STANDALONE)
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -102,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.34";
-        public const string PCHP_BUILD_DATE = "2026-06-04 11:30";
+        public const string PCHP_VERSION = "0.1.34-diag.3";
+        public const string PCHP_BUILD_DATE = "2026-07-13 20:01 (diag3:pinup API + fail-safe)";
 
         #region DLL Imports
 
@@ -135,11 +133,32 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
 
+        // 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        // 当宿主/原生 UI 需要覆盖 PCHP 窗口时设为 false；恢复游戏输入/光标行为时设回 true。
+        // 返回 true 表示请求已成功投递到浏览器进程。
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private static extern bool PinupNativeWindow([MarshalAs(UnmanagedType.U1)] bool pinup);
+
+        // 查询当前原生窗口的置顶状态，默认为 true。
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private static extern bool IsNativeWindowPinup();
+
         // DLL 搜索路径设置（解决 pchp_sdk.dll 不在 exe 同级目录的问题）
         // 注意：不用 #if UNITY_STANDALONE_WIN 包裹，因为 Mac 编辑器交叉构建 Windows 包时
         // 也需要这个声明。运行时通过 Application.platform 判断是否调用。
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool SetDllDirectory(string lpPathName);
+
+        // 手动加载 DLL（绕过 Mono VFS 的文件可见性限制）
+        // 微信沙箱的 VFS 层会隐藏 .dll 文件（File.Exists 返回 false），
+        // 但 kernel32.LoadLibrary 走 Windows 原生路径，不受 VFS 限制
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string lpLibFileName);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetLastError();
 
         // Windows 窗口控制 API
 #if UNITY_STANDALONE_WIN
@@ -321,6 +340,14 @@ namespace WeChatWASM
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
 
+            // ★ PC 高性能模式必备：窗口失焦后保持主循环运行
+            // Unity Standalone 默认 runInBackground=false，失焦时 Update 会暂停，
+            // 导致消息队列不处理、按钮点不动、异步回调不触发。
+            // PC HP 模式下 Unity 窗口被 SW_HIDE 隐藏，焦点实际由微信客户端外壳持有，
+            // 必须显式开启后台运行。
+            Application.runInBackground = true;
+            Debug.Log($"[WXPCHPInitScript] Application.runInBackground = true (PC HP 模式必备)");
+
             // 立即隐藏窗口，防止 Unity 独立窗口暴露在桌面上
             // 后续由微信客户端通过 InitGameWindow 接管窗口显示
             HideGameWindow();
@@ -344,6 +371,24 @@ namespace WeChatWASM
         {
             // 在主线程中处理消息队列
             ProcessMessageQueue();
+        }
+
+        /// <summary>
+        /// 焦点变化回调——用于诊断 PC HP 模式下"按钮失焦后点不动"的问题。
+        /// Unity 窗口被 SW_HIDE 后，焦点状态由微信客户端外壳窗口决定，
+        /// 这里记录 isFocused 变化，便于定位是否因失焦导致主循环/输入中断。
+        /// </summary>
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            Debug.Log($"[WXPCHPInitScript] OnApplicationFocus(hasFocus={hasFocus}) | runInBackground={Application.runInBackground} | isFocused={Application.isFocused}");
+        }
+
+        /// <summary>
+        /// 暂停回调——PC HP 模式下若被系统挂起（如锁屏、切到锁屏界面）会触发。
+        /// </summary>
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            Debug.Log($"[WXPCHPInitScript] OnApplicationPause(pauseStatus={pauseStatus}) | runInBackground={Application.runInBackground}");
         }
 
         private void OnDestroy()
@@ -457,8 +502,8 @@ namespace WeChatWASM
                 }
                 catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 获取环境变量失败: {ex.Message}"); }
 
-                // === 诊断：尝试直接 LoadLibrary 绝对路径 ===
-                // 如果命令行 arg[0] 能拿到 exe 真实路径，就能推导 DLL 位置
+                // === 策略 2：从 arg[0] 推导 exe 目录，直接 LoadLibrary ===
+                // 不依赖 File.Exists（被 VFS 屏蔽），直接尝试 LoadLibrary
                 try
                 {
                     string[] args = System.Environment.GetCommandLineArgs();
@@ -467,15 +512,43 @@ namespace WeChatWASM
                         string exeDir = System.IO.Path.GetDirectoryName(args[0]);
                         if (!string.IsNullOrEmpty(exeDir))
                         {
-                            string dllFullPath = System.IO.Path.Combine(exeDir, "pchp_sdk.dll");
-                            Debug.Log($"[WXPCHPInitScript] 从 arg[0] 推导 DLL 路径: {dllFullPath}");
-                            if (System.IO.File.Exists(dllFullPath))
+                            string[] exeDirCandidates = new string[]
                             {
-                                Debug.Log($"[WXPCHPInitScript] ✅ DLL 文件存在！尝试 SetDllDirectory...");
+                                System.IO.Path.Combine(exeDir, "pchp_sdk.dll"),
+                                System.IO.Path.Combine(exeDir, "pchp_Data", "pchp_sdk.dll"),
+                                System.IO.Path.Combine(exeDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll"),
+                            };
+                            foreach (var candidate in exeDirCandidates)
+                            {
+                                Debug.Log($"[WXPCHPInitScript] arg[0] 策略尝试 LoadLibrary: {candidate}");
+                                try
+                                {
+                                    IntPtr handle = LoadLibrary(candidate);
+                                    if (handle != IntPtr.Zero)
+                                    {
+                                        Debug.Log($"[WXPCHPInitScript] ✅ arg[0] LoadLibrary 成功！路径: {candidate}");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        uint err = GetLastError();
+                                        Debug.Log($"[WXPCHPInitScript] ❌ arg[0] LoadLibrary 失败，错误码: {err}");
+                                    }
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] arg[0] LoadLibrary 异常: {innerEx.Message}");
+                                }
+                            }
+
+                            // LoadLibrary 失败则尝试 SetDllDirectory
+                            try
+                            {
                                 bool result = SetDllDirectory(exeDir);
                                 Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{exeDir}\") = {result}");
                                 if (result) return;
                             }
+                            catch { }
                         }
                     }
                 }
@@ -505,7 +578,8 @@ namespace WeChatWASM
                 catch (Exception ex) { Debug.Log($"[WXPCHPInitScript] 列出 ./ 失败: {ex.Message}"); }
 
                 // 搜索常见 native lib 目录
-                string[] probeDirs = new string[] { "/", ".", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
+                // 注意：微信沙箱 VFS 的工作目录 ./ 实际就是 pchp_Data/（非 exe 同级）
+                string[] probeDirs = new string[] { "/", ".", "./Plugins", "./Plugins/x86_64", "./pchp_Data", "./pchp_Data/Plugins", "./pchp_Data/Plugins/x86_64" };
                 foreach (var dir in probeDirs)
                 {
                     try
@@ -532,14 +606,18 @@ namespace WeChatWASM
                 }
 
                 // 直接尝试各种可能的路径检查文件是否存在
+                // VFS 的 ./ = pchp_Data/，所以 ./Plugins/x86_64/ = 原 pchp_Data/Plugins/x86_64/
                 string[] dllProbes = new string[]
                 {
                     "./pchp_sdk.dll", "/pchp_sdk.dll",
+                    "./Plugins/x86_64/pchp_sdk.dll",
+                    "./Plugins/pchp_sdk.dll",
                     "./pchp_Data/Plugins/x86_64/pchp_sdk.dll",
                     "./pchp_Data/Plugins/pchp_sdk.dll",
                     "pchp_sdk.dll",
                     "./libpchp_sdk.so", "/libpchp_sdk.so",
                     "./pchp_sdk.so", "/pchp_sdk.so",
+                    "./Plugins/x86_64/libpchp_sdk.so",
                     "./pchp_Data/Plugins/x86_64/libpchp_sdk.so",
                 };
                 Debug.Log("[WXPCHPInitScript] === DLL 路径探测 ===");
@@ -551,57 +629,73 @@ namespace WeChatWASM
                     else Debug.Log($"[WXPCHPInitScript] ❌ 不存在: {probe}");
                 }
 
-                // === 策略 3：通过 %APPDATA% 环境变量尝试定位 ===
-                // 微信安装路径模式：%APPDATA%\Tencent\xwechat\radium\pchp\{appid}\
-                // 这是最后的兜底——如果 Mono 自己的搜索机制就能找到，这步不需要
+                // === 策略 3：通过 %APPDATA% 构造绝对路径 + LoadLibrary 强制加载 ===
+                // 微信沙箱 VFS 会隐藏 .dll 文件（File.Exists 返回 false），
+                // 但 kernel32.LoadLibrary 走 Windows 原生文件系统，不受 VFS 限制。
+                // 因此不能依赖 File.Exists 判断，直接暴力 LoadLibrary 所有候选路径。
                 string appData = null;
                 try { appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData); } catch { }
                 Debug.Log($"[WXPCHPInitScript] APPDATA = {appData}");
 
                 if (!string.IsNullOrEmpty(appData) && appData != "/" && !appData.StartsWith("http"))
                 {
-                    // 尝试通过已知微信路径模式查找
                     string radiumPath = System.IO.Path.Combine(appData, "Tencent", "xwechat", "radium", "pchp");
                     Debug.Log($"[WXPCHPInitScript] 检查微信安装路径: {radiumPath}");
 
                     if (System.IO.Directory.Exists(radiumPath))
                     {
-                        // 遍历 appid 目录
                         try
                         {
                             foreach (var appDir in System.IO.Directory.GetDirectories(radiumPath))
                             {
-                                // 检查 exe 同级
-                                string dllAtRoot = System.IO.Path.Combine(appDir, "pchp_sdk.dll");
-                                if (System.IO.File.Exists(dllAtRoot))
+                                // 构造所有可能的 DLL 绝对路径（不依赖 File.Exists）
+                                string[] candidatePaths = new string[]
                                 {
+                                    System.IO.Path.Combine(appDir, "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "pchp_sdk.dll"),
+                                    System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll"),
+                                };
+
+                                foreach (var candidatePath in candidatePaths)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] 尝试 LoadLibrary: {candidatePath}");
                                     try
                                     {
-                                        bool result = SetDllDirectory(appDir);
-                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA策略命中，SetDllDirectory(\"{appDir}\") = {result}");
-                                        return;
+                                        IntPtr handle = LoadLibrary(candidatePath);
+                                        if (handle != IntPtr.Zero)
+                                        {
+                                            Debug.Log($"[WXPCHPInitScript] ✅ LoadLibrary 成功！路径: {candidatePath}, handle: {handle}");
+                                            // LoadLibrary 成功后，后续 DllImport("pchp_sdk") 就能自动找到已加载的模块
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            uint err = GetLastError();
+                                            Debug.Log($"[WXPCHPInitScript] ❌ LoadLibrary 失败，错误码: {err}, 路径: {candidatePath}");
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
-                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
+                                        Debug.Log($"[WXPCHPInitScript] LoadLibrary 异常: {ex.Message}, 路径: {candidatePath}");
                                     }
                                 }
 
-                                // 检查 Plugins/x86_64/
-                                string dllAtPlugins = System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64", "pchp_sdk.dll");
-                                if (System.IO.File.Exists(dllAtPlugins))
+                                // LoadLibrary 全失败了，最后尝试 SetDllDirectory 兜底
+                                try
                                 {
-                                    string pluginDir = System.IO.Path.GetDirectoryName(dllAtPlugins);
-                                    try
+                                    string pluginDir = System.IO.Path.Combine(appDir, "pchp_Data", "Plugins", "x86_64");
+                                    bool result = SetDllDirectory(pluginDir);
+                                    Debug.Log($"[WXPCHPInitScript] SetDllDirectory(\"{pluginDir}\") = {result}");
+                                    if (result)
                                     {
-                                        bool result = SetDllDirectory(pluginDir);
-                                        Debug.Log($"[WXPCHPInitScript] ✅ APPDATA/Plugins策略命中，SetDllDirectory(\"{pluginDir}\") = {result}");
+                                        Debug.Log($"[WXPCHPInitScript] ✅ SetDllDirectory 兜底成功");
                                         return;
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
-                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.Log($"[WXPCHPInitScript] SetDllDirectory 被拦截: {ex.Message}");
                                 }
                             }
                         }
@@ -613,8 +707,6 @@ namespace WeChatWASM
                 }
 
                 // 如果走到这里，说明所有主动策略都失败了
-                // 但不必恐慌——Mono runtime 的 DllImport 会按内置规则搜索 pchp_Data/Plugins/x86_64/
-                // 只要构建时正确放置了 DLL，Mono 应该能自己找到
                 Debug.Log($"[WXPCHPInitScript] ℹ️ 主动路径设置未成功，依赖 Mono 内置 native plugin 搜索机制（pchp_Data/Plugins/x86_64/）");
             }
             catch (Exception e)
@@ -747,6 +839,75 @@ namespace WeChatWASM
 
         #endregion
 
+        #region Public Methods - Window Control
+
+        /// <summary>
+        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        /// 典型用法：弹出 toast / 原生 UI 前 pinup=false 让宿主覆盖游戏窗口，
+        /// UI 关闭后 pinup=true 恢复游戏输入与光标行为。
+        /// </summary>
+        /// <param name="pinup">true=置顶（默认值）；false=允许宿主 UI 覆盖</param>
+        /// <returns>true=请求已投递到浏览器进程；false=平台不支持或调用失败</returns>
+        /// <remarks>
+        /// 设计说明：
+        /// 1. 本方法是纯窗口层级控制，不依赖 Mojo 通道（IsConnected）；
+        ///    也不需要 InitEmbeddedGameSDK 完成（IsInitialized），只要 DLL 已加载即可。
+        ///    因此不做 IsInitialized/IsConnected 守卫，让"游戏 loading 阶段就想 pinup=false"的场景可用。
+        /// 2. 返回值仅表示请求已投递，浏览器侧实际窗口层级变更是异步的。
+        ///    若后续操作强依赖层级已变更（例如紧接着 ShowWindow），调用方需自行做时序同步。
+        /// 3. DllNotFoundException 会被 catch 兜底，非 Windows 平台或 DLL 缺失时返回 false 且不崩游戏。
+        /// </remarks>
+        public bool SetNativeWindowPinup(bool pinup)
+        {
+            Debug.Log($"[WXPCHPInitScript] ▶ SetNativeWindowPinup({pinup})");
+            try
+            {
+                bool queued = PinupNativeWindow(pinup);
+                Debug.Log($"[WXPCHPInitScript] ✓ SetNativeWindowPinup({pinup}) → queued={queued}");
+                return queued;
+            }
+            catch (DllNotFoundException)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SetNativeWindowPinup({pinup}) 跳过：pchp_sdk.dll 未加载（当前平台 {Application.platform}）");
+                return false;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[WXPCHPInitScript] ✗ SetNativeWindowPinup({pinup}) 异常: {e.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 查询当前原生窗口的置顶请求状态。默认值为 true。
+        /// </summary>
+        /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
+        /// <remarks>
+        /// 与 <see cref="SetNativeWindowPinup"/> 一致，不做 IsInitialized 守卫。
+        /// DLL 未加载时返回默认值 true（对齐 DLL 侧默认行为）。
+        /// </remarks>
+        public bool IsNativeWindowPinupEnabled()
+        {
+            try
+            {
+                bool v = IsNativeWindowPinup();
+                Debug.Log($"[WXPCHPInitScript] ✓ IsNativeWindowPinupEnabled → {v}");
+                return v;
+            }
+            catch (DllNotFoundException)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] IsNativeWindowPinupEnabled 跳过：pchp_sdk.dll 未加载（当前平台 {Application.platform}），返回默认值 true");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[WXPCHPInitScript] ✗ IsNativeWindowPinupEnabled 异常: {e.Message}");
+                return true;
+            }
+        }
+
+        #endregion
+
         #region Public Methods - WX API Calls
 
         /// <summary>
@@ -762,9 +923,11 @@ namespace WeChatWASM
         /// <returns>callbackId</returns>
         public string CallWXAPI(string method, object data, Action<string> onSuccess = null, Action<string> onFail = null, Action<string> onComplete = null)
         {
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI ENTER: method={method}, IsInitialized={IsInitialized}, IsConnected={IsConnected}, hasSuccess={onSuccess != null}, hasFail={onFail != null}, hasComplete={onComplete != null}");
+
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {method}");
+                Debug.LogWarning($"[WXPCHPInitScript] ✗ SDK未初始化或未连接，无法调用 {method}");
                 string errRes = "{\"errMsg\":\"SDK not initialized\"}";
                 onFail?.Invoke(errRes);
                 onComplete?.Invoke(errRes);
@@ -773,6 +936,7 @@ namespace WeChatWASM
 
             string callbackId = GenerateCallbackId();
             string paramsJson = data != null ? JsonMapper.ToJson(data) : "{}";
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: callbackId={callbackId}, paramsJson={paramsJson}");
 
             // 注册回调
             _pendingCallbacks[callbackId] = new CallbackInfo
@@ -782,6 +946,7 @@ namespace WeChatWASM
                 OnComplete = onComplete,
                 ApiName = method
             };
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: 已注册回调到 _pendingCallbacks (当前待处理数: {_pendingCallbacks.Count})");
 
             // 构建下行指令: { callbackId, method, params }
             var command = new PCHPExeCommand
@@ -792,10 +957,11 @@ namespace WeChatWASM
             };
 
             string commandJson = JsonMapper.ToJson(command);
-            Debug.Log($"[WXPCHPInitScript] 发送API请求: {method}, callbackId: {callbackId}");
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPI STEP: 即将发送指令 JSON: {commandJson}");
 
             if (!SendMessageInternal(commandJson))
             {
+                Debug.LogError($"[WXPCHPInitScript] ✗ CallWXAPI 发送失败: method={method}, callbackId={callbackId}");
                 _pendingCallbacks.Remove(callbackId);
                 string errRes = "{\"errMsg\":\"Failed to send message\"}";
                 onFail?.Invoke(errRes);
@@ -803,6 +969,7 @@ namespace WeChatWASM
                 return null;
             }
 
+            Debug.Log($"[WXPCHPInitScript] ✓ CallWXAPI EXIT: method={method}, callbackId={callbackId} 已成功投递到 native 层");
             return callbackId;
         }
 
@@ -1070,13 +1237,13 @@ namespace WeChatWASM
         {
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning("[WXPCHPInitScript] SDK未初始化或未连接");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessage ✗ SDK未初始化或未连接");
                 return false;
             }
 
             if (data == null || data.Length == 0)
             {
-                Debug.LogWarning("[WXPCHPInitScript] 发送的数据为空");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessage ✗ 发送的数据为空");
                 return false;
             }
 
@@ -1086,7 +1253,9 @@ namespace WeChatWASM
                 try
                 {
                     Marshal.Copy(data, 0, ptr, data.Length);
-                    return SendMsgAsync(ptr, data.Length);
+                    bool ok = SendMsgAsync(ptr, data.Length);
+                    Debug.Log($"[WXPCHPInitScript] ▶ SendMsgAsync 返回={ok}, len={data.Length}, ptr=0x{ptr.ToInt64():X}");
+                    return ok;
                 }
                 finally
                 {
@@ -1095,7 +1264,7 @@ namespace WeChatWASM
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 发送消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] SendMessage ✗ 发送消息异常: {e.Message}");
                 return false;
             }
         }
@@ -1119,18 +1288,20 @@ namespace WeChatWASM
         {
             if (!IsInitialized || !IsConnected)
             {
-                Debug.LogWarning("[WXPCHPInitScript] SDK未初始化或未连接");
+                Debug.LogWarning("[WXPCHPInitScript] SendMessageInternal ✗ SDK未初始化或未连接");
                 return false;
             }
 
             try
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
-                return SendMessage(data);
+                bool ok = SendMessage(data);
+                Debug.Log($"[WXPCHPInitScript] ▶ SendMessageInternal 结果={ok}, payloadLen={data.Length}");
+                return ok;
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 发送消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] SendMessageInternal ✗ 发送消息异常: {e.Message}");
                 return false;
             }
         }
@@ -1287,8 +1458,11 @@ namespace WeChatWASM
         {
             if (data == IntPtr.Zero || len <= 0)
             {
+                Debug.LogWarning($"[WXPCHPInitScript] HandleAsyncMessage 收到空数据: data={data}, len={len}");
                 return;
             }
+
+            Debug.Log($"[WXPCHPInitScript] ◀ HandleAsyncMessage 收到 native 回调: len={len}, ptr=0x{data.ToInt64():X}");
 
             try
             {
@@ -1302,13 +1476,17 @@ namespace WeChatWASM
 
                     // 转为字符串，加入消息队列（主线程处理）
                     string message = System.Text.Encoding.UTF8.GetString(buffer);
-                    Debug.Log($"[WXPCHPInitScript] 收到原始消息: {message}");
+                    Debug.Log($"[WXPCHPInitScript] ◀ 收到原始消息: {message}");
                     instance._messageQueue.Enqueue(message);
+                }
+                else
+                {
+                    Debug.LogWarning("[WXPCHPInitScript] HandleAsyncMessage: instance 为 null，消息丢弃");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[WXPCHPInitScript] 处理消息异常: {e.Message}");
+                Debug.LogError($"[WXPCHPInitScript] HandleAsyncMessage ✗ 处理消息异常: {e.Message}");
             }
         }
 
@@ -1387,6 +1565,35 @@ namespace WeChatWASM
         {
             return _initScript?.SendRawMessage(message) ?? false;
         }
+
+        /// <summary>
+        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有子 HWND 之上。
+        /// 弹出原生 UI（toast 等）前置 false 让宿主覆盖游戏窗口，关闭后置 true。
+        /// </summary>
+        /// <param name="pinup">true=置顶（默认）；false=允许宿主 UI 覆盖</param>
+        /// <returns>true=请求已投递到浏览器进程；false=不支持或调用失败</returns>
+        /// <remarks>
+        /// 返回值仅表示请求已投递，浏览器侧窗口层级变更是异步的。
+        /// 调用方若需严格的时序保证，应自行做同步等待。
+        /// </remarks>
+        public bool SetNativeWindowPinup(bool pinup)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogWarning("[WXPCHighPerformanceManager] InitScript 未初始化，SetNativeWindowPinup 失败");
+                return false;
+            }
+            return _initScript.SetNativeWindowPinup(pinup);
+        }
+
+        /// <summary>
+        /// 查询当前原生窗口的置顶请求状态（默认 true）。
+        /// </summary>
+        /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
+        public bool IsNativeWindowPinupEnabled()
+        {
+            return _initScript?.IsNativeWindowPinupEnabled() ?? true;
+        }
     }
 }
-#endif // WX_PCHP_ENABLED && (UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+#endif // WX_PCHP_ENABLED

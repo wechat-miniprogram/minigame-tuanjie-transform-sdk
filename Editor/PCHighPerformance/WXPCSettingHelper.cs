@@ -117,6 +117,51 @@ namespace WeChatWASM
             GUILayout.Space(10);
         }
 
+        // SessionState keys 用于路径B的两阶段构建
+        private const string SESSION_KEY_PATHB_EXPORT = "PCHP_PathB_ExportPath";
+        private const string SESSION_KEY_PATHB_TARGET = "PCHP_PathB_Target";
+
+        /// <summary>
+        /// Domain Reload 后恢复路径B构建
+        /// </summary>
+        [InitializeOnLoadMethod]
+        private static void OnDomainReloadPathB()
+        {
+            string pendingExportPath = SessionState.GetString(SESSION_KEY_PATHB_EXPORT, "");
+            int pendingTarget = SessionState.GetInt(SESSION_KEY_PATHB_TARGET, 0);
+
+            if (!string.IsNullOrEmpty(pendingExportPath) && pendingTarget != 0)
+            {
+                SessionState.EraseString(SESSION_KEY_PATHB_EXPORT);
+                SessionState.EraseInt(SESSION_KEY_PATHB_TARGET);
+
+                var buildTarget = (BuildTarget)pendingTarget;
+                Debug.Log($"[PC高性能模式] [路径B] Domain Reload 完成，恢复构建: path={pendingExportPath}");
+
+                EditorApplication.delayCall += () =>
+                {
+                    // 验证类型已编译
+                    System.Type pchpType = null;
+                    foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        pchpType = asm.GetType("WeChatWASM.WXPCHighPerformanceManager");
+                        if (pchpType != null) break;
+                    }
+
+                    if (pchpType == null)
+                    {
+                        Debug.LogError("[PC高性能模式] [路径B] Domain Reload 后 WXPCHighPerformanceManager 仍不存在！");
+                        EditorUtility.DisplayDialog("构建失败",
+                            "WX_PCHP_ENABLED 宏生效后重编译未产生 PCHP 类型。\n\n请确认 Standalone 平台的 Scripting Define Symbols 包含 WX_PCHP_ENABLED，等编译完成后重试。", "确定");
+                        return;
+                    }
+
+                    Debug.Log("[PC高性能模式] [路径B] ✅ 类型已就绪，继续构建...");
+                    ExecutePathBBuild(pendingExportPath, buildTarget);
+                };
+            }
+        }
+
         /// <summary>
         /// 点击生成并转换按钮
         /// </summary>
@@ -160,43 +205,74 @@ namespace WeChatWASM
 
             Debug.Log($"[PC高性能模式] 目标平台: {platformName}");
 
+            // Step 1: 确保 WX_PCHP_ENABLED 宏已定义
+            bool macroReady = EnsurePCHPDefineSymbol();
+
+            // 检查类型是否已编译
+            System.Type pchpType = null;
+            foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                pchpType = asm.GetType("WeChatWASM.WXPCHighPerformanceManager");
+                if (pchpType != null) break;
+            }
+
+            if (!macroReady || pchpType == null)
+            {
+                // 两阶段模式：保存参数，触发 Reload
+                SessionState.SetString(SESSION_KEY_PATHB_EXPORT, fullExportPath);
+                SessionState.SetInt(SESSION_KEY_PATHB_TARGET, (int)buildTarget);
+
+                Debug.Log("[PC高性能模式] [路径B] ⏳ 需要等待脚本重编译，构建将在 Domain Reload 后自动继续...");
+
+                if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
+                {
+                    EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
+                }
+                else
+                {
+                    UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+                }
+
+                EditorUtility.DisplayDialog("等待编译",
+                    "WX_PCHP_ENABLED 宏已写入，正在触发脚本重编译。\n\n编译完成后将自动开始构建，请稍候...", "确定");
+                return;
+            }
+
+            // 宏和类型都就绪，直接构建
+            ExecutePathBBuild(fullExportPath, buildTarget);
+        }
+
+        /// <summary>
+        /// 路径B 实际执行构建（宏已生效、类型已编译）
+        /// </summary>
+        private static void ExecutePathBBuild(string fullExportPath, BuildTarget buildTarget)
+        {
+            string platformName = buildTarget == BuildTarget.StandaloneOSX ? "macOS" : "Windows x64";
+
             try
             {
-                // Step 1: 确保 WX_PCHP_ENABLED 宏已定义
-                EditorUtility.DisplayProgressBar("PC高性能模式", "正在检查 WX_PCHP_ENABLED 宏...", 0.05f);
-                EnsurePCHPDefineSymbol();
-
-                // Step 2: 检查首场景是否已有 SDK（有则跳过注入，依赖 RuntimeInitializeOnLoadMethod）
-                EditorUtility.DisplayProgressBar("PC高性能模式", "正在检查 SDK 注入状态...", 0.1f);
-                CheckAndOptionallyInjectSDK();
-
-                // Step 3: 切换构建目标
-                EditorUtility.DisplayProgressBar("PC高性能模式", "正在切换构建目标...", 0.2f);
-                var originalTarget = EditorUserBuildSettings.activeBuildTarget;
-                if (originalTarget != buildTarget)
+                // 切换构建目标
+                EditorUtility.DisplayProgressBar("PC高性能模式", "正在准备构建...", 0.2f);
+                if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
                 {
-                    Debug.Log($"[PC高性能模式] 切换构建目标: {originalTarget} -> {buildTarget}");
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
                 }
 
-                // Step 4: 配置 Player Settings
-                EditorUtility.DisplayProgressBar("PC高性能模式", "正在配置 Player Settings...", 0.3f);
+                // 配置 Player Settings
                 ConfigurePlayerSettings();
 
-                // Step 5: 准备输出目录
+                // 准备输出目录
                 if (!Directory.Exists(fullExportPath))
                 {
                     Directory.CreateDirectory(fullExportPath);
                 }
 
-                // PC高性能模式统一使用固定名称 pchp
                 const string execName = "pchp";
-
                 string executablePath = buildTarget == BuildTarget.StandaloneOSX
                     ? Path.Combine(fullExportPath, $"{execName}.app")
                     : Path.Combine(fullExportPath, $"{execName}.exe");
 
-                // Step 6: 获取场景列表
+                // 获取场景列表
                 var scenes = GetEnabledScenes();
                 if (scenes.Length == 0)
                 {
@@ -205,9 +281,18 @@ namespace WeChatWASM
                     return;
                 }
 
-                // Step 7: 执行构建
+                // 执行构建
                 EditorUtility.DisplayProgressBar("PC高性能模式", "正在构建 Standalone...", 0.5f);
                 Debug.Log($"[PC高性能模式] 开始构建，输出: {executablePath}");
+
+                // [诊断]
+#if UNITY_2023_1_OR_NEWER
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                Debug.Log($"[PC高性能模式] [诊断] Standalone Defines: {diagDefines}");
+                Debug.Log($"[PC高性能模式] [诊断] Contains WX_PCHP_ENABLED: {diagDefines.Contains("WX_PCHP_ENABLED")}");
 
                 var report = BuildPipeline.BuildPlayer(scenes, executablePath, buildTarget, BuildOptions.None);
 
@@ -215,16 +300,47 @@ namespace WeChatWASM
 
                 if (report.summary.result == BuildResult.Succeeded)
                 {
-                    Debug.Log($"[PC高性能模式] 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
+                    Debug.Log($"[PC高性能模式] ✅ 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
 
-                    // 复制 pchp_sdk.dll 到构建产物目录
+                    // 复制 pchp_sdk.dll
                     WXPCHPBuildHelper.CopyPCHPNativeDllPublic(fullExportPath, buildTarget);
 
-                    if (EditorUtility.DisplayDialog("构建成功",
-                        $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {fullExportPath}",
-                        "打开目录", "关闭"))
+                    // 打包 wxapkg
+                    EditorUtility.DisplayProgressBar("PC高性能模式", "正在打包 wxapkg...", 0.8f);
+                    string wxapkgOutputDir = fullExportPath;
+                    string tempWxapkgPath = Path.Combine(Path.GetDirectoryName(fullExportPath), $"{WXPCHPBuildHelper.PCHPOutputDir}_temp.wxapkg");
+                    string finalWxapkgPath = Path.Combine(wxapkgOutputDir, $"{WXPCHPBuildHelper.PCHPOutputDir}.wxapkg");
+
+                    if (WXApkgPacker.Pack(fullExportPath, tempWxapkgPath))
                     {
-                        EditorUtility.RevealInFinder(fullExportPath);
+                        Directory.Delete(fullExportPath, true);
+                        Directory.CreateDirectory(wxapkgOutputDir);
+                        File.Move(tempWxapkgPath, finalWxapkgPath);
+
+                        string gameJsPath = Path.Combine(wxapkgOutputDir, "game.js");
+                        File.WriteAllText(gameJsPath, "");
+                        Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
+                        EditorUtility.ClearProgressBar();
+
+                        if (EditorUtility.DisplayDialog("构建成功",
+                            $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {wxapkgOutputDir}\n\n产物:\n• {WXPCHPBuildHelper.PCHPOutputDir}.wxapkg\n• game.js",
+                            "打开目录", "关闭"))
+                        {
+                            EditorUtility.RevealInFinder(wxapkgOutputDir);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
+                        if (File.Exists(tempWxapkgPath)) File.Delete(tempWxapkgPath);
+                        EditorUtility.ClearProgressBar();
+
+                        if (EditorUtility.DisplayDialog("构建成功（未打包）",
+                            $"PC高性能模式构建完成，但 wxapkg 打包失败。\n\n原始构建产物保留在: {fullExportPath}",
+                            "打开目录", "关闭"))
+                        {
+                            EditorUtility.RevealInFinder(fullExportPath);
+                        }
                     }
                 }
                 else
@@ -232,7 +348,6 @@ namespace WeChatWASM
                     Debug.LogError($"[PC高性能模式] 构建失败: {report.summary.result}");
                     EditorUtility.DisplayDialog("构建失败", $"构建失败: {report.summary.result}\n\n请查看 Console 获取详细错误信息", "确定");
                 }
-                // 注意：路径B 不调用 RestoreToMiniGamePlatform()，保持 Standalone 平台
             }
             catch (System.Exception e)
             {
@@ -243,9 +358,12 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 确保 WX_PCHP_ENABLED 宏已定义
+        /// 确保 WX_PCHP_ENABLED 宏已定义。
+        /// 如果宏是新增的，使用两阶段构建：先写入宏并触发 Domain Reload，
+        /// Reload 后通过 SessionState 恢复构建流程。
         /// </summary>
-        private void EnsurePCHPDefineSymbol()
+        /// <returns>true 表示宏已就绪可继续；false 表示需要等待 Domain Reload</returns>
+        private bool EnsurePCHPDefineSymbol()
         {
             var targetGroup = BuildTargetGroup.Standalone;
 #if UNITY_2023_1_OR_NEWER
@@ -266,8 +384,10 @@ namespace WeChatWASM
 #else
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
 #endif
-                Debug.Log("[PC高性能模式] 已自动添加 WX_PCHP_ENABLED 宏");
+                Debug.Log("[PC高性能模式] 已自动添加 WX_PCHP_ENABLED 宏，需要等待 Domain Reload...");
+                return false;
             }
+            return true;
         }
 
         /// <summary>
@@ -354,7 +474,7 @@ namespace WeChatWASM
         /// <summary>
         /// 配置 Player Settings
         /// </summary>
-        private void ConfigurePlayerSettings()
+        private static void ConfigurePlayerSettings()
         {
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
             PlayerSettings.defaultScreenWidth = 1280;
@@ -380,7 +500,7 @@ namespace WeChatWASM
         /// <summary>
         /// 获取启用的场景列表
         /// </summary>
-        private string[] GetEnabledScenes()
+        private static string[] GetEnabledScenes()
         {
             var scenes = new List<string>();
             foreach (var scene in EditorBuildSettings.scenes)

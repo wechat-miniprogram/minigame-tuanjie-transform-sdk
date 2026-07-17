@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEditor.Compilation;
 
 namespace WeChatWASM
 {
@@ -28,11 +29,136 @@ namespace WeChatWASM
             return enabled;
         }
 
+        // SessionState keys（跨 Domain Reload 持久化构建参数）
+        private const string SESSION_KEY_PENDING_EXPORT_PATH = "PCHP_PendingBuild_ExportPath";
+        private const string SESSION_KEY_PENDING_TARGET = "PCHP_PendingBuild_Target";
+        private const string SESSION_KEY_RETRY_COUNT = "PCHP_PendingBuild_RetryCount";
+        private const int MAX_RETRY_COUNT = 3; // 最多重试 3 次 Domain Reload
+
         /// <summary>
-        /// 执行PC高性能构建
+        /// 上次 BuildPCHighPerformance 调用是否进入了异步两阶段模式
+        /// 调用者应检查此属性：如果为 true，表示构建将在 Domain Reload 后自动继续，
+        /// 调用者不应立即调用 RestoreToMiniGamePlatform()
+        /// </summary>
+        public static bool IsBuildDeferred { get; private set; }
+
+        /// <summary>
+        /// Domain Reload 后自动恢复构建（InitializeOnLoad 保证每次 Reload 都会执行）
+        /// </summary>
+        [InitializeOnLoadMethod]
+        private static void OnDomainReload()
+        {
+            string pendingExportPath = SessionState.GetString(SESSION_KEY_PENDING_EXPORT_PATH, "");
+            int pendingTarget = SessionState.GetInt(SESSION_KEY_PENDING_TARGET, 0);
+
+            if (!string.IsNullOrEmpty(pendingExportPath) && pendingTarget != 0)
+            {
+                // 清除标记，防止重复触发
+                SessionState.EraseString(SESSION_KEY_PENDING_EXPORT_PATH);
+                SessionState.EraseInt(SESSION_KEY_PENDING_TARGET);
+
+                // 重试计数检查
+                int retryCount = SessionState.GetInt(SESSION_KEY_RETRY_COUNT, 0);
+                SessionState.EraseInt(SESSION_KEY_RETRY_COUNT);
+                if (retryCount >= MAX_RETRY_COUNT)
+                {
+                    Debug.LogError($"[PC高性能模式] ❌ 已重试 {retryCount} 次仍未成功，放弃自动构建。");
+                    Debug.LogError("[PC高性能模式] 请手动操作：切换到 Standalone 平台，确认 Scripting Define Symbols 包含 WX_PCHP_ENABLED，等编译完成后重新导出。");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败",
+                        $"已尝试 {retryCount} 次 Domain Reload 但 PCHP 类型始终未编译成功。\n\n" +
+                        "请手动切换到 File > Build Settings > PC Standalone，\n" +
+                        "确认 Player Settings 中 Scripting Define Symbols 包含 WX_PCHP_ENABLED，\n" +
+                        "等待编译完成后再次点击导出。", "确定");
+                    return;
+                }
+
+                var buildTarget = (BuildTarget)pendingTarget;
+                Debug.Log($"[PC高性能模式] Domain Reload 完成 (retry={retryCount})，恢复构建: exportPath={pendingExportPath}, target={buildTarget}");
+
+                // 捕获 retryCount 到闭包
+                int currentRetry = retryCount;
+
+                // 用 delayCall 确保 Editor 完全初始化后再执行
+                EditorApplication.delayCall += () =>
+                {
+                    // 验证 active platform 已经是 Standalone
+                    Debug.Log($"[PC高性能模式] [Phase2 恢复] active={EditorUserBuildSettings.activeBuildTarget}, expected={buildTarget}, retry={currentRetry}");
+                    if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
+                    {
+                        Debug.LogError($"[PC高性能模式] Domain Reload 后 active platform ({EditorUserBuildSettings.activeBuildTarget}) 仍不是 {buildTarget}！");
+                        Debug.LogError("[PC高性能模式] 再次尝试切换平台...");
+                        // 再存一次 SessionState，等下一轮 Reload（递增 retry）
+                        SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                        SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                        SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
+                        return;
+                    }
+
+                    // 再次验证 PCHP 类型是否已生效
+                    var pchpType = FindPCHPManagerType();
+                    if (pchpType == null)
+                    {
+                        Debug.LogError("[PC高性能模式] Domain Reload 后 WXPCHighPerformanceManager 仍不存在！");
+                        Debug.LogError("[PC高性能模式] 可能原因：宏写入了但编译器未使用新 defines 重编译 Wx assembly");
+
+                        // 检查 defines 是否确实包含宏
+                        string currentDefines = "";
+#if UNITY_2023_1_OR_NEWER
+                        currentDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                        currentDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                        Debug.LogError($"[PC高性能模式] 当前 Standalone defines: {currentDefines}");
+
+                        if (!currentDefines.Contains("WX_PCHP_ENABLED"))
+                        {
+                            Debug.LogError("[PC高性能模式] 宏丢失！重新写入并触发编译...");
+                            var newDefines = string.IsNullOrEmpty(currentDefines) ? "WX_PCHP_ENABLED" : currentDefines + ";WX_PCHP_ENABLED";
+#if UNITY_2023_1_OR_NEWER
+                            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone, newDefines);
+#else
+                            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
+#endif
+                            // 保存 SessionState 等待下一轮（递增 retry）
+                            SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                            SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                            SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                            CompilationPipeline.RequestScriptCompilation();
+                            return;
+                        }
+
+                        // 宏存在但类型不存在——可能是 Unity 编译器缓存问题，强制重编译
+                        Debug.LogError("[PC高性能模式] 宏存在但类型未编译，强制 RequestScriptCompilation...");
+                        SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, pendingExportPath);
+                        SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                        SessionState.SetInt(SESSION_KEY_RETRY_COUNT, currentRetry + 1);
+                        CompilationPipeline.RequestScriptCompilation();
+                        return;
+                    }
+
+                    Debug.Log("[PC高性能模式] ✅ WXPCHighPerformanceManager 类型已就绪，继续构建...");
+                    bool result = ExecuteBuildPhase2(pendingExportPath, buildTarget);
+                    if (result)
+                    {
+                        // 路径A：构建成功后恢复到小游戏平台
+                        RestoreToMiniGamePlatform();
+                    }
+                };
+            }
+        }
+
+        /// <summary>
+        /// 执行PC高性能构建（入口方法）
+        /// 
+        /// 两阶段构建策略：
+        /// 阶段1：确保 WX_PCHP_ENABLED 宏已就绪 + 切换平台
+        ///   - 如果宏刚被写入或平台需要切换，Domain Reload 会中断当前调用栈
+        ///   - 通过 SessionState 持久化构建意图，Domain Reload 后 InitializeOnLoadMethod 恢复
+        /// 阶段2：实际执行 BuildPlayer（宏已生效，类型已编译）
         /// </summary>
         /// <param name="exportBasePath">导出基础路径（来自小游戏面板配置）</param>
-        /// <returns>构建是否成功</returns>
+        /// <returns>构建是否成功（如果进入两阶段模式返回 true，实际结果延迟）</returns>
         public static bool BuildPCHighPerformance(string exportBasePath)
         {
             if (string.IsNullOrEmpty(exportBasePath))
@@ -44,40 +170,95 @@ namespace WeChatWASM
             // 确定构建目标平台
             var currentPlatform = Application.platform;
             BuildTarget buildTarget;
-            string platformName;
 
             if (currentPlatform == RuntimePlatform.OSXEditor)
             {
                 buildTarget = BuildTarget.StandaloneOSX;
-                platformName = "Mac";
             }
             else
             {
                 buildTarget = BuildTarget.StandaloneWindows64;
-                platformName = "Windows";
             }
+
+            // 阶段1：确保 (a)宏已定义 (b)当前 active platform 是 Standalone (c)PCHP类型已编译
+            bool macroReady = EnsurePCHPDefineSymbol(buildTarget);
+            bool platformReady = EditorUserBuildSettings.activeBuildTarget == buildTarget;
+            bool typeExists = FindPCHPManagerType() != null;
+
+            Debug.Log($"[PC高性能模式] [Phase1 检查] macroReady={macroReady}, platformReady={platformReady}, typeExists={typeExists}, activeBuildTarget={EditorUserBuildSettings.activeBuildTarget}, targetBuildTarget={buildTarget}");
+
+            // 三个条件必须全部满足才能同步构建
+            // 核心原因：BuildPlayer 在 active platform 非 Standalone 时，可能使用缓存编译产物
+            // 导致 WX_PCHP_ENABLED 宏不生效（已知 Unity bug）
+            if (!macroReady || !platformReady || !typeExists)
+            {
+                // 需要切换平台 + 重编译后再构建
+                // 持久化构建参数到 SessionState（跨 Domain Reload 保持）
+                SessionState.SetString(SESSION_KEY_PENDING_EXPORT_PATH, exportBasePath);
+                SessionState.SetInt(SESSION_KEY_PENDING_TARGET, (int)buildTarget);
+                IsBuildDeferred = true;
+
+                if (!macroReady)
+                {
+                    Debug.Log("[PC高性能模式] ⏳ WX_PCHP_ENABLED 宏刚写入，需要重编译...");
+                }
+                if (!platformReady)
+                {
+                    Debug.Log($"[PC高性能模式] ⏳ 当前 active platform ({EditorUserBuildSettings.activeBuildTarget}) 不是 {buildTarget}，需要切换平台...");
+                }
+                if (!typeExists)
+                {
+                    Debug.Log("[PC高性能模式] ⏳ PCHP 类型未编译（当前 platform 下条件编译排除了它）...");
+                }
+                Debug.Log("[PC高性能模式] 构建参数已保存到 SessionState，Domain Reload 后将自动恢复构建");
+
+                // 触发平台切换（会自动带上重编译）
+                if (!platformReady)
+                {
+                    Debug.Log($"[PC高性能模式] 切换构建目标: {EditorUserBuildSettings.activeBuildTarget} -> {buildTarget}");
+                    EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget);
+                    // SwitchActiveBuildTarget 会触发 Domain Reload，当前调用栈被中断
+                    // OnDomainReload() 将在 Reload 后恢复构建
+                }
+                else
+                {
+                    // 已经在正确平台，但宏刚写入需要重编译
+                    Debug.Log("[PC高性能模式] 当前已在 Standalone，手动触发脚本重编译...");
+                    CompilationPipeline.RequestScriptCompilation();
+                    // RequestScriptCompilation 也会触发 Domain Reload
+                }
+
+                return true; // 返回 true 表示流程正常启动（将异步完成）
+            }
+
+            // 三条件全满足，直接执行阶段2
+            IsBuildDeferred = false;
+            Debug.Log("[PC高性能模式] ✅ 宏就绪 + 平台正确 + 类型已编译，直接执行构建...");
+            return ExecuteBuildPhase2(exportBasePath, buildTarget);
+        }
+
+        /// <summary>
+        /// 阶段2：实际执行 BuildPlayer（此时宏已生效，WXPCHPInitScript 类型已编译）
+        /// </summary>
+        private static bool ExecuteBuildPhase2(string exportBasePath, BuildTarget buildTarget)
+        {
+            string platformName = buildTarget == BuildTarget.StandaloneOSX ? "Mac" : "Windows";
 
             // 构建输出路径：直接放在 minigame/pchpcode 目录下
             string pchpOutputPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, PCHPOutputDir);
 
-            Debug.Log($"[PC高性能模式] 开始构建，目标平台: {platformName}");
+            Debug.Log($"[PC高性能模式] 开始构建（阶段2），目标平台: {platformName}");
             Debug.Log($"[PC高性能模式] 输出路径: {pchpOutputPath}");
-
-            // 保存当前构建目标
-            var originalTarget = EditorUserBuildSettings.activeBuildTarget;
-            var originalTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
 
             try
             {
-                // 切换构建目标（如果需要）
-                if (originalTarget != buildTarget)
+                // Phase 2 执行时 active target 必须已经是 Standalone（Phase 1 保证）
+                // 如果仍然不匹配说明有逻辑错误，直接报错而非再次 Switch（避免触发 Domain Reload）
+                if (EditorUserBuildSettings.activeBuildTarget != buildTarget)
                 {
-                    Debug.Log($"[PC高性能模式] 切换构建目标: {originalTarget} -> {buildTarget}");
-                    if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, buildTarget))
-                    {
-                        Debug.LogError("[PC高性能模式] 切换构建目标失败");
-                        return false;
-                    }
+                    Debug.LogError($"[PC高性能模式] ❌ Phase 2 执行时 active target ({EditorUserBuildSettings.activeBuildTarget}) != 期望 ({buildTarget})，这不应该发生！");
+                    Debug.LogError("[PC高性能模式] 请重新点击导出，让两阶段流程从头执行");
+                    return false;
                 }
 
                 // 配置 Player Settings
@@ -104,6 +285,25 @@ namespace WeChatWASM
                 // 构建选项
                 var buildOptions = BuildOptions.None;
 
+                // [诊断] 构建前打印关键状态
+                Debug.Log($"[PC高性能模式] [诊断] === 构建前状态 ===");
+                Debug.Log($"[PC高性能模式] [诊断] Active BuildTarget: {EditorUserBuildSettings.activeBuildTarget}");
+                Debug.Log($"[PC高性能模式] [诊断] Target BuildTarget: {buildTarget}");
+#if UNITY_2023_1_OR_NEWER
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.Standalone);
+#else
+                var diagDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+#endif
+                Debug.Log($"[PC高性能模式] [诊断] Standalone Defines: {diagDefines}");
+                Debug.Log($"[PC高性能模式] [诊断] Contains WX_PCHP_ENABLED: {diagDefines.Contains("WX_PCHP_ENABLED")}");
+
+                var pchpType = FindPCHPManagerType();
+                Debug.Log($"[PC高性能模式] [诊断] WXPCHighPerformanceManager type found: {pchpType != null}");
+                if (pchpType == null)
+                {
+                    Debug.LogError("[PC高性能模式] ⚠️ WXPCHighPerformanceManager 不存在，构建产物将缺少 PCHP 类！");
+                }
+
                 // 执行构建
                 Debug.Log($"[PC高性能模式] 执行构建，输出: {executablePath}");
                 var report = BuildPipeline.BuildPlayer(scenes, executablePath, buildTarget, buildOptions);
@@ -111,45 +311,52 @@ namespace WeChatWASM
                 // 检查构建结果
                 if (report.summary.result == BuildResult.Succeeded)
                 {
-                    Debug.Log($"[PC高性能模式] 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
+                    Debug.Log($"[PC高性能模式] ✅ 构建成功! 耗时: {report.summary.totalTime.TotalSeconds:F2}秒");
                     Debug.Log($"[PC高性能模式] 输出路径: {pchpOutputPath}");
 
-                    // 复制 pchp_sdk.dll 到构建产物中（确保运行时能找到）
-                    CopyPCHPNativeDll(pchpOutputPath, buildTarget);
+                // 复制 pchp_sdk.dll 到构建产物中（确保运行时能找到）
+                CopyPCHPNativeDll(pchpOutputPath, buildTarget);
 
-                    // 打包成 wxapkg 格式（先打包到临时位置）
-                    string tempWxapkgPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, $"{PCHPOutputDir}_temp.wxapkg");
-                    string finalWxapkgPath = Path.Combine(pchpOutputPath, $"{PCHPOutputDir}.wxapkg");
+                // TODO[临时-2026-07-07]: 跳过 wxapkg 打包，保留原始 Standalone 构建产物以便直接运行 .exe 调试
+                // 恢复方式：把下方 #if false 改为 #if true 即可还原 wxapkg 打包流程
+                // 影响范围：仅路径A（WXPCHPBuildHelper），路径B（WXPCSettingHelper）不受影响
+#if false
+                // 打包成 wxapkg 格式（先打包到临时位置）
+                string tempWxapkgPath = Path.Combine(exportBasePath, WXConvertCore.miniGameDir, $"{PCHPOutputDir}_temp.wxapkg");
+                string finalWxapkgPath = Path.Combine(pchpOutputPath, $"{PCHPOutputDir}.wxapkg");
 
-                    Debug.Log($"[PC高性能模式] 开始打包 wxapkg...");
+                Debug.Log($"[PC高性能模式] 开始打包 wxapkg...");
 
-                    if (WXApkgPacker.Pack(pchpOutputPath, tempWxapkgPath))
+                if (WXApkgPacker.Pack(pchpOutputPath, tempWxapkgPath))
+                {
+                    // 删除原始构建材料
+                    Debug.Log($"[PC高性能模式] 清理原始构建材料...");
+                    Directory.Delete(pchpOutputPath, true);
+
+                    // 重新创建目录并移动 wxapkg
+                    Directory.CreateDirectory(pchpOutputPath);
+                    File.Move(tempWxapkgPath, finalWxapkgPath);
+
+                    // 创建空的 game.js 文件
+                    string gameJsPath = Path.Combine(pchpOutputPath, "game.js");
+                    File.WriteAllText(gameJsPath, "");
+                    Debug.Log($"[PC高性能模式] 已创建 game.js: {gameJsPath}");
+
+                    Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
+                }
+                else
+                {
+                    Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
+                    if (File.Exists(tempWxapkgPath))
                     {
-                        // 删除原始构建材料
-                        Debug.Log($"[PC高性能模式] 清理原始构建材料...");
-                        Directory.Delete(pchpOutputPath, true);
-
-                        // 重新创建目录并移动 wxapkg
-                        Directory.CreateDirectory(pchpOutputPath);
-                        File.Move(tempWxapkgPath, finalWxapkgPath);
-
-                        // 创建空的 game.js 文件
-                        string gameJsPath = Path.Combine(pchpOutputPath, "game.js");
-                        File.WriteAllText(gameJsPath, "");
-                        Debug.Log($"[PC高性能模式] 已创建 game.js: {gameJsPath}");
-
-                        Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
+                        File.Delete(tempWxapkgPath);
                     }
-                    else
-                    {
-                        Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
-                        if (File.Exists(tempWxapkgPath))
-                        {
-                            File.Delete(tempWxapkgPath);
-                        }
-                    }
+                }
+#else
+                Debug.Log($"[PC高性能模式] [临时] 跳过 wxapkg 打包，保留原始 Standalone 构建产物: {pchpOutputPath}");
+#endif
 
-                    return true;
+                return true;
                 }
                 else
                 {
@@ -176,12 +383,32 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// 在所有已加载 Assembly 中查找 WXPCHighPerformanceManager 类型
+        /// </summary>
+        private static System.Type FindPCHPManagerType()
+        {
+            var pchpType = System.Type.GetType("WeChatWASM.WXPCHighPerformanceManager, Wx");
+            if (pchpType != null) return pchpType;
+
+            foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                pchpType = asm.GetType("WeChatWASM.WXPCHighPerformanceManager");
+                if (pchpType != null) return pchpType;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 恢复到小游戏平台（仅路径A——转换工具链——需要调用）
         /// 路径B（原生 Standalone 接入）不应调用此方法
         /// 团结引擎使用 WeixinMiniGame，Unity 使用 WebGL
         /// </summary>
         public static void RestoreToMiniGamePlatform()
         {
+            // 防御性清理：确保 WebGL/MiniGame 平台的 defines 中不包含 WX_PCHP_ENABLED
+            // 避免因 Unity Editor defines 残留/泄漏导致 WXPCHPInitScript 被编译进 WASM
+            CleanPCHPDefineFromNonStandalonePlatforms();
+
 #if TUANJIE_2022_3_OR_NEWER
             // 团结引擎：切换到 WeixinMiniGame 平台
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WeixinMiniGame)
@@ -200,6 +427,60 @@ namespace WeChatWASM
                 EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
             }
 #endif
+        }
+
+        /// <summary>
+        /// 从非 Standalone 平台的 ScriptingDefineSymbols 中移除 WX_PCHP_ENABLED
+        /// 防止宏泄漏到 WebGL/MiniGame 导致 WXPCHPInitScript 被编译进 WASM
+        /// </summary>
+        private static void CleanPCHPDefineFromNonStandalonePlatforms()
+        {
+            const string PCHP_DEFINE_SYMBOL = "WX_PCHP_ENABLED";
+
+            // 需要清理的平台列表
+            BuildTargetGroup[] groupsToClean = new BuildTargetGroup[]
+            {
+                BuildTargetGroup.WebGL,
+#if TUANJIE_2022_3_OR_NEWER
+                BuildTargetGroup.WeixinMiniGame,
+#endif
+            };
+
+            foreach (var group in groupsToClean)
+            {
+                try
+                {
+#if UNITY_2023_1_OR_NEWER
+                    var namedTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(group);
+                    var defines = PlayerSettings.GetScriptingDefineSymbols(namedTarget);
+#else
+                    var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+#endif
+                    if (string.IsNullOrEmpty(defines) || !defines.Contains(PCHP_DEFINE_SYMBOL))
+                        continue;
+
+                    // 移除宏
+                    var parts = defines.Split(';');
+                    var cleaned = new System.Collections.Generic.List<string>();
+                    foreach (var part in parts)
+                    {
+                        if (part.Trim() != PCHP_DEFINE_SYMBOL)
+                            cleaned.Add(part);
+                    }
+                    var newDefines = string.Join(";", cleaned.ToArray());
+
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.SetScriptingDefineSymbols(namedTarget, newDefines);
+#else
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(group, newDefines);
+#endif
+                    Debug.Log($"[PC高性能模式] 已从 {group} 平台清除 WX_PCHP_ENABLED 宏（防止 WASM 编译污染）");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[PC高性能模式] 清理 {group} 平台 defines 异常: {e.Message}");
+                }
+            }
         }
 
 #if TUANJIE_2022_3_OR_NEWER
@@ -297,6 +578,53 @@ namespace WeChatWASM
             }
         }
 #endif
+
+        /// <summary>
+        /// 确保 Standalone 平台的 ScriptingDefineSymbols 包含 WX_PCHP_ENABLED
+        /// 必须在 SwitchActiveBuildTarget 之前调用，这样切换平台触发的 Domain Reload
+        /// 重编译脚本时宏就已经生效，首次构建即可正确编译 WXPCHPInitScript
+        /// </summary>
+        /// <returns>true 表示宏已就绪可以继续构建；false 表示刚写入宏需要等 Domain Reload</returns>
+        private static bool EnsurePCHPDefineSymbol(BuildTarget buildTarget)
+        {
+            const string PCHP_DEFINE_SYMBOL = "WX_PCHP_ENABLED";
+
+            // 仅对 Standalone 平台操作
+            if (buildTarget != BuildTarget.StandaloneWindows64 &&
+                buildTarget != BuildTarget.StandaloneWindows &&
+                buildTarget != BuildTarget.StandaloneOSX)
+            {
+                return true;
+            }
+
+            var targetGroup = BuildTargetGroup.Standalone;
+#if UNITY_2023_1_OR_NEWER
+            var namedTarget = UnityEditor.Build.NamedBuildTarget.Standalone;
+            var defines = PlayerSettings.GetScriptingDefineSymbols(namedTarget);
+#else
+            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+#endif
+
+            if (!defines.Contains(PCHP_DEFINE_SYMBOL))
+            {
+                var newDefines = string.IsNullOrEmpty(defines)
+                    ? PCHP_DEFINE_SYMBOL
+                    : defines + ";" + PCHP_DEFINE_SYMBOL;
+
+#if UNITY_2023_1_OR_NEWER
+                PlayerSettings.SetScriptingDefineSymbols(namedTarget, newDefines);
+#else
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newDefines);
+#endif
+                Debug.Log($"[PC高性能模式] 已自动添加 {PCHP_DEFINE_SYMBOL} 到 Standalone ScriptingDefineSymbols");
+                return false; // 需要等待 Domain Reload
+            }
+            else
+            {
+                Debug.Log($"[PC高性能模式] {PCHP_DEFINE_SYMBOL} 宏已存在，跳过");
+                return true; // 宏已就绪
+            }
+        }
 
         /// <summary>
         /// 配置 Player Settings 用于 PC 高性能构建
@@ -446,6 +774,12 @@ namespace WeChatWASM
             }
             string destPluginDir = Path.Combine(dataDir, DLL_NAME);
             CopyFileWithLog(dllSourcePath, destPluginDir);
+
+            // 目标路径 3：pchp_Data/ 根目录（微信沙箱 VFS 的工作目录 ./ 实际对应 pchp_Data/）
+            // 微信 PC 客户端解包 wxapkg 后，EXE 的工作目录指向 pchp_Data/ 内部，
+            // Mono DllImport 会先搜索当前工作目录，所以必须在这里放一份
+            string destDataRoot = Path.Combine(outputPath, "pchp_Data", DLL_NAME);
+            CopyFileWithLog(dllSourcePath, destDataRoot);
         }
 
         /// <summary>
