@@ -1,4 +1,4 @@
-#if UNITY_WEBGL || WEIXINMINIGAME || UNITY_EDITOR
+#if UNITY_WEBGL || WEIXINMINIGAME || UNITY_EDITOR || WX_PCHP_ENABLED
 using System;
 using System.Collections.Generic;
 
