@@ -253,6 +253,28 @@ namespace WeChatWASM
         // 线程安全的消息队列，用于主线程处理（存储原始 JSON 字符串）
         private readonly ConcurrentQueue<string> _messageQueue = new ConcurrentQueue<string>();
 
+        // ─── 自定义链路字段（接入方自带协议闭环时使用） ───
+        // 提供 SendAppEvent / SendAppEventSync / HandleHostEvent 三个方法，
+        // 与 AHP MinaSDKAHP.cs 签名对齐，让 TS 适配方可跨平台复用。
+        // 详见 issue #13020 § 1.6。
+
+        /// <summary>
+        /// Host → TS 事件回调委托
+        /// TS 侧通过 Puerts 赋值：Instance.HandleHostEvent = (eventName, data) => {...}
+        /// </summary>
+        public Action<string, string> HandleHostEvent;
+
+        /// <summary>
+        /// Host → TS 业务事件回调委托（biz 前缀事件走此委托）
+        /// </summary>
+        public Action<string, string> HandleBizHostEvent;
+
+        // sync 阻塞等待基础设施（供 SendAppEventSync 使用）
+        private readonly object _hostSyncLock = new object();
+        private readonly System.Threading.AutoResetEvent _hostSyncWaitHandle = new System.Threading.AutoResetEvent(false);
+        private volatile string _hostSyncResult = null;
+        private const int HOST_SYNC_TIMEOUT_MS = 10000;
+
         #endregion
 
         #region Events
@@ -1147,6 +1169,104 @@ namespace WeChatWASM
 
         #endregion
 
+        #region Custom Link Methods (自定义链路接入方专用)
+        //
+        // 提供 SendAppEvent / SendAppEventSync / HandleHostEvent 三个方法，
+        // 与 AHP MinaSDKAHP.cs 签名对齐，让 TS 适配方（MinaSDKAHP.ts）
+        // 可跨 AHP / PCHP 平台复用，无需维护两套适配代码。
+        //
+        // 链路：
+        //   TS → SendAppEvent(jsonStr) → 内核 → game.js onExeMessage(payload)
+        //   TS → SendAppEventSync(jsonStr) → 内核 → game.js → postToExe({eventName:"syncResponse", data:...})
+        //   game.js → postToExe({eventName:"callback", data:...}) → ProcessIncomingMessage → HandleHostEvent
+        //
+        // 详见 issue #13020 § 1.6。
+
+        /// <summary>
+        /// 异步发送事件给 game.js（fire-and-forget）
+        /// 纯透传：jsonStr 原样发送，不套 {callbackId, method, params} 协议。
+        /// </summary>
+        /// <param name="eventName">事件名称（TS 侧用于分类，C# 不解析）</param>
+        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造）</param>
+        public void SendAppEvent(string eventName, string jsonStr)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法发送 {eventName}");
+                return;
+            }
+
+            Debug.Log($"[WXPCHPInitScript] SendAppEvent: {eventName}");
+            SendMessageInternal(jsonStr ?? "{}");
+        }
+
+        /// <summary>
+        /// 同步发送事件给 game.js，阻塞等待回包
+        /// 纯透传：jsonStr 原样发送，不套 {callbackId, method, params} 协议。
+        /// 回包通过 game.js postToExe({eventName:"syncResponse", data:...}) 返回。
+        /// </summary>
+        /// <param name="eventName">事件名称（TS 侧用于分类，C# 不解析）</param>
+        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造）</param>
+        /// <returns>回包原始数据字符串，超时返回空字符串</returns>
+        public string SendAppEventSync(string eventName, string jsonStr)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法调用 {eventName}");
+                return "";
+            }
+
+            lock (_hostSyncLock)
+            {
+                try
+                {
+                    _hostSyncResult = null;
+                    _hostSyncWaitHandle.Reset();
+
+                    Debug.Log($"[WXPCHPInitScript] SendAppEventSync: {eventName}");
+                    if (!SendMessageInternal(jsonStr ?? "{}"))
+                    {
+                        return "";
+                    }
+
+                    // 阻塞等待（pump 消息队列以处理回包）
+                    var startTime = DateTime.UtcNow;
+                    while (_hostSyncResult == null && (DateTime.UtcNow - startTime).TotalMilliseconds < HOST_SYNC_TIMEOUT_MS)
+                    {
+                        if (_messageQueue.TryDequeue(out var messageJson))
+                        {
+                            try { ProcessIncomingMessage(messageJson); } catch { }
+                        }
+                        System.Threading.Thread.Sleep(1);
+                    }
+
+                    if (_hostSyncResult == null)
+                    {
+                        Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时: {eventName}");
+                        return "";
+                    }
+
+                    return _hostSyncResult;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[WXPCHPInitScript] SendAppEventSync error: {e}");
+                    return "";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 处理 sync 回包（从 ProcessIncomingMessage 调用）
+        /// </summary>
+        private void OnHostSyncResponse(string data)
+        {
+            _hostSyncResult = data ?? "";
+            _hostSyncWaitHandle.Set();
+        }
+
+        #endregion
+
         #region Public Methods - Event Listeners
 
         /// <summary>
@@ -1441,6 +1561,50 @@ namespace WeChatWASM
                 else
                 {
                     Debug.LogWarning($"[WXPCHPInitScript] 未找到对应的回调: callbackId={callbackId}");
+                }
+            }
+            else if (jsonData.ContainsKey("eventName"))
+            {
+                // 自定义链路消息：{ eventName: string, data: string }
+                string hostEventName = (string)jsonData["eventName"];
+                string hostData;
+                if (jsonData.ContainsKey("data"))
+                {
+                    var dataValue = jsonData["data"];
+                    hostData = dataValue.IsString ? (string)dataValue : JsonMapper.ToJson(dataValue);
+                }
+                else
+                {
+                    hostData = messageJson;
+                }
+
+                if (hostEventName == "syncResponse" || hostEventName == "bizSyncResponse")
+                {
+                    // sync 回包，解锁 SendAppEventSync
+                    OnHostSyncResponse(hostData);
+                }
+                else
+                {
+                    // 普通事件，转发给 HandleHostEvent / HandleBizHostEvent
+                    var hostHandler = hostEventName.StartsWith("biz", StringComparison.OrdinalIgnoreCase)
+                        ? HandleBizHostEvent
+                        : HandleHostEvent;
+
+                    try
+                    {
+                        if (hostHandler != null)
+                        {
+                            hostHandler.Invoke(hostEventName, hostData);
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[WXPCHPInitScript] HandleHostEvent is null, event dropped: {hostEventName}");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"[WXPCHPInitScript] HandleHostEvent error: {e}");
+                    }
                 }
             }
             else
