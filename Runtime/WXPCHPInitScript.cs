@@ -1567,9 +1567,16 @@ namespace WeChatWASM
             {
                 // 自定义链路消息：{ eventName: string, data: string }
                 string hostEventName = (string)jsonData["eventName"];
-                string hostData = jsonData.ContainsKey("data")
-                    ? (jsonData["data"] is string hostStr ? hostStr : JsonMapper.ToJson(jsonData["data"]))
-                    : messageJson;
+                string hostData;
+                if (jsonData.ContainsKey("data"))
+                {
+                    var dataValue = jsonData["data"];
+                    hostData = dataValue.IsString ? (string)dataValue : JsonMapper.ToJson(dataValue);
+                }
+                else
+                {
+                    hostData = messageJson;
+                }
 
                 if (hostEventName == "syncResponse" || hostEventName == "bizSyncResponse")
                 {
