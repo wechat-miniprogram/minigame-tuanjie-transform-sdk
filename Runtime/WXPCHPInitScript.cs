@@ -1184,10 +1184,12 @@ namespace WeChatWASM
 
         /// <summary>
         /// 异步发送事件给 game.js（fire-and-forget）
-        /// 纯透传：jsonStr 原样发送，不套 {callbackId, method, params} 协议。
+        /// 与 AHP 平台 sendAppEvent(eventName, jsonStr) 双参数语义对齐：
+        /// eventName 与 jsonStr 一起过桥，下行协议为 { eventName, data }，
+        /// 与上行 ProcessIncomingMessage 解析的 { eventName, data } 完全对称。
         /// </summary>
-        /// <param name="eventName">事件名称（TS 侧用于分类，C# 不解析）</param>
-        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造）</param>
+        /// <param name="eventName">事件名称（随消息一起发到 game.js，C# 不解析其含义）</param>
+        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造，作为 data 字段内联）</param>
         public void SendAppEvent(string eventName, string jsonStr)
         {
             if (!IsInitialized || !IsConnected)
@@ -1197,16 +1199,17 @@ namespace WeChatWASM
             }
 
             Debug.Log($"[WXPCHPInitScript] SendAppEvent: {eventName}");
-            SendMessageInternal(jsonStr ?? "{}");
+            SendMessageInternal(WrapAppEvent(eventName, jsonStr));
         }
 
         /// <summary>
         /// 同步发送事件给 game.js，阻塞等待回包
-        /// 纯透传：jsonStr 原样发送，不套 {callbackId, method, params} 协议。
+        /// 与 AHP 平台 sendAppEvent(eventName, jsonStr) 双参数语义对齐：
+        /// eventName 与 jsonStr 一起过桥，下行协议为 { eventName, data }。
         /// 回包通过 game.js postToExe({eventName:"syncResponse", data:...}) 返回。
         /// </summary>
-        /// <param name="eventName">事件名称（TS 侧用于分类，C# 不解析）</param>
-        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造）</param>
+        /// <param name="eventName">事件名称（随消息一起发到 game.js，C# 不解析其含义）</param>
+        /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造，作为 data 字段内联）</param>
         /// <returns>回包原始数据字符串，超时返回空字符串</returns>
         public string SendAppEventSync(string eventName, string jsonStr)
         {
@@ -1224,7 +1227,7 @@ namespace WeChatWASM
                     _hostSyncWaitHandle.Reset();
 
                     Debug.Log($"[WXPCHPInitScript] SendAppEventSync: {eventName}");
-                    if (!SendMessageInternal(jsonStr ?? "{}"))
+                    if (!SendMessageInternal(WrapAppEvent(eventName, jsonStr)))
                     {
                         return "";
                     }
@@ -1263,6 +1266,20 @@ namespace WeChatWASM
         {
             _hostSyncResult = data ?? "";
             _hostSyncWaitHandle.Set();
+        }
+
+        /// <summary>
+        /// 把 (eventName, jsonStr) 包成与 AHP 对齐的下行协议 { eventName, data }。
+        /// AHP 底层 Java WVAAppSDKProvider.sendAppEvent(eventName, jsonStr) 是双参数；
+        /// PCHP 底层 SendMsgAsync 只能发单个字节流，故合并为一个 JSON，
+        /// 使下行与上行 ProcessIncomingMessage 解析的 { eventName, data } 协议对称。
+        /// eventName 经 JsonMapper.ToJson 转义；jsonStr 本身已是合法 JSON，直接内联为 data，避免二次转义。
+        /// </summary>
+        private string WrapAppEvent(string eventName, string jsonStr)
+        {
+            string ev = eventName ?? "";
+            string data = string.IsNullOrEmpty(jsonStr) ? "null" : jsonStr;
+            return $"{{\"eventName\":{JsonMapper.ToJson(ev)},\"data\":{data}}}";
         }
 
         #endregion
