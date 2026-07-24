@@ -1264,7 +1264,9 @@ namespace WeChatWASM
         /// </summary>
         private void OnHostSyncResponse(string data)
         {
-            Debug.Log($"[WXPCHPInitScript] ← OnHostSyncResponse: dataLen={data?.Length ?? 0}, preview={(data ?? "").Length > 200 ? (data ?? "").Substring(0, 200) + "..." : (data ?? "")}");
+            int dataLen = data?.Length ?? 0;
+            string preview = data == null ? "(null)" : (data.Length > 200 ? data.Substring(0, 200) + "..." : data);
+            Debug.Log("[WXPCHPInitScript] ← OnHostSyncResponse: dataLen=" + dataLen + ", preview=" + preview);
             _hostSyncResult = data ?? "";
             _hostSyncWaitHandle.Set();
             Debug.Log("[WXPCHPInitScript] OnHostSyncResponse → _hostSyncWaitHandle.Set() ✓");
