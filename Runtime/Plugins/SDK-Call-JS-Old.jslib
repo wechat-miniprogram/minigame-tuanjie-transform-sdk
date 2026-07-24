@@ -1075,3 +1075,8 @@ mergeInto(LibraryManager.library, {
         window.WXWASMSDK.WX_SetPreferredFramesPerSecond(fps);
     }
 });
+
+
+// 兼容旧 Emscripten：其 wasm 导入符号为 _emscripten_glGenTextures/_emscripten_glBindTexture
+LibraryManager.library.emscripten_glGenTextures = LibraryManager.library.glGenTextures;
+LibraryManager.library.emscripten_glBindTexture = LibraryManager.library.glBindTexture;

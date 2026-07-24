@@ -506,11 +506,47 @@ export async function bootstrapWebGPUASTC(opts) {
             _glContext = gl;
         },
     };
+    
+    
     GameGlobal._webgpuASTCDecoder = decoderProxy;
-    GameGlobal._webgpuASTCEnabled = true;
+    
+    
+    GameGlobal._webgpuASTCEnabled = false;
+    
+    if (typeof wx === 'undefined' || typeof wx.prewarmWebGPUDecoder !== 'function') {
+        GameGlobal._webgpuASTCEnabled = true;
+        log('info', 'wx.prewarmWebGPUDecoder absent, enable WebGPU ASTC immediately (legacy behavior)');
+        return { enabled: true, costMs: mark() - t0 };
+    }
+    
+    
+    var warmupT0 = mark();
+    new Promise(function (resolve, reject) {
+        wx.prewarmWebGPUDecoder({
+            success: function (res) {
+                (res && res.ready) ? resolve() : reject(new Error('prewarm not ready'));
+            },
+            fail: function (err) {
+                reject(new Error((err && err.errMsg) || 'prewarm failed'));
+            },
+        });
+    }).then(function () {
+        
+        if (!_initFailed) {
+            GameGlobal._webgpuASTCEnabled = true;
+            log('info', 'pipeline warmed up, WebGPU ASTC enabled', { warmupMs: Math.round(mark() - warmupT0) });
+        }
+    }).catch(function (e) {
+        
+        GameGlobal._webgpuASTCEnabled = false;
+        GameGlobal._webgpuASTCDecoder = null;
+        log('warn', 'warmup failed, fallback to CPU soft-decode for this session', e && e.message);
+    });
     var costMs = mark() - t0;
-    log('info', 'ready (via wx.decodeASTC)', { costMs: Math.round(costMs) });
-    return { enabled: true, costMs: costMs };
+    
+    
+    log('info', 'bootstrap done, pipeline warming up (CPU soft-decode until ready)', { costMs: Math.round(costMs) });
+    return { enabled: true, warmingUp: true, costMs: costMs };
 }
 
 export function bindDecoderGLContextOnce(GLctx, GL) {

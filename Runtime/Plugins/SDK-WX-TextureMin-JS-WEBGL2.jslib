@@ -2,6 +2,12 @@ mergeInto(LibraryManager.library, {
 
     glCompressedTexImage2D: function(target, level, internalFormat, width, height, border, imageSize, data) {
         var lastTid = window._lastTextureId;
+        if (lastTid == null) { // 部分引擎胶水无此跟踪，用当前绑定纹理反查
+          var boundTex = GLctx.getParameter(GLctx.TEXTURE_BINDING_2D);
+          for (var ti = 0; boundTex && ti < GL.textures.length; ti++) {
+            if (GL.textures[ti] === boundTex) { lastTid = ti; break; }
+          }
+        }
         var isMiniProgram = typeof wx !== "undefined";
 
         function getMatchId() {
@@ -196,6 +202,12 @@ mergeInto(LibraryManager.library, {
     },
     glCompressedTexSubImage2D: function(target, level, xoffset, yoffset, width, height, format, imageSize, data) {
         var lastTid = window._lastTextureId;
+        if (lastTid == null) { // 部分引擎胶水无此跟踪，用当前绑定纹理反查
+          var boundTex = GLctx.getParameter(GLctx.TEXTURE_BINDING_2D);
+          for (var ti = 0; boundTex && ti < GL.textures.length; ti++) {
+            if (GL.textures[ti] === boundTex) { lastTid = ti; break; }
+          }
+        }
         var isMiniProgram = typeof wx !== "undefined";
 
         function getMatchId() {
@@ -417,3 +429,7 @@ mergeInto(LibraryManager.library, {
         GLctx["compressedTexSubImage2D"](target, level, xoffset, yoffset, width, height, format, data ? HEAPU8.subarray(data, data + imageSize) : null)
     },
 });
+
+// 兼容旧 Emscripten（Unity 2021/2022）：其 wasm 导入符号为 _emscripten_gl*，别名到新实现
+LibraryManager.library.emscripten_glCompressedTexImage2D = LibraryManager.library.glCompressedTexImage2D;
+LibraryManager.library.emscripten_glCompressedTexSubImage2D = LibraryManager.library.glCompressedTexSubImage2D;
