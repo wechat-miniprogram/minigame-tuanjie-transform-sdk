@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.34-diag.3";
-        public const string PCHP_BUILD_DATE = "2026-07-13 20:01 (diag3:pinup API + fail-safe)";
+        public const string PCHP_VERSION = "0.1.35";
+        public const string PCHP_BUILD_DATE = "2026-07-24 (custom link: SendAppEvent/Sync + WrapAppEvent fix + diag logs)";
 
         #region DLL Imports
 
@@ -1264,8 +1264,10 @@ namespace WeChatWASM
         /// </summary>
         private void OnHostSyncResponse(string data)
         {
+            Debug.Log($"[WXPCHPInitScript] ← OnHostSyncResponse: dataLen={data?.Length ?? 0}, preview={(data ?? "").Length > 200 ? (data ?? "").Substring(0, 200) + "..." : (data ?? "")}");
             _hostSyncResult = data ?? "";
             _hostSyncWaitHandle.Set();
+            Debug.Log("[WXPCHPInitScript] OnHostSyncResponse → _hostSyncWaitHandle.Set() ✓");
         }
 
         /// <summary>
@@ -1273,13 +1275,18 @@ namespace WeChatWASM
         /// AHP 底层 Java WVAAppSDKProvider.sendAppEvent(eventName, jsonStr) 是双参数；
         /// PCHP 底层 SendMsgAsync 只能发单个字节流，故合并为一个 JSON，
         /// 使下行与上行 ProcessIncomingMessage 解析的 { eventName, data } 协议对称。
-        /// eventName 经 JsonMapper.ToJson 转义；jsonStr 本身已是合法 JSON，直接内联为 data，避免二次转义。
+        /// eventName 手动 JSON 转义（不能直接调 JsonMapper.ToJson(string)，LitJson 不允许
+        /// string 作为顶层值序列化，会抛 "Can't add a value here"）；
+        /// jsonStr 本身已是合法 JSON，直接内联为 data，避免二次转义。
         /// </summary>
         private string WrapAppEvent(string eventName, string jsonStr)
         {
-            string ev = eventName ?? "";
+            // 手动转义 eventName：JSON string 只需处理 \ 和 " 两个字符
+            string ev = (eventName ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"");
             string data = string.IsNullOrEmpty(jsonStr) ? "null" : jsonStr;
-            return $"{{\"eventName\":{JsonMapper.ToJson(ev)},\"data\":{data}}}";
+            string envelope = $"{{\"eventName\":\"{ev}\",\"data\":{data}}}";
+            Debug.Log($"[WXPCHPInitScript] WrapAppEvent: eventName={ev}, dataLen={data.Length}, envelopeLen={envelope.Length}");
+            return envelope;
         }
 
         #endregion
@@ -1598,6 +1605,7 @@ namespace WeChatWASM
                 if (hostEventName == "syncResponse" || hostEventName == "bizSyncResponse")
                 {
                     // sync 回包，解锁 SendAppEventSync
+                    Debug.Log($"[WXPCHPInitScript] ← ProcessIncomingMessage: sync 回包 eventName={hostEventName}, dataLen={hostData?.Length ?? 0}");
                     OnHostSyncResponse(hostData);
                 }
                 else
@@ -1607,11 +1615,14 @@ namespace WeChatWASM
                         ? HandleBizHostEvent
                         : HandleHostEvent;
 
+                    Debug.Log($"[WXPCHPInitScript] ← ProcessIncomingMessage: host event eventName={hostEventName}, dataLen={hostData?.Length ?? 0}, hasHandler={hostHandler != null}");
+
                     try
                     {
                         if (hostHandler != null)
                         {
                             hostHandler.Invoke(hostEventName, hostData);
+                            Debug.Log($"[WXPCHPInitScript] ✓ forwarded to {(hostEventName.StartsWith("biz", StringComparison.OrdinalIgnoreCase) ? "HandleBizHostEvent" : "HandleHostEvent")}: {hostEventName}");
                         }
                         else
                         {
