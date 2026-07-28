@@ -4,6 +4,28 @@
         <name>wx-runtime-editor</name>
     </assembly>
     <members>
+        <member name="T:WeChatWASM.GameProtect.Obfuscation.WasmObfuscateAttribute">
+             <summary>
+             标记需要 WASM 混淆保护的方法或类。
+             构建时（仅微信小游戏/WebGL），wx-editor.dll 会扫描带此标记的方法，
+             根据 level 执行定向常量与控制流加固。
+            
+             用法：
+               [WasmObfuscate]             // 默认 Medium（level = 2）
+               [WasmObfuscate(level = 1)]   // Light
+               [WasmObfuscate(level = 2)]   // Medium
+               [WasmObfuscate(level = 3)]   // Heavy
+            
+             注意：只标记冷路径方法（存档、计分、校验等），
+             不要标记每帧调用的热路径（Update、OnGUI 等）。
+             </summary>
+        </member>
+        <member name="P:WeChatWASM.GameProtect.Obfuscation.WasmObfuscateAttribute.level">
+            <summary>
+            混淆级别：1 = Light、2 = Medium、3 = Heavy；默认 2（Medium）。
+            其他值会在构建报告中标记为 Unknown 并安全跳过。
+            </summary>
+        </member>
         <member name="T:WeChatWASM.GameProtect.Monitor.WXDataPluginExample">
             <summary>
             WX数据保护插件使用示例
@@ -9575,43 +9597,6 @@
             [VideoDecoder.on(string eventName, function callback)](https://developers.weixin.qq.com/minigame/dev/api/media/video-decoder/VideoDecoder.on.html)
             需要基础库： `2.11.1`
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
-            </summary>
-        </member>
-        <member name="T:WeChatWASM.WasmObfuscateLevel">
-            <summary>
-            混淆级别。
-            </summary>
-        </member>
-        <member name="F:WeChatWASM.WasmObfuscateLevel.StringOnly">
-            <summary>只加密字符串字面量</summary>
-        </member>
-        <member name="F:WeChatWASM.WasmObfuscateLevel.Light">
-            <summary>字符串 + 整数常量加密</summary>
-        </member>
-        <member name="F:WeChatWASM.WasmObfuscateLevel.Medium">
-            <summary>Light + 不透明谓词（控制流混淆）</summary>
-        </member>
-        <member name="F:WeChatWASM.WasmObfuscateLevel.Heavy">
-            <summary>Medium + 多点假基本块插入</summary>
-        </member>
-        <member name="T:WeChatWASM.WasmObfuscateAttribute">
-             <summary>
-             标记需要 WASM 混淆保护的方法或类。
-             构建时（仅微信小游戏/WebGL），wx-editor.dll 会扫描带此标记的方法，
-             根据级别执行定向字符串、整数和控制流加固。
-            
-             用法：
-               [WasmObfuscate]                              // 默认 Medium
-               [WasmObfuscate(level = WasmObfuscateLevel.Heavy)]
-               public void Save() { ... }
-            
-             注意：只标记冷路径方法（存档、计分、校验等），
-             不要标记每帧调用的热路径（Update、OnGUI 等）。
-             </summary>
-        </member>
-        <member name="P:WeChatWASM.WasmObfuscateAttribute.level">
-            <summary>
-            混淆级别，默认 Medium。
             </summary>
         </member>
         <member name="T:WeChatWASM.WasmObfuscationRuntime">

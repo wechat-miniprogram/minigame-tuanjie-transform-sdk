@@ -95,6 +95,147 @@
             导出产物 minigame 目录，所有文件变动请勿离开该目录
             </summary>
         </member>
+        <member name="T:WeChatWASM.WXGameProtectWindow">
+            <summary>
+            游戏安全加固设置窗口。
+            菜单路径: 微信小游戏 / 安全加固设置
+            
+            统一管理所有加固保护的开关，避免修改代码中的硬编码 bool。
+            设置存储在 EditorPrefs（per-machine，不进版本控制），key 前缀 "WX_GameProtect_"。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsMetadataEncryptEnabled">
+            <summary>是否启用 global-metadata.dat 加密</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsWasmObfuscationEnabled">
+            <summary>是否启用 WASM 加固总开关</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsInstructionSubstitutionEnabled">
+            <summary>是否启用指令替换</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsLocalVariableNoiseEnabled">
+            <summary>是否启用局部变量噪声</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsBogusControlFlowEnabled">
+            <summary>是否启用虚假控制流</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsControlFlowFlatteningEnabled">
+            <summary>是否启用控制流平坦化</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsEntryGateEnabled">
+            <summary>是否启用入口 Gate</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsNameStrippingEnabled">
+            <summary>是否启用函数名剥离（默认关闭，不提供 UI 开关）</summary>
+        </member>
+        <member name="T:WeChatWASM.WXMetadataEncryptor">
+             <summary>
+             global-metadata.dat 加密器（Protected 版，编译进 wx-editor.dll）。
+            
+             在 BuildPipeline.BuildPlayer 完成后、WXConvertCore.convertDataPackage 之前触发：
+             1) 精确解析 webgl.data 容器头（TuanjieWebData1.0/UnityWebData1.0），
+                定位出 global-metadata.dat 这一个条目的真实 offset/size，只加密这一段
+                （⚠️ 之前的实现是"从魔数打到文件末尾"，会把紧跟在 metadata 后面的
+                Resources/tuanjie_default_resources 一起加密坏掉，已修复，见下方注释）
+             2) 用锚点字符串替换，把运行期解密逻辑注入到 framework.js 的 doRun() 闭包内部
+                （替换 "if (shouldRunNow) callMain(args);" 这一行，而不是在文件末尾追加 IIFE——
+                后者拿不到真实的 FS/callMain，是已验证失效的方案，见
+                doc/metadata-encryption/06-落地方案-运行期解密.md）
+            
+             注意：本文件位于 Protected/WXSDKEditor，编译进 wx-editor.dll（经 Obfuscar 混淆）。
+             因此不能直接引用外层明文 .cs（如 WXConvertCore），需通过 UnityUtil/WXExtEnvDef 访问。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.TryLocateMetadataEntry(System.Byte[],System.Int32@,System.Int32@,System.String@)">
+            <summary>
+            按 TuanjieWebData1.0 / UnityWebData1.0 容器格式，解析文件头，
+            找到路径中含 "global-metadata.dat" 的那个条目，返回其在容器内的 offset 和 size。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector">
+             <summary>
+             WASM 定向函数加固器（编译进 wx-editor.dll）。
+            
+             在 Unity/IL2CPP 已生成 webgl.wasm 后、微信转换压缩 wasmcode 前运行：
+             1. 读取构建前的 wx-wasm-obfuscation-markers.json；
+             2. 解析 WASM name custom section，建立函数索引与 IL2CPP 函数名的映射；
+             3. 对 Light 级别执行 i32/i64 常量编码；
+             4. Medium 在常量保护之上，在入口和函数体内 block/loop 体内起始处插入运行期 Gate；
+             5. Heavy 在 Medium 之上，在函数最终 end 前插入尾部不透明控制流岛，并在 if 分支起始处插入额外 Gate；
+             6. 校验改写后的结构后写回 webgl.wasm，后续 WXConvertCore 会将它压缩并复制至 minigame/wasmcode。
+            
+             这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
+             </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
+            <summary>
+            足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
+            解析 type、import、function、name、code section，并保持其他 section 的原始字节不变。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionParameterCount(System.UInt32)">
+            <summary>
+            获取指定函数（按全局 function index）的参数个数。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.StripFunctionNames(System.Collections.Generic.HashSet{System.UInt32})">
+            <summary>
+            从 name section 中剥离指定函数的名称。
+            返回重新构建的完整 name section（含 section header），或 null 表示整个 section 为空可删除。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.InsertMidBlockGates(System.Byte[],System.Int32,WeChatWASM.WXWasmFunctionProtector.WasmInstrumentTarget,System.UInt32,System.UInt32,WeChatWASM.WXWasmFunctionProtector.WasmModule.WasmFunctionSignature,WeChatWASM.WXWasmFunctionProtector.WasmModule.WasmFunctionSignature,System.Int32@)">
+            <summary>
+            在函数体内的 block/loop/if 体内起始处插入自包含的 if/else/end Gate。
+            这些 Gate 是完整的 if 块（不包裹原指令），净栈效果为零，不改变原有 br 深度。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.SkipBlockType(System.Byte[],System.Int32@,System.Int32)">
+            <summary>
+            跳过 blocktype immediate，返回 block 体内第一条指令的偏移。
+            blocktype: 0x40 (void) 或一个 value type (0x7f/0x7e/0x7d/0x7c) 或一个 s33 type index (LEB128)。
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.WXWasmFunctionProtector.WasmModule.BuildBogusBlock(System.Int32,System.Int32,System.Int32)" -->
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.SplitIntoBasicBlocks(System.Byte[],System.Int32,WeChatWASM.WXWasmFunctionProtector.WasmInstrumentTarget)">
+            <summary>
+            将指令流分割为基本块。
+            
+            核心安全不变量：切割后的每个新块在进入时值栈为空。
+            平坦化会把每个块包在独立的 block...end 中，通过 br_table 调度，
+            每个块入口时值栈保证为空。
+            
+            切割策略：只在"已确认栈为空"的安全点切割：
+            - 顶层 void block/if/loop 的 end 之后（WASM 规范保证 void end 后栈不变）
+            - 在纯简单指令序列（无 call）中精确跟踪到 stackDepth==0 的位置
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetTopLevelStackEffect(System.Byte)">
+            <summary>
+            计算单条顶层指令对值栈深度的净效果。
+            返回 int.MinValue 表示无法确定（call 等指令的栈效果取决于函数签名）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.ContainsTopLevelBranch(System.Collections.Generic.List{System.Byte[]})">
+            <summary>
+            检查基本块列表中是否有块包含跳出到函数体隐式顶层块的 br/br_if 指令。
+            平坦化会在每个块外面包裹额外的嵌套 block，导致这些 br 的 depth 语义被破坏。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmObfuscationMarkerCollector">
+             <summary>
+             WASM 混淆标记采集器（编译进 wx-editor.dll）。
+            
+             第一阶段只做可靠采集：在 WebGL 构建开始前扫描用户程序集内带
+             [WeChatWASM.WasmObfuscate] 的方法，输出 Console 日志和 JSON 报告。
+            
+             目的：先确认 Runtime DLL 的 Attribute 能被游戏工程正确引用、
+             标记方法在构建时能被稳定发现，并记录后续 WASM 函数映射/重写所需的
+             方法签名、IL 大小、异常处理区数量等信息。
+            
+             本类不修改用户程序集，不改变游戏行为。
+             </summary>
+        </member>
         <member name="T:WeChatWASM.JsonFormatter">
             <summary>
             JSON 格式化工具类
@@ -869,30 +1010,6 @@
             多包融合配置
             </summary>
         </member>
-        <member name="T:WeChatWASM.WXMetadataEncryptor">
-             <summary>
-             global-metadata.dat 加密器（Protected 版，编译进 wx-editor.dll）。
-            
-             在 BuildPipeline.BuildPlayer 完成后、WXConvertCore.convertDataPackage 之前触发：
-             1) 精确解析 webgl.data 容器头（TuanjieWebData1.0/UnityWebData1.0），
-                定位出 global-metadata.dat 这一个条目的真实 offset/size，只加密这一段
-                （⚠️ 之前的实现是"从魔数打到文件末尾"，会把紧跟在 metadata 后面的
-                Resources/tuanjie_default_resources 一起加密坏掉，已修复，见下方注释）
-             2) 用锚点字符串替换，把运行期解密逻辑注入到 framework.js 的 doRun() 闭包内部
-                （替换 "if (shouldRunNow) callMain(args);" 这一行，而不是在文件末尾追加 IIFE——
-                后者拿不到真实的 FS/callMain，是已验证失效的方案，见
-                doc/metadata-encryption/06-落地方案-运行期解密.md）
-            
-             注意：本文件位于 Protected/WXSDKEditor，编译进 wx-editor.dll（经 Obfuscar 混淆）。
-             因此不能直接引用外层明文 .cs（如 WXConvertCore），需通过 UnityUtil/WXExtEnvDef 访问。
-             </summary>
-        </member>
-        <member name="M:WeChatWASM.WXMetadataEncryptor.TryLocateMetadataEntry(System.Byte[],System.Int32@,System.Int32@,System.String@)">
-            <summary>
-            按 TuanjieWebData1.0 / UnityWebData1.0 容器格式，解析文件头，
-            找到路径中含 "global-metadata.dat" 的那个条目，返回其在容器内的 offset 和 size。
-            </summary>
-        </member>
         <member name="T:WeChatWASM.WXMultiPackageMergeCLI">
             <summary>
             多包融合命令行工具
@@ -1088,39 +1205,6 @@
             <summary>
             CustomNodePath
             </summary>
-        </member>
-        <member name="T:WeChatWASM.WXWasmFunctionProtector">
-             <summary>
-             WASM 定向函数加固器（编译进 wx-editor.dll）。
-            
-             在 Unity/IL2CPP 已生成 webgl.wasm 后、微信转换压缩 wasmcode 前运行：
-             1. 读取构建前的 wx-wasm-obfuscation-markers.json；
-             2. 解析 WASM name custom section，建立函数索引与 IL2CPP 函数名的映射；
-             3. 对 [WasmObfuscate(Medium/Heavy)] 对应的 WASM 函数体插入运行期 Gate；
-             4. 写回 webgl.wasm，后续 WXConvertCore 会将它压缩并复制至 minigame/wasmcode。
-            
-             这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
-             </summary>
-        </member>
-        <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
-            <summary>
-            足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
-            只解析 import、name、code section，并保持其他 section 的原始字节不变。
-            </summary>
-        </member>
-        <member name="T:WeChatWASM.WXWasmObfuscationMarkerCollector">
-             <summary>
-             WASM 混淆标记采集器（编译进 wx-editor.dll）。
-            
-             第一阶段只做可靠采集：在 WebGL 构建开始前扫描用户程序集内带
-             [WeChatWASM.WasmObfuscate] 的方法，输出 Console 日志和 JSON 报告。
-            
-             目的：先确认 Runtime DLL 的 Attribute 能被游戏工程正确引用、
-             标记方法在构建时能被稳定发现，并记录后续 WASM 函数映射/重写所需的
-             方法签名、IL 大小、异常处理区数量等信息。
-            
-             本类不修改用户程序集，不改变游戏行为。
-             </summary>
         </member>
     </members>
 </doc>
