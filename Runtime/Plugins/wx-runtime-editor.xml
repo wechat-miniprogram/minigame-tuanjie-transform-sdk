@@ -9577,5 +9577,85 @@
             注册监听录制事件的回调函数。当对应事件触发时，回调函数会被执行
             </summary>
         </member>
+        <member name="T:WeChatWASM.WasmObfuscateLevel">
+            <summary>
+            混淆级别。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WasmObfuscateLevel.StringOnly">
+            <summary>只加密字符串字面量</summary>
+        </member>
+        <member name="F:WeChatWASM.WasmObfuscateLevel.Light">
+            <summary>字符串 + 整数常量加密</summary>
+        </member>
+        <member name="F:WeChatWASM.WasmObfuscateLevel.Medium">
+            <summary>Light + 不透明谓词（控制流混淆）</summary>
+        </member>
+        <member name="F:WeChatWASM.WasmObfuscateLevel.Heavy">
+            <summary>Medium + 多点假基本块插入</summary>
+        </member>
+        <member name="T:WeChatWASM.WasmObfuscateAttribute">
+             <summary>
+             标记需要 WASM 混淆保护的方法或类。
+             构建时（仅微信小游戏/WebGL），wx-editor.dll 会扫描带此标记的方法，
+             根据级别执行定向字符串、整数和控制流加固。
+            
+             用法：
+               [WasmObfuscate]                              // 默认 Medium
+               [WasmObfuscate(level = WasmObfuscateLevel.Heavy)]
+               public void Save() { ... }
+            
+             注意：只标记冷路径方法（存档、计分、校验等），
+             不要标记每帧调用的热路径（Update、OnGUI 等）。
+             </summary>
+        </member>
+        <member name="P:WeChatWASM.WasmObfuscateAttribute.level">
+            <summary>
+            混淆级别，默认 Medium。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WasmObfuscationRuntime">
+             <summary>
+             由构建期 WASM 定向加固器注入到用户方法中的运行时辅助函数。
+            
+             这些函数刻意禁止内联：构建后的 IL2CPP/WASM 中会保留跨程序集调用，
+             避免简单的常量折叠将定向加固指令完全消除。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WasmObfuscationRuntime.DecodeInt(System.Int32,System.Int32)">
+            <summary>
+            解码构建期写入的整数常量。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WasmObfuscationRuntime.IsGateOpen(System.Int32)">
+             <summary>
+             返回恒真的运行期门控条件。
+            
+             两次调用 Mix 使用同一个初始化后不再变化的 GateSeed，结果相同；
+             由于 Mix 是禁止内联的运行期函数，IL2CPP 不应把调用点直接折叠为常量。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WasmObfuscationRuntime.Touch(System.Int32)">
+            <summary>
+            Gate 的假分支触发的无业务副作用操作。
+            正常情况下 IsGateOpen 恒为 true，因此此方法不会执行。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WasmStringDecryptor">
+            <summary>
+            运行时字符串解密器。
+            ILPostProcessor 在构建时将 ldstr "原文" 替换为：
+              ldstr "Base64加密串" → ldstr "Base64密钥" → call WasmStringDecryptor.Decrypt
+            运行时调用此方法解密还原原始字符串。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WasmStringDecryptor.Decrypt(System.String,System.String)">
+            <summary>
+            解密字符串。
+            </summary>
+            <param name="encryptedBase64">XOR 加密后的 Base64 字符串</param>
+            <param name="keyBase64">密钥的 Base64 字符串</param>
+            <returns>解密后的原始字符串</returns>
+        </member>
     </members>
 </doc>

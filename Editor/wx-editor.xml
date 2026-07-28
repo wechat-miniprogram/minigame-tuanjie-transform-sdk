@@ -1089,5 +1089,38 @@
             CustomNodePath
             </summary>
         </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector">
+             <summary>
+             WASM 定向函数加固器（编译进 wx-editor.dll）。
+            
+             在 Unity/IL2CPP 已生成 webgl.wasm 后、微信转换压缩 wasmcode 前运行：
+             1. 读取构建前的 wx-wasm-obfuscation-markers.json；
+             2. 解析 WASM name custom section，建立函数索引与 IL2CPP 函数名的映射；
+             3. 对 [WasmObfuscate(Medium/Heavy)] 对应的 WASM 函数体插入运行期 Gate；
+             4. 写回 webgl.wasm，后续 WXConvertCore 会将它压缩并复制至 minigame/wasmcode。
+            
+             这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
+             </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
+            <summary>
+            足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
+            只解析 import、name、code section，并保持其他 section 的原始字节不变。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmObfuscationMarkerCollector">
+             <summary>
+             WASM 混淆标记采集器（编译进 wx-editor.dll）。
+            
+             第一阶段只做可靠采集：在 WebGL 构建开始前扫描用户程序集内带
+             [WeChatWASM.WasmObfuscate] 的方法，输出 Console 日志和 JSON 报告。
+            
+             目的：先确认 Runtime DLL 的 Attribute 能被游戏工程正确引用、
+             标记方法在构建时能被稳定发现，并记录后续 WASM 函数映射/重写所需的
+             方法签名、IL 大小、异常处理区数量等信息。
+            
+             本类不修改用户程序集，不改变游戏行为。
+             </summary>
+        </member>
     </members>
 </doc>
