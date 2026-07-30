@@ -137,13 +137,14 @@ function _runProbe() {
     return new Promise(function (resolve) {
         var done = false;
         var t0 = mark();
-        var timer = setTimeout(function () {
-            if (done)
-                return;
-            done = true;
-            log('warn', '[probe] timeout', { costMs: (mark() - t0).toFixed(1), threshold: _PROBE_TIMEOUT_MS });
-            resolve(false);
-        }, _PROBE_TIMEOUT_MS);
+        var timer = (_PROBE_TIMEOUT_MS === Infinity) ? null
+            : setTimeout(function () {
+                if (done)
+                    return;
+                done = true;
+                log('warn', '[probe] timeout', { costMs: (mark() - t0).toFixed(1), threshold: _PROBE_TIMEOUT_MS });
+                resolve(false);
+            }, _PROBE_TIMEOUT_MS);
         wxDecodeASTC({
             data: _PROBE_ASTC_DATA.buffer,
             width: 64, height: 64,
@@ -152,14 +153,16 @@ function _runProbe() {
             if (done)
                 return;
             done = true;
-            clearTimeout(timer);
+            if (timer)
+                clearTimeout(timer);
             log('info', '[probe] passed', { costMs: (mark() - t0).toFixed(1) });
             resolve(true);
         }).catch(function (e) {
             if (done)
                 return;
             done = true;
-            clearTimeout(timer);
+            if (timer)
+                clearTimeout(timer);
             log('warn', '[probe] decode failed', { costMs: (mark() - t0).toFixed(1), error: (e && e.message) || e });
             resolve(false);
         });
@@ -310,25 +313,25 @@ export async function bootstrapWebGPUASTC(opts) {
     opts = opts || {};
     var timeoutMs = opts.timeoutMs || DEFAULT_TIMEOUT_MS;
     
+    
     var cfg = (typeof GameGlobal !== 'undefined' && GameGlobal.__WEBGPU_ASTC_SHIM_CONFIG__) || {};
-    if (opts.maxConcurrency && opts.maxConcurrency > 0) {
-        DEFAULT_MAX_CONCURRENCY = opts.maxConcurrency;
+    function _resolveNum(v) {
+        if (v === Infinity || v === -1)
+            return Infinity;
+        return (typeof v === 'number' && v > 0) ? v : null;
     }
-    else if (cfg.maxConcurrency && cfg.maxConcurrency > 0) {
-        DEFAULT_MAX_CONCURRENCY = cfg.maxConcurrency;
-    }
-    if (opts.injectBytesPerFrame && opts.injectBytesPerFrame > 0) {
-        DEFAULT_INJECT_BYTES_PER_FRAME = opts.injectBytesPerFrame;
-    }
-    else if (cfg.injectBytesPerFrame && cfg.injectBytesPerFrame > 0) {
-        DEFAULT_INJECT_BYTES_PER_FRAME = cfg.injectBytesPerFrame;
-    }
-    if (opts.injectCountPerFrame && opts.injectCountPerFrame > 0) {
-        DEFAULT_INJECT_COUNT_PER_FRAME = opts.injectCountPerFrame;
-    }
-    else if (cfg.injectCountPerFrame && cfg.injectCountPerFrame > 0) {
-        DEFAULT_INJECT_COUNT_PER_FRAME = cfg.injectCountPerFrame;
-    }
+    var _mc = _resolveNum(opts.maxConcurrency) || _resolveNum(cfg.maxConcurrency);
+    if (_mc != null)
+        DEFAULT_MAX_CONCURRENCY = _mc;
+    var _ib = _resolveNum(opts.injectBytesPerFrame) || _resolveNum(cfg.injectBytesPerFrame);
+    if (_ib != null)
+        DEFAULT_INJECT_BYTES_PER_FRAME = _ib;
+    var _ic = _resolveNum(opts.injectCountPerFrame) || _resolveNum(cfg.injectCountPerFrame);
+    if (_ic != null)
+        DEFAULT_INJECT_COUNT_PER_FRAME = _ic;
+    var _pt = _resolveNum(opts.probeTimeoutMs) || _resolveNum(cfg.probeTimeoutMs);
+    if (_pt != null)
+        _PROBE_TIMEOUT_MS = _pt;
     
     
     

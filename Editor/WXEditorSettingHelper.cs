@@ -391,6 +391,7 @@ namespace WeChatWASM
             this.formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
             this.formCheckbox("EmscriptenGLX", "EmscriptenGLX(?)", "是否使用EmscriptenGLX渲染方案");
             this.formCheckbox("iOSMetal", "iOSMetal(?)", "使用iOSMetal渲染，需开启iOS高性能+模式，降低功耗、提升性能，仅支持团结引擎，不支持Unity，有引擎源码可自行适配");
+            this.formCheckbox("enablePCWebGPUAstc", "PC WebGPU ASTC Shim(?)", "【实验】仅对 PC 小游戏生效：在原生 WebGL 不支持 ASTC 扩展时，用 WebGPU Compute Shader 软解 ASTC 纹理。");
             this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
             this.formCheckbox("cleanBuild", "Clean WebGL Build");
             // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
@@ -688,6 +689,7 @@ namespace WeChatWASM
             this.setData("iOSPerformancePlus", CompileOptions.enableIOSPerformancePlus);
             this.setData("iOSMetal", CompileOptions.enableiOSMetal);
             this.setData("EmscriptenGLX", CompileOptions.enableEmscriptenGLX);
+            this.setData("enablePCWebGPUAstc", CompileOptions.enablePCWebGPUAstc);
             this.setData("fbslim", CompileOptions.fbslim);
 #if !TUANJIE_1_9_OR_NEWER
             // #if TUANJIE_2022_3_OR_NEWER
@@ -820,6 +822,7 @@ namespace WeChatWASM
             CompileOptions.enableIOSPerformancePlus = this.getDataCheckbox("iOSPerformancePlus");
             CompileOptions.enableiOSMetal = this.getDataCheckbox("iOSMetal");
             CompileOptions.enableEmscriptenGLX = this.getDataCheckbox("EmscriptenGLX");
+            CompileOptions.enablePCWebGPUAstc = this.getDataCheckbox("enablePCWebGPUAstc");
             CompileOptions.fbslim = this.getDataCheckbox("fbslim");
 #if !TUANJIE_1_9_OR_NEWER
             // #if TUANJIE_2022_3_OR_NEWER
@@ -954,6 +957,7 @@ namespace WeChatWASM
             _CompileOptions.enableIOSPerformancePlus = CompileOptions.FindPropertyRelative("enableIOSPerformancePlus").boolValue;
             _CompileOptions.enableiOSMetal = CompileOptions.FindPropertyRelative("enableiOSMetal").boolValue;
             _CompileOptions.enableEmscriptenGLX = CompileOptions.FindPropertyRelative("enableEmscriptenGLX").boolValue;
+            _CompileOptions.enablePCWebGPUAstc = CompileOptions.FindPropertyRelative("enablePCWebGPUAstc").boolValue;
             _CompileOptions.fbslim = CompileOptions.FindPropertyRelative("fbslim").boolValue;
 
             _CompileOptions.autoAdaptScreen = CompileOptions.FindPropertyRelative("autoAdaptScreen").boolValue;
@@ -981,6 +985,7 @@ namespace WeChatWASM
             CompileOptions.FindPropertyRelative("enableIOSPerformancePlus").boolValue = _CompileOptions.enableIOSPerformancePlus;
             CompileOptions.FindPropertyRelative("enableiOSMetal").boolValue = _CompileOptions.enableiOSMetal;
             CompileOptions.FindPropertyRelative("enableEmscriptenGLX").boolValue = _CompileOptions.enableEmscriptenGLX;
+            CompileOptions.FindPropertyRelative("enablePCWebGPUAstc").boolValue = _CompileOptions.enablePCWebGPUAstc;
             CompileOptions.FindPropertyRelative("fbslim").boolValue = _CompileOptions.fbslim;
 
             CompileOptions.FindPropertyRelative("autoAdaptScreen").boolValue = _CompileOptions.autoAdaptScreen;

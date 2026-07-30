@@ -694,19 +694,25 @@
             </summary>
             <summary>
             wx.decodeASTC 同时在飞的最大请求数。值越大并行度越高，但回包集中时易引发单帧 GL 上传风暴。
-            默认 6；设 1 强制串行（诊断用）。
+            默认 6；设 1 强制串行（诊断用）；设 -1 表示不限并发（Infinity）。
             </summary>
         </member>
         <member name="F:WeChatWASM.CompileOptions.webgpuAstcInjectBytesPerFrame">
             <summary>
             每帧（requestAnimationFrame）允许上传到 GL 纹理的最大字节数。单位：字节。
-            默认 8MB；过小会导致注入队列堆积（每 job 持有 ~16MB RGBA），过大则单帧耗时尖刺。
+            默认 8MB；过小会导致注入队列堆积（每 job 持有 ~16MB RGBA），过大则单帧耗时尖刺；设 -1 表示不限（Infinity，关闭节流）。
             </summary>
         </member>
         <member name="F:WeChatWASM.CompileOptions.webgpuAstcInjectCountPerFrame">
             <summary>
             每帧允许上传到 GL 纹理的最大张数。
-            默认 4；与 injectBytesPerFrame 共同构成双重预算，先到者限流。
+            默认 4；与 injectBytesPerFrame 共同构成双重预算，先到者限流；设 -1 表示不限（Infinity，关闭节流）。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CompileOptions.webgpuAstcProbeTimeoutMs">
+            <summary>
+            准入探测超时（毫秒）。预热完成后发一次探测解码，在此时间内回包才启用 WebGPU，否则保持 CPU 软解。
+            默认 300；设 -1 表示不限超时（Infinity，等待回包为止，诊断用）。
             </summary>
         </member>
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">

@@ -1442,9 +1442,10 @@ namespace WeChatWASM
                     block.AppendLine("GameGlobal.__WEBGPU_ASTC_SHIM_ENABLED__ = true;");
                     block.AppendLine("if (typeof globalThis !== 'undefined') { globalThis.__WEBGPU_ASTC_SHIM_ENABLED__ = true; }");
                     block.AppendLine("GameGlobal.__WEBGPU_ASTC_SHIM_CONFIG__ = {");
-                    block.AppendLine($"  maxConcurrency: {co.webgpuAstcMaxConcurrency},");
-                    block.AppendLine($"  injectBytesPerFrame: {co.webgpuAstcInjectBytesPerFrame},");
-                    block.AppendLine($"  injectCountPerFrame: {co.webgpuAstcInjectCountPerFrame}");
+                    block.AppendLine($"  maxConcurrency: {(co.webgpuAstcMaxConcurrency < 0 ? "Infinity" : co.webgpuAstcMaxConcurrency.ToString())},");
+                    block.AppendLine($"  injectBytesPerFrame: {(co.webgpuAstcInjectBytesPerFrame < 0 ? "Infinity" : co.webgpuAstcInjectBytesPerFrame.ToString())},");
+                    block.AppendLine($"  injectCountPerFrame: {(co.webgpuAstcInjectCountPerFrame < 0 ? "Infinity" : co.webgpuAstcInjectCountPerFrame.ToString())},");
+                    block.AppendLine($"  probeTimeoutMs: {(co.webgpuAstcProbeTimeoutMs < 0 ? "Infinity" : co.webgpuAstcProbeTimeoutMs.ToString())}");
                     block.AppendLine("};");
                     block.AppendLine(END_MARK);
                     finalContent = stripped + block.ToString();
