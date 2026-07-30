@@ -1849,6 +1849,28 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// 同步发送应用事件（真同步链路，阻塞等 JS 回包）
+        ///
+        /// 链路：C# → SendMsgSync → 内核 → JS registerSyncMsgHandler → 插件 _handleSyncExeCommand
+        ///       → wx[functionName]Sync() 同步返回 → 内核 → C# 拿到回包（全程阻塞，无回调）
+        ///
+        /// jsonStr 须为 va 协议：{"functionParams":{"functionName":"GetSystemInfoSync","conf":{...},"callbackId":"..."}}
+        /// functionName 用 PascalCase，插件侧转 camelCase 后调 wx.xxxSync()。
+        /// </summary>
+        /// <param name="eventName">事件名（插件侧当前不路由，可传 "PCHPExeEvent"）</param>
+        /// <param name="jsonStr">va 协议 JSON 字符串</param>
+        /// <returns>JS 同步回包 JSON 字符串；空字符串表示失败</returns>
+        public string SendAppEventSync(string eventName, string jsonStr)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
+                return "";
+            }
+            return _initScript.SendAppEventSync(eventName, jsonStr);
+        }
+
+        /// <summary>
         /// 注册事件监听
         /// </summary>
         public void On(string eventName, Action<string> callback)
