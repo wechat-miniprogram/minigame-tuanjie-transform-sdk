@@ -627,6 +627,9 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
+    WXSetSyncReadCacheEnabled: function(enabled) {
+        window.WXWASMSDK.WXSetSyncReadCacheEnabled(enabled);
+    },
     WXGetPluginCachePath: function() {
         var returnStr = window.WXWASMSDK.WXGetPluginCachePath();
         var bufferSize = lengthBytesUTF8(returnStr || '') + 1;

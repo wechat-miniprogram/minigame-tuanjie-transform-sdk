@@ -33,6 +33,7 @@ export const ResType = {
         phoneCalendarAuthorized: 'string',
     },
     AppBaseInfo: {
+        PCKernelVersion: 'string',
         SDKVersion: 'string',
         enableDebug: 'bool',
         fontSizeScaleFactor: 'number',
@@ -61,6 +62,10 @@ export const ResType = {
         platform: 'string',
         system: 'string',
     },
+    DirectAdStatusInfo: {
+        isInDirectGameAd: 'bool',
+        isInMask: 'bool',
+    },
     EnterOptionsGame: {
         apiCategory: 'string',
         query: 'object',
@@ -79,6 +84,7 @@ export const ResType = {
         feedId: 'string',
     },
     LaunchOptionsGame: {
+        hostExtraData: 'string',
         query: 'object',
         referrerInfo: 'EnterOptionsGameReferrerInfo',
         scene: 'number',
@@ -94,12 +100,49 @@ export const ResType = {
         width: 'number',
     },
     OfficialComponentsInfo: {
+        challengeRewardsComponentInfo: 'ChallengeRewardsComponentInfo',
         notificationComponentInfo: 'OfficialComponentInfo',
+        rewardsComponentInfo: 'RewardsComponentInfo',
+    },
+    ChallengeRewardsComponentInfo: {
+        name: 'string',
+        receiveDetail: 'ChallengeReceiveDetail',
+    },
+    ChallengeReceiveDetail: {
+        awardResult: 'number',
+        receivedRareReward: 'bool',
+        userSourceList: 'UserSource[]',
+    },
+    UserSource: {
+        sourceType: 'number',
+        source: 'SourceInfo',
+        sourceNum: 'number',
+    },
+    SourceInfo: {
+        propList: 'PropInfo[]',
+        type: 'number',
+        sourceName: 'string',
+    },
+    PropInfo: {
+        propName: 'string',
+        propNum: 'number',
     },
     OfficialComponentInfo: {
         boundingClientRect: 'ClientRect',
         isVisible: 'bool',
         name: 'string',
+    },
+    RewardsComponentInfo: {
+        canReceiveFriendGiftCount: 'number',
+        canReceiveGiftCount: 'number',
+        name: 'string',
+        receiveDetail: 'ReceiveDetail',
+    },
+    ReceiveDetail: {
+        desc: 'string',
+        icon: 'string',
+        name: 'string',
+        type: 'string',
     },
     GetStorageInfoSyncOption: {
         currentSize: 'number',
@@ -283,6 +326,18 @@ export const ResType = {
     CheckIsAddedToMyMiniProgramSuccessCallbackResult: {
         added: 'bool',
         errMsg: 'string',
+    },
+    CheckIsSupportMidasPaymentFailCallbackErr: {
+        errMsg: 'string',
+    },
+    CheckIsSupportMidasPaymentSuccessCallbackResult: {
+        data: 'CheckIsSupportMidasPaymentSuccessCallbackDataResult',
+        errMsg: 'string',
+    },
+    CheckIsSupportMidasPaymentSuccessCallbackDataResult: {
+        allow_pay: 'bool',
+        err_code: 'number',
+        err_msg: 'string',
     },
     ChooseImageSuccessCallbackResult: {
         tempFilePaths: 'string[]',
@@ -531,7 +586,7 @@ export const ResType = {
         status: 'number',
         errMsg: 'string',
     },
-    GetChatToolInfoSuccessCallbackResult: {
+    RequestMidasFriendPaymentSuccessCallbackResult: {
         cloudID: 'string',
         encryptedData: 'string',
         errMsg: 'string',
@@ -575,8 +630,13 @@ export const ResType = {
         errMsg: 'string',
     },
     GetGameExptInfoSuccessCallbackResult: {
-        list: 'object',
+        list: 'GameExptInfo[]',
         errMsg: 'string',
+    },
+    GameExptInfo: {
+        expt_id: 'number',
+        param_name: 'string',
+        param_value: 'string',
     },
     GetGroupEnterInfoError: {
         errMsg: 'string',
@@ -610,6 +670,16 @@ export const ResType = {
         errMsg: 'string',
         localip: 'string',
         netmask: 'string',
+    },
+    GetLocationSuccessCallbackResult: {
+        accuracy: 'number',
+        altitude: 'number',
+        horizontalAccuracy: 'number',
+        latitude: 'number',
+        longitude: 'number',
+        speed: 'number',
+        verticalAccuracy: 'number',
+        errMsg: 'string',
     },
     GetNetworkTypeSuccessCallbackResult: {
         hasSystemProxy: 'bool',
@@ -764,6 +834,7 @@ export const ResType = {
     },
     OnCopyUrlListenerResult: {
         query: 'string',
+        title: 'string',
     },
     OnDeviceMotionChangeListenerResult: {
         alpha: 'number',
@@ -772,6 +843,11 @@ export const ResType = {
     },
     OnDeviceOrientationChangeListenerResult: {
         value: 'string',
+    },
+    OnDirectAdStatusChangeListenerResult: {
+        isEndByAbnormal: 'bool',
+        isInDirectGameAd: 'bool',
+        isInMask: 'bool',
     },
     ListenerError: {
         message: 'string',
@@ -927,6 +1003,14 @@ export const ResType = {
         eventType: 'number',
         branchDim: 'string',
     },
+    FacialRecognitionError: {
+        errMsg: 'string',
+        errCode: 'number',
+    },
+    RequestFacialVerifyError: {
+        errMsg: 'string',
+        errCode: 'number',
+    },
     MidasFriendPaymentError: {
         errMsg: 'string',
         errCode: 'number',
@@ -961,7 +1045,7 @@ export const ResType = {
         errMsg: 'string',
     },
     RequestSubscribeMessageSuccessCallbackResult: {
-        anyKeyWord: 'string',
+        anyKeyWord: 'object',
         errMsg: 'string',
     },
     RequestSubscribeSystemMessageSuccessCallbackResult: {
