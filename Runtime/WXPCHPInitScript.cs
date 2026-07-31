@@ -252,6 +252,9 @@ namespace WeChatWASM
         private static WXPCHPInitScript instance;
         public static WXPCHPInitScript Instance => instance;
 
+        /// <summary>Unity 主线程 ID，Awake 时记录。SendMsgSync 不可在主线程调用（会死锁）</summary>
+        private static int _unityMainThreadId = -1;
+
         #endregion
 
         #region Callback Management
@@ -387,6 +390,8 @@ namespace WeChatWASM
 
         private void Awake()
         {
+            // 记录 Unity 主线程 ID，供 SendMessageSyncInternal 做死锁检测
+            _unityMainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Debug.Log($"[WXPCHPInitScript] ========== PC高性能模式 SDK v{PCHP_VERSION} (build {PCHP_BUILD_DATE}) ==========");
             Debug.Log($"[WXPCHPInitScript] GameObject 名称: {gameObject.name}");
             Debug.Log($"[WXPCHPInitScript] 场景名称: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
@@ -1449,6 +1454,16 @@ namespace WeChatWASM
             if (!IsInitialized || !IsConnected)
             {
                 Debug.LogWarning("[WXPCHPInitScript] SendMessageSyncInternal ✗ SDK未初始化或未连接");
+                return false;
+            }
+
+            // ⚠️ 死锁检测：不可在 Unity 主线程调用！
+            // SendMsgSync 阻塞调用线程等 JS 回包，而 JS 引擎由 Unity 主线程消息循环 pump 驱动，
+            // 主线程被占住 → JS handleSyncMessage 永远不执行 → 死锁。
+            // 必须切子线程调（如 Task.Run / Thread）。
+            if (_unityMainThreadId != -1 && System.Threading.Thread.CurrentThread.ManagedThreadId == _unityMainThreadId)
+            {
+                Debug.LogError("[WXPCHPInitScript] SendMessageSyncInternal ✗ 检测到 Unity 主线程调用，这会导致死锁！请切子线程调（Task.Run / Thread）。");
                 return false;
             }
 
