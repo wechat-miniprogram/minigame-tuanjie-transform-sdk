@@ -1931,6 +1931,22 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// 伪同步调用微信 API（异步通道 + 阻塞等回调，对游戏代码表现为同步返回）
+        /// 走 SendMsgAsync 异步通道（不死锁），C# 侧 while 轮询 _messageQueue 等回调。
+        /// 插件侧对 Sync API 直接调 wx[method]() 拿返回值，主动 reply 回包。
+        /// ⚠️ 可在主线程调用，但会阻塞调用线程直到回调或超时。
+        /// </summary>
+        public string CallWXAPISyncBridge(string method, string paramsJson = null, int timeoutMs = 5000)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
+                return "";
+            }
+            return _initScript.CallWXAPISyncBridge(method, paramsJson, timeoutMs);
+        }
+
+        /// <summary>
         /// 注册事件监听
         /// </summary>
         public void On(string eventName, Action<string> callback)

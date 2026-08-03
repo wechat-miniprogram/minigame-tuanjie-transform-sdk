@@ -201,6 +201,40 @@ __declspec(dllexport) void FreeMsgData(uint8_t* data);
 - **线程**：任意线程
 - **C# 声明**：待补充（`WXPCHPInitScript` 尚未声明此 DllImport）
 
+### ⚠️ 已知限制：`SendMsgSync` 不可用（Mojo 同步调用死锁）
+
+**实测结论**：`SendMsgSync` 在当前 pchp_sdk.dll 实现下**必然死锁**，不可用于 C# → JS 方向的同步调用。
+
+**死锁根因**：
+
+`SendMsgSync` 内部通过 Mojo 同步 IPC 调用从 Unity 进程（client）发到浏览器进程（host）。Mojo 同步调用在 pchp_sdk.dll 的 IPC 线程上执行，阻塞等 host 回包。但 Mojo 回包需要 IPC 线程 pump 消息——IPC 线程被同步调用占着，pump 不了，回包永远收不到。
+
+```
+C# SendMsgSync (子线程 event.Wait 阻塞)
+  → pchp_sdk.dll IPC 线程: pchp_host_->SendMsgSync (Mojo 同步, 阻塞 IPC 线程)
+  → host 侧处理完 → Mojo 回包需要 IPC 线程 pump
+  → IPC 线程被占着 → 回包收不到 → 死锁
+```
+
+**验证记录**（2026-08-03）：
+
+1. 内核日志确认 host 侧成功返回（`PchpManager success=1 response_size=96`），但 C# 侧 `SendMsgSync` P/Invoke 永远不返回
+2. 不管 payload 是 va 协议还是 PCHPExeCommand 结构，死锁都存在——和 payload 无关
+3. 内核 JSHandler 的行为和 payload 结构有关（va 协议走 InvokeHandler 异步 JSAPI，PCHPExeCommand 走 registerSyncMsgHandler 同步回调），但 pchp_sdk.dll 的 Mojo 同步调用死锁和此无关
+
+**设计约束**：
+
+`SendMsgSync` 只适用于 **pc-adapter 侧直接拿信息马上返回** 的场景（如读取本地缓存的状态）。**不能**在 pc-adapter 侧又发一个同步 JSAPI 给内核（同步调同步，必死锁）。
+
+**替代方案**：
+
+C# → JS 方向的同步语义通过**异步通道 + C# 侧阻塞等回调**实现（`CallWXAPISyncBridge`）：
+- C# 用 `SendMsgAsync` 异步发（不阻塞 IPC 线程，不死锁）
+- 插件侧对 Sync API 直接调 `wx[method]()` 拿返回值，主动 `reply` 回包
+- C# 侧 `while (!completed && !timeout)` 阻塞等回调，对游戏代码表现为同步返回
+
+`SendMsgSync` / `RegisterSyncMsgHandler` 的反向（JS → C# 方向，JS 主动 `sendMsgSync`）理论上不受此死锁影响，但尚未验证。
+
 ---
 
 ## 窗口控制
