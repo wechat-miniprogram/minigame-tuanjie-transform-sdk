@@ -1264,6 +1264,36 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// 同步调用微信 API（对齐异步 CallWXAPI 的消息结构，走 SendMsgSync 同步通道）
+        ///
+        /// 与异步 CallWXAPI 区别：
+        /// - 消息结构相同：PCHPExeCommand {callbackId, method, params}
+        /// - native 通道不同：SendMsgSync（同步阻塞）vs SendMsgAsync（异步）
+        /// - 返回方式不同：同步返回结果 JSON vs 异步回调
+        ///
+        /// ⚠️ 不可在 Unity 主线程调用（SendMessageSyncInternal 有死锁检测）。
+        /// </summary>
+        public string CallWXAPISync(string method, string paramsJson = null)
+        {
+            if (!IsInitialized || !IsConnected)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SDK未初始化或未连接，无法同步调用 {method}");
+                return "";
+            }
+
+            var command = new PCHPExeCommand
+            {
+                callbackId = GenerateCallbackId(),
+                method = method,
+                @params = paramsJson ?? "{}"
+            };
+            string commandJson = JsonMapper.ToJson(command);
+            Debug.Log($"[WXPCHPInitScript] ▶ CallWXAPISync: method={method}, callbackId={command.callbackId}, json={commandJson}");
+
+            return SendMessageSyncInternal(commandJson, out var resp) ? resp : "";
+        }
+
+        /// <summary>
         /// 把 (eventName, jsonStr) 包成与 AHP 对齐的下行协议 { eventName, data }。
         /// AHP 底层 Java WVAAppSDKProvider.sendAppEvent(eventName, jsonStr) 是双参数；
         /// PCHP 底层 SendMsgAsync 只能发单个字节流，故合并为一个 JSON，
@@ -1884,6 +1914,20 @@ namespace WeChatWASM
                 return "";
             }
             return _initScript.SendAppEventSync(eventName, jsonStr);
+        }
+
+        /// <summary>
+        /// 同步调用微信 API（对齐异步 CallWXAPI，走 SendMsgSync 同步通道）
+        /// ⚠️ 不可在 Unity 主线程调用。
+        /// </summary>
+        public string CallWXAPISync(string method, string paramsJson = null)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
+                return "";
+            }
+            return _initScript.CallWXAPISync(method, paramsJson);
         }
 
         /// <summary>
