@@ -129,6 +129,14 @@ namespace WeChatWASM
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool SendMsgAsync(IntPtr data, int len);
 
+        // SendMsgSync / FreeMsgData 已删除：Mojo 同步调用死锁，不可用（详见 issue #13020 §1.7）
+        // 如需恢复，参考 README.md 同步通信章节 + 历史代码
+
+        // 注册同步消息 handler（接住来自 JS 侧 sendMsgSync 的同步请求，跑在 SDK IPC 线程）
+        // 内核 Initialize 流程要求必须注册
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void RegisterSyncMsgHandler(SyncMsgHandlerDelegate handler);
+
         // 清理资源
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern bool Cleanup();
@@ -216,8 +224,19 @@ namespace WeChatWASM
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void AsyncMsgHandlerDelegate(IntPtr data, int len);
 
+        // 同步消息处理器委托（JS→C# 方向，接住 JS 侧 sendMsgSync）
+        // handler 成功时设置 response/responseLen；response 内存只需存活到 handler 返回（SDK 会拷贝）
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate bool SyncMsgHandlerDelegate(IntPtr data, int len, out IntPtr response, out int responseLen);
+
         // 保持委托引用，防止被GC回收
         private static AsyncMsgHandlerDelegate asyncMsgHandler;
+        private static SyncMsgHandlerDelegate syncMsgHandler;
+
+        // 同步 handler 的响应缓冲区（handler 跑在 SDK IPC 线程，单线程无并发）
+        // 用 GCHandle.Pinned 固定内存，handler 里直接把 response 指向这块缓冲区，避免每次 alloc 泄漏
+        private static readonly byte[] _syncResponseBuffer = new byte[65536];
+        private static GCHandle _syncResponseHandle;
 
         #endregion
 
@@ -258,22 +277,30 @@ namespace WeChatWASM
         // 与 AHP MinaSDKAHP.cs 签名对齐，让 TS 适配方可跨平台复用。
         // 详见 issue #13020 § 1.6。
 
-        /// <summary>
-        /// Host → TS 事件回调委托
-        /// TS 侧通过 Puerts 赋值：Instance.HandleHostEvent = (eventName, data) => {...}
-        /// </summary>
-        public Action<string, string> HandleHostEvent;
+    /// <summary>
+    /// Host → TS 事件回调委托
+    /// TS 侧通过 Puerts 赋值：Instance.HandleHostEvent = (eventName, data) => {...}
+    /// </summary>
+    public Action<string, string> HandleHostEvent;
+
+    /// <summary>SendAppEventSync 伪同步回包（ProcessIncomingMessage 写，SendAppEventSync 读）</summary>
+    private volatile string _pendingSyncResponse;
+    /// <summary>SendAppEventSync 伪同步是否完成</summary>
+    private volatile bool _syncResponseCompleted;
 
         /// <summary>
         /// Host → TS 业务事件回调委托（biz 前缀事件走此委托）
         /// </summary>
         public Action<string, string> HandleBizHostEvent;
 
-        // sync 阻塞等待基础设施（供 SendAppEventSync 使用）
-        private readonly object _hostSyncLock = new object();
-        private readonly System.Threading.AutoResetEvent _hostSyncWaitHandle = new System.Threading.AutoResetEvent(false);
-        private volatile string _hostSyncResult = null;
-        private const int HOST_SYNC_TIMEOUT_MS = 10000;
+        /// <summary>
+        /// TS → C# 主动同步请求回调委托（接住 JS 侧 sendMsgSync）
+        /// 与 HandleHostEvent（下行）方向相反：这是【上行同步】链路的 C# 落点。
+        /// TS 侧通过 Puerts 赋值：Instance.HandleSyncHostEvent = (eventName, data) => resultJson
+        /// 委托必须【同步返回】结果 JSON 字符串（跑在 SDK IPC 线程），不能 async。
+        /// 未赋值时 HandleSyncMessage 回空 JSON {}。
+        /// </summary>
+        public Func<string, string, string> HandleSyncHostEvent;
 
         #endregion
 
@@ -784,6 +811,12 @@ namespace WeChatWASM
                 RegisterAsyncMsgHandler(asyncMsgHandler);
                 ShowStepInfo("步骤 2/5 - RegisterAsyncMsgHandler ✅", "异步消息处理器注册成功！");
 
+                // 2.5 注册同步消息处理器（内核 Initialize 流程要求必须注册）
+                syncMsgHandler = HandleSyncMessage;
+                _syncResponseHandle = GCHandle.Alloc(_syncResponseBuffer, GCHandleType.Pinned);
+                RegisterSyncMsgHandler(syncMsgHandler);
+                Debug.Log("[WXPCHPInitScript] RegisterSyncMsgHandler registered ✓");
+
                 // 3. 建立连接
                 Debug.Log("[WXPCHPInitScript] Step 3: 调用 EstablishConnection");
                 ShowStepInfo("步骤 3/5 - EstablishConnection", "正在建立 Mojo 连接...");
@@ -1204,13 +1237,15 @@ namespace WeChatWASM
 
         /// <summary>
         /// 同步发送事件给 game.js，阻塞等待回包
-        /// 与 AHP 平台 sendAppEvent(eventName, jsonStr) 双参数语义对齐：
-        /// eventName 与 jsonStr 一起过桥，下行协议为 { eventName, data }。
-        /// 回包通过 game.js postToExe({eventName:"syncResponse", data:...}) 返回。
+        /// 伪同步实现：走异步通道 SendAppEvent（SendMsgAsync，不死锁），C# 侧 while 轮询
+        /// _messageQueue 等 syncResponse 回包。对游戏代码表现为同步返回。
+        /// 与 AHP 平台 sendAppEvent(eventName, jsonStr) 双参数语义对齐。
+        ///
+        /// ⚠️ 不走 SendMsgSync 真同步（Mojo 同步调用死锁，详见 issue #13020 §1.7）。
         /// </summary>
         /// <param name="eventName">事件名称（随消息一起发到 game.js，C# 不解析其含义）</param>
         /// <param name="jsonStr">完整 JSON 载荷（由 TS 侧构造，作为 data 字段内联）</param>
-        /// <returns>回包原始数据字符串，超时返回空字符串</returns>
+        /// <returns>回包原始数据字符串，失败/超时返回空字符串</returns>
         public string SendAppEventSync(string eventName, string jsonStr)
         {
             if (!IsInitialized || !IsConnected)
@@ -1219,57 +1254,30 @@ namespace WeChatWASM
                 return "";
             }
 
-            lock (_hostSyncLock)
+            Debug.Log($"[WXPCHPInitScript] SendAppEventSync (伪同步): {eventName}");
+
+            // 异步发（走 SendMsgAsync，不阻塞 IPC 线程，不死锁）
+            _syncResponseCompleted = false;
+            _pendingSyncResponse = null;
+            SendAppEvent(eventName, jsonStr);
+
+            // 阻塞等 syncResponse 回包（HandleAsyncMessage 在 IPC 线程入队，调用线程轮询取）
+            var startTime = DateTime.UtcNow;
+            while (!_syncResponseCompleted && (DateTime.UtcNow - startTime).TotalMilliseconds < 10000)
             {
-                try
+                if (_messageQueue.TryDequeue(out var messageJson))
                 {
-                    _hostSyncResult = null;
-                    _hostSyncWaitHandle.Reset();
-
-                    Debug.Log($"[WXPCHPInitScript] SendAppEventSync: {eventName}");
-                    if (!SendMessageInternal(WrapAppEvent(eventName, jsonStr)))
-                    {
-                        return "";
-                    }
-
-                    // 阻塞等待（pump 消息队列以处理回包）
-                    var startTime = DateTime.UtcNow;
-                    while (_hostSyncResult == null && (DateTime.UtcNow - startTime).TotalMilliseconds < HOST_SYNC_TIMEOUT_MS)
-                    {
-                        if (_messageQueue.TryDequeue(out var messageJson))
-                        {
-                            try { ProcessIncomingMessage(messageJson); } catch { }
-                        }
-                        System.Threading.Thread.Sleep(1);
-                    }
-
-                    if (_hostSyncResult == null)
-                    {
-                        Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时: {eventName}");
-                        return "";
-                    }
-
-                    return _hostSyncResult;
+                    try { ProcessIncomingMessage(messageJson); } catch { }
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[WXPCHPInitScript] SendAppEventSync error: {e}");
-                    return "";
-                }
+                System.Threading.Thread.Sleep(1);
             }
-        }
 
-        /// <summary>
-        /// 处理 sync 回包（从 ProcessIncomingMessage 调用）
-        /// </summary>
-        private void OnHostSyncResponse(string data)
-        {
-            int dataLen = data?.Length ?? 0;
-            string preview = data == null ? "(null)" : (data.Length > 200 ? data.Substring(0, 200) + "..." : data);
-            Debug.Log("[WXPCHPInitScript] ← OnHostSyncResponse: dataLen=" + dataLen + ", preview=" + preview);
-            _hostSyncResult = data ?? "";
-            _hostSyncWaitHandle.Set();
-            Debug.Log("[WXPCHPInitScript] OnHostSyncResponse → _hostSyncWaitHandle.Set() ✓");
+            if (!_syncResponseCompleted)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时(10s): {eventName}");
+            }
+
+            return _pendingSyncResponse ?? "";
         }
 
         /// <summary>
@@ -1495,6 +1503,12 @@ namespace WeChatWASM
                 _pendingCallbacks.Clear();
                 _eventListeners.Clear();
 
+                // 释放同步 handler 的 GCHandle
+                if (_syncResponseHandle.IsAllocated)
+                {
+                    _syncResponseHandle.Free();
+                }
+
                 Cleanup();
                 Debug.Log("[WXPCHPInitScript] SDK清理完成");
             }
@@ -1604,14 +1618,16 @@ namespace WeChatWASM
                     hostData = messageJson;
                 }
 
-                if (hostEventName == "syncResponse" || hostEventName == "bizSyncResponse")
                 {
-                    // sync 回包，解锁 SendAppEventSync
-                    Debug.Log($"[WXPCHPInitScript] ← ProcessIncomingMessage: sync 回包 eventName={hostEventName}, dataLen={hostData?.Length ?? 0}");
-                    OnHostSyncResponse(hostData);
-                }
-                else
-                {
+                    // syncResponse → 解锁 SendAppEventSync 伪同步
+                    if (hostEventName == "syncResponse" || hostEventName == "bizSyncResponse")
+                    {
+                        _pendingSyncResponse = hostData;
+                        _syncResponseCompleted = true;
+                        Debug.Log($"[WXPCHPInitScript] ← syncResponse received, unlocking SendAppEventSync: len={hostData?.Length ?? 0}");
+                        return;
+                    }
+
                     // 普通事件，转发给 HandleHostEvent / HandleBizHostEvent
                     var hostHandler = hostEventName.StartsWith("biz", StringComparison.OrdinalIgnoreCase)
                         ? HandleBizHostEvent
@@ -1684,6 +1700,89 @@ namespace WeChatWASM
             }
         }
 
+        /// <summary>
+        /// 同步消息处理回调（JS→C# 方向，接住 JS 侧 sendMsgSync）
+        /// 跑在 SDK IPC 线程，必须同步返回。
+        /// 解析上行 envelope { eventName, data }，路由到 instance.HandleSyncHostEvent 委托，
+        /// 委托同步返回结果 JSON 字符串，原样回包给 JS。
+        /// 未注册委托 / 解析失败时回空 JSON {}。
+        /// </summary>
+        [AOT.MonoPInvokeCallback(typeof(SyncMsgHandlerDelegate))]
+        private static bool HandleSyncMessage(IntPtr data, int len, out IntPtr response, out int responseLen)
+        {
+            response = IntPtr.Zero;
+            responseLen = 0;
+
+            if (data == IntPtr.Zero || len <= 0)
+            {
+                Debug.LogWarning("[WXPCHPInitScript] HandleSyncMessage: empty data");
+                return false;
+            }
+
+            try
+            {
+                byte[] buffer = new byte[len];
+                Marshal.Copy(data, buffer, 0, len);
+                string requestJson = System.Text.Encoding.UTF8.GetString(buffer);
+                string preview = requestJson.Length > 200 ? requestJson.Substring(0, 200) + "..." : requestJson;
+                Debug.Log($"[WXPCHPInitScript] ← HandleSyncMessage (JS→C# sync): len={len}, json={preview}");
+
+                // 默认空响应；成功路由到委托后替换
+                string responseJson = "{}";
+
+                // 解析上行 envelope { eventName, data }（与下行 WrapAppEvent 对称）
+                if (instance != null && instance.HandleSyncHostEvent != null)
+                {
+                    string eventName = "";
+                    string hostData = "";
+                    try
+                    {
+                        var jsonData = JsonMapper.ToObject(requestJson);
+                        if (jsonData.ContainsKey("eventName"))
+                        {
+                            eventName = (string)jsonData["eventName"];
+                        }
+                        if (jsonData.ContainsKey("data"))
+                        {
+                            var dataValue = jsonData["data"];
+                            hostData = dataValue == null ? "" : (dataValue.IsString ? (string)dataValue : JsonMapper.ToJson(dataValue));
+                        }
+                    }
+                    catch (Exception pe)
+                    {
+                        // 非 envelope 结构：整体作为 data 传给委托，eventName 留空
+                        Debug.LogWarning($"[WXPCHPInitScript] HandleSyncMessage: not an envelope, pass raw. {pe.Message}");
+                        hostData = requestJson;
+                    }
+
+                    string result = instance.HandleSyncHostEvent(eventName, hostData);
+                    responseJson = string.IsNullOrEmpty(result) ? "{}" : result;
+                    Debug.Log($"[WXPCHPInitScript] HandleSyncMessage routed → HandleSyncHostEvent(eventName={eventName}), respLen={responseJson.Length}");
+                }
+                else
+                {
+                    Debug.LogWarning("[WXPCHPInitScript] HandleSyncMessage: no HandleSyncHostEvent registered, return {}");
+                }
+
+                byte[] respBytes = System.Text.Encoding.UTF8.GetBytes(responseJson);
+                if (respBytes.Length > _syncResponseBuffer.Length)
+                {
+                    Debug.LogError($"[WXPCHPInitScript] HandleSyncMessage: response too large ({respBytes.Length})");
+                    return false;
+                }
+                Array.Copy(respBytes, 0, _syncResponseBuffer, 0, respBytes.Length);
+                response = _syncResponseHandle.AddrOfPinnedObject();
+                responseLen = respBytes.Length;
+                Debug.Log($"[WXPCHPInitScript] → HandleSyncMessage response: len={respBytes.Length}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[WXPCHPInitScript] HandleSyncMessage error: {e.Message}");
+                return false;
+            }
+        }
+
         #endregion
     }
 
@@ -1734,6 +1833,44 @@ namespace WeChatWASM
                 return null;
             }
             return _initScript.CallWXAPI(method, data, onSuccess, onFail, onComplete);
+        }
+
+        /// <summary>
+        /// 同步发送应用事件（伪同步：异步 SendAppEvent + while 轮询 _messageQueue 等 syncResponse 回包）
+        ///
+        /// 链路：C# → SendAppEvent → SendMsgAsync → 内核 → JS handleMessage → 插件 _handleCustomLinkEvent
+        ///       → gameWX[method](...) → postToExe({eventName:"syncResponse", data:...})
+        ///       → 内核 → C# HandleAsyncMessage → _messageQueue → ProcessIncomingMessage syncResponse 分支 → 解锁
+        ///
+        /// ⚠️ 不走 SendMsgSync 真同步（Mojo 同步调用死锁，详见 issue #13020 §1.7）。
+        /// </summary>
+        /// <param name="eventName">事件名（随消息一起发到 game.js）</param>
+        /// <param name="jsonStr">完整 JSON 载荷</param>
+        /// <returns>回包数据字符串；空字符串表示失败/超时</returns>
+        public string SendAppEventSync(string eventName, string jsonStr)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
+                return "";
+            }
+            return _initScript.SendAppEventSync(eventName, jsonStr);
+        }
+
+        /// <summary>
+        /// 伪同步调用微信 API（异步通道 + 阻塞等回调，对游戏代码表现为同步返回）
+        /// 走 SendMsgAsync 异步通道（不死锁），C# 侧 while 轮询 _messageQueue 等回调。
+        /// 插件侧对 Sync API 直接调 wx[method]() 拿返回值，主动 reply 回包。
+        /// ⚠️ 可在主线程调用，但会阻塞调用线程直到回调或超时。
+        /// </summary>
+        public string CallWXAPISyncBridge(string method, string paramsJson = null, int timeoutMs = 5000)
+        {
+            if (_initScript == null)
+            {
+                Debug.LogError("[WXPCHighPerformanceManager] InitScript 未初始化");
+                return "";
+            }
+            return _initScript.CallWXAPISyncBridge(method, paramsJson, timeoutMs);
         }
 
         /// <summary>
