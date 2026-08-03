@@ -1458,8 +1458,9 @@ namespace WeChatWASM
             }
 
             // ⚠️ 死锁检测：不可在 Unity 主线程调用！
-            // SendMsgSync 阻塞调用线程等 JS 回包，而 JS 引擎由 Unity 主线程消息循环 pump 驱动，
-            // 主线程被占住 → JS handleSyncMessage 永远不执行 → 死锁。
+            // 实测现象：Unity 主线程调 SendMsgSync 会永久阻塞，JS 侧 handleSyncMessage 不触发。
+            // 推测原因：JS 执行依赖 Unity 主线程消息循环，主线程被 SendMsgSync 占住后 JS 没机会跑。
+            // （此推测未在内核源码层证实，但切子线程调用可规避——详见 issue #13020 验证记录）
             // 必须切子线程调（如 Task.Run / Thread）。
             if (_unityMainThreadId != -1 && System.Threading.Thread.CurrentThread.ManagedThreadId == _unityMainThreadId)
             {
