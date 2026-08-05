@@ -6,12 +6,14 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2026-6-22 v0.1.33 【普通更新】
+## 2026-8-5 v0.1.33 【普通更新】
 ### Feature
 * 普通：升级基础库版本
 * 普通：线程支持相关优化
 * 普通：多包融合工具
-* 普通：支持多线程版 EmscriptenGLX 库
+* 普通：EmscriptenGLX支持多线程
+* 普通：EmscriptenGLX 支持压缩纹理
+* 普通：优化 EmscriptenGLX shader warmup 速度
 * 普通：优化转换面板的 iOSMetal 提示语
 * 普通：鸿蒙视频音频播放适配
 ### Fixed
