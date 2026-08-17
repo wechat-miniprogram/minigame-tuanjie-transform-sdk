@@ -6,6 +6,13 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
+## 2026-8-11 v0.1.34 【普通更新】
+### Feature
+* 普通：优化 EmscriptenGLX 对象 id 生成机制，避免宿主多 gl context id 冲突导致渲染异常
+### Fixed
+* 普通：WebSocket.send 兼容 TypedArray，避免 C++ 传递的 wasm 堆视图被错误透传给 SocketTask
+* 普通：修复 UDP/TCP Socket 在 OnClose/OnError 回调返回空参数时的兼容问题（Android 等平台）
+
 ## 2026-8-11 v0.1.33 【普通更新】
 ### Feature
 * 普通：升级基础库版本
