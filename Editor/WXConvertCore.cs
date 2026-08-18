@@ -1445,8 +1445,8 @@ namespace WeChatWASM
                     block.AppendLine($"  maxConcurrency: {(co.webgpuAstcMaxConcurrency < 0 ? "Infinity" : co.webgpuAstcMaxConcurrency.ToString())},");
                     block.AppendLine($"  injectBytesPerFrame: {(co.webgpuAstcInjectBytesPerFrame < 0 ? "Infinity" : co.webgpuAstcInjectBytesPerFrame.ToString())},");
                     block.AppendLine($"  injectCountPerFrame: {(co.webgpuAstcInjectCountPerFrame < 0 ? "Infinity" : co.webgpuAstcInjectCountPerFrame.ToString())},");
-                    // GPU 档位准入：minGPUTier 1~3（非法值运行时回退默认 2）；allowUnknownGPU 未收录机型是否放行
-                    block.AppendLine($"  minGPUTier: {Mathf.Clamp(co.webgpuAstcMinGPUTier, 1, 3).ToString()},");
+                    // GPU 档位准入：minGPUTier 0=不限制（运行时跳过判定）；1~3=最低档位（非法值运行时回退默认 2）
+                    block.AppendLine($"  minGPUTier: {Mathf.Clamp((int)co.webgpuAstcMinGPUTier, 0, 3).ToString()},");
                     block.AppendLine($"  allowUnknownGPU: {(co.webgpuAstcAllowUnknownGPU ? "true" : "false")}");
                     block.AppendLine("};");
                     block.AppendLine(END_MARK);

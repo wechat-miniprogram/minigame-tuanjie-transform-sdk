@@ -574,6 +574,25 @@
             是否禁止多点触控
             </summary>
         </member>
+        <member name="T:WeChatWASM.WXWebGPUAstcGPUTier">
+            <summary>
+            PC WebGPU ASTC GPU 档位准入的最低档位（仅在 enablePCWebGPUAstc=true 时生效）。
+            插件侧用本地 GPU 天梯分表（662 款）把机型分档，低于所选档位的设备会被拦截，
+            全程走 CPU 软解、不创建任何 WebGPU 上下文。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.WXWebGPUAstcGPUTier.NoRestriction">
+            <summary>不限制：跳过 GPU 档位判定，所有机型（含未收录）都放行</summary>
+        </member>
+        <member name="F:WeChatWASM.WXWebGPUAstcGPUTier.Low">
+            <summary>低档及以上：低档核显/老卡也放行</summary>
+        </member>
+        <member name="F:WeChatWASM.WXWebGPUAstcGPUTier.Mid">
+            <summary>中档及以上：拦截低档核显/老卡（推荐默认值）</summary>
+        </member>
+        <member name="F:WeChatWASM.WXWebGPUAstcGPUTier.High">
+            <summary>仅高档：只放行高端显卡</summary>
+        </member>
         <member name="F:WeChatWASM.CompileOptions.DevelopBuild">
             <summary>
             Development Build
@@ -712,8 +731,8 @@
         <member name="F:WeChatWASM.CompileOptions.webgpuAstcMinGPUTier">
             <summary>
             【实验】PC WebGPU ASTC GPU 档位准入：允许启用该能力的最低 GPU 档位（仅在 enablePCWebGPUAstc=true 时生效）。
-            插件侧用本地 GPU 天梯分表把机型分为三档：1=低档（核显/老卡）、2=中档、3=高档。
-            1=低档也放行；2=中档及以上（默认，拦截低档）；3=仅高档。
+            NoRestriction=不限制（跳过判定，所有机型放行）；Low=低档及以上；
+            Mid=中档及以上（默认，拦截低档核显/老卡）；High=仅高档。
             被拦截的设备不会创建任何 WebGPU 上下文，全程走 CPU 软解。
             </summary>
         </member>

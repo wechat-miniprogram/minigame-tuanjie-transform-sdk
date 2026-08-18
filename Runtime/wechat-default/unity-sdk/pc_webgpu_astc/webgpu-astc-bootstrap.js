@@ -1,4 +1,4 @@
-import { checkGPUAdmissionWithGL } from './gpu-admission';
+import { checkGPUAdmissionWithGL, getRendererFromGL } from './gpu-admission';
 var DEFAULT_TIMEOUT_MS = 2000;
 var _GL = null;
 
@@ -465,10 +465,18 @@ export async function bootstrapWebGPUASTC(opts) {
     
     
     
+    
+    
     function _resolveTier(v) {
-        return (typeof v === 'number' && v >= 1 && v <= 3) ? Math.floor(v) : null;
+        return (typeof v === 'number' && v >= 0 && v <= 3) ? Math.floor(v) : null;
     }
-    _PENDING_MIN_TIER = _resolveTier(opts.minGPUTier) || _resolveTier(cfg.minGPUTier) || 2;
+    
+    var _minTier = _resolveTier(opts.minGPUTier);
+    if (_minTier == null)
+        _minTier = _resolveTier(cfg.minGPUTier);
+    if (_minTier == null)
+        _minTier = 2;
+    _PENDING_MIN_TIER = _minTier;
     _PENDING_ALLOW_UNKNOWN = (typeof opts.allowUnknownGPU === 'boolean')
         ? opts.allowUnknownGPU
         : (typeof cfg.allowUnknownGPU === 'boolean' ? cfg.allowUnknownGPU : false);
@@ -761,7 +769,16 @@ export function bindDecoderGLContextOnce(GLctx, GL) {
     
     if (_ADMISSION_PENDING && GLctx) {
         _ADMISSION_PENDING = false;
-        var admission = checkGPUAdmissionWithGL(GLctx, _PENDING_MIN_TIER, _PENDING_ALLOW_UNKNOWN);
+        var admission;
+        if (_PENDING_MIN_TIER <= 0) {
+            
+            
+            
+            admission = { passed: true, renderer: getRendererFromGL(GLctx), tier: 0, minTier: 0, reason: 'no-restriction' };
+        }
+        else {
+            admission = checkGPUAdmissionWithGL(GLctx, _PENDING_MIN_TIER, _PENDING_ALLOW_UNKNOWN);
+        }
         GameGlobal._webgpuASTCGPUAdmission = admission; 
         log(admission.passed ? 'info' : 'warn', '[admission][gl-bind]', 'renderer=' + (admission.renderer || 'n/a'), 'matched=' + (admission.matchedKey || 'none'), 'score=' + (admission.score != null ? admission.score : 'unknown'), 'tier=' + admission.tier + ' (min=' + admission.minTier + ')', admission.passed ? 'passed' : ('BLOCKED: ' + admission.reason));
         if (!admission.passed) {
