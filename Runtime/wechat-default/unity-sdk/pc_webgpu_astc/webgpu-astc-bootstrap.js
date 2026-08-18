@@ -1,5 +1,17 @@
+import { checkGPUAdmissionWithGL } from './gpu-admission';
 var DEFAULT_TIMEOUT_MS = 2000;
 var _GL = null;
+
+
+
+
+
+
+
+var _ADMISSION_PENDING = false;
+var _ADMISSION_REJECTED = false;
+var _PENDING_MIN_TIER = 2;
+var _PENDING_ALLOW_UNKNOWN = false;
 function mark() {
     try {
         if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
@@ -55,6 +67,44 @@ function wxIsWebGPUSupported(timeoutMs) {
 }
 var _WX_DECODE_QUEUE = [];
 var _WX_DECODE_INFLIGHT = 0;
+var _WX_DECODE_SEQ = 0;
+
+
+
+
+
+
+function _isDecodeSizePriority() {
+    try {
+        if (typeof GameGlobal !== 'undefined'
+            && GameGlobal._WEBGPU_ASTC_DECODE_PRIORITY === 'fifo') {
+            return false;
+        }
+    }
+    catch (_) { }
+    return true;
+}
+
+
+function _pickNextDecodeTask() {
+    if (_WX_DECODE_QUEUE.length === 0)
+        return null;
+    if (!_isDecodeSizePriority()) {
+        return _WX_DECODE_QUEUE.shift();
+    }
+    var bestIdx = 0;
+    var best = _WX_DECODE_QUEUE[0];
+    for (var i = 1; i < _WX_DECODE_QUEUE.length; i++) {
+        var t = _WX_DECODE_QUEUE[i];
+        if (t.pixels < best.pixels
+            || (t.pixels === best.pixels && t.seq < best.seq)) {
+            best = t;
+            bestIdx = i;
+        }
+    }
+    _WX_DECODE_QUEUE.splice(bestIdx, 1);
+    return best;
+}
 
 
 
@@ -80,8 +130,10 @@ function _getMaxConcurrency() {
 }
 function _drainWxDecodeQueue() {
     var max = _getMaxConcurrency();
-    while (_WX_DECODE_INFLIGHT < max && _WX_DECODE_QUEUE.length > 0) {
-        var task = _WX_DECODE_QUEUE.shift();
+    while (_WX_DECODE_INFLIGHT < max) {
+        var task = _pickNextDecodeTask();
+        if (!task)
+            break;
         _WX_DECODE_INFLIGHT++;
         _runWxDecodeTask(task);
     }
@@ -126,50 +178,15 @@ function wxDecodeASTC(params) {
             params: params,
             resolve: resolve,
             reject: reject,
+            seq: _WX_DECODE_SEQ++,
+            pixels: (params.width > 0 && params.height > 0) ? params.width * params.height : 0,
         });
         _drainWxDecodeQueue();
     });
 }
-var _PROBE_ASTC_DATA = new Uint8Array(256);
-var _PROBE_TIMEOUT_MS = 300;
-
-function _runProbe() {
-    return new Promise(function (resolve) {
-        var done = false;
-        var t0 = mark();
-        var timer = (_PROBE_TIMEOUT_MS === Infinity) ? null
-            : setTimeout(function () {
-                if (done)
-                    return;
-                done = true;
-                log('warn', '[probe] timeout', { costMs: (mark() - t0).toFixed(1), threshold: _PROBE_TIMEOUT_MS });
-                resolve(false);
-            }, _PROBE_TIMEOUT_MS);
-        wxDecodeASTC({
-            data: _PROBE_ASTC_DATA.buffer,
-            width: 64, height: 64,
-            blockWidth: 4, blockHeight: 4,
-        }).then(function () {
-            if (done)
-                return;
-            done = true;
-            if (timer)
-                clearTimeout(timer);
-            log('info', '[probe] passed', { costMs: (mark() - t0).toFixed(1) });
-            resolve(true);
-        }).catch(function (e) {
-            if (done)
-                return;
-            done = true;
-            if (timer)
-                clearTimeout(timer);
-            log('warn', '[probe] decode failed', { costMs: (mark() - t0).toFixed(1), error: (e && e.message) || e });
-            resolve(false);
-        });
-    });
-}
 var _INJECT_QUEUE = [];
 var _INJECT_RAF_SCHEDULED = false;
+var _INJECT_SEQ = 0;
 var DEFAULT_INJECT_BYTES_PER_FRAME = 8 * 1024 * 1024;
 var DEFAULT_INJECT_COUNT_PER_FRAME = 4;
 function _getInjectBudgetBytes() {
@@ -213,6 +230,28 @@ function _isInjectThrottlingDisabled() {
     catch (_) { }
     return false;
 }
+
+
+
+function _pickNextInjectJob() {
+    if (_INJECT_QUEUE.length === 0)
+        return null;
+    if (!_isDecodeSizePriority()) {
+        return _INJECT_QUEUE.shift();
+    }
+    var bestIdx = 0;
+    var best = _INJECT_QUEUE[0];
+    for (var i = 1; i < _INJECT_QUEUE.length; i++) {
+        var j = _INJECT_QUEUE[i];
+        if (j.bytes < best.bytes
+            || (j.bytes === best.bytes && j.seq < best.seq)) {
+            best = j;
+            bestIdx = i;
+        }
+    }
+    _INJECT_QUEUE.splice(bestIdx, 1);
+    return best;
+}
 function _scheduleInjectFlush() {
     if (_INJECT_RAF_SCHEDULED)
         return;
@@ -226,10 +265,11 @@ function _scheduleInjectFlush() {
         var budgetCount = _getInjectBudgetCount();
         var spentBytes = 0;
         var spentCount = 0;
-        while (_INJECT_QUEUE.length > 0
-            && spentCount < budgetCount
+        while (spentCount < budgetCount
             && spentBytes < budgetBytes) {
-            var job = _INJECT_QUEUE.shift();
+            var job = _pickNextInjectJob();
+            if (!job)
+                break;
             try {
                 job.run();
             }
@@ -256,7 +296,11 @@ function _enqueueInject(job) {
         job.run();
         return;
     }
-    _INJECT_QUEUE.push(job);
+    _INJECT_QUEUE.push({
+        bytes: job.bytes,
+        run: job.run,
+        seq: _INJECT_SEQ++,
+    });
     
     
     
@@ -269,6 +313,90 @@ function _enqueueInject(job) {
         catch (_) { }
     }
     _scheduleInjectFlush();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var GL_TEXTURE_BASE_LEVEL = 0x813C;
+var _PROGRESSIVE_MIP_ENABLED = null;
+var _MIP_PROGRESS_STATES = {};
+function _isProgressiveMipEnabled() {
+    if (_PROGRESSIVE_MIP_ENABLED === null) {
+        try {
+            _PROGRESSIVE_MIP_ENABLED = !(typeof GameGlobal !== 'undefined'
+                && GameGlobal._WEBGPU_ASTC_PROGRESSIVE_MIP === false);
+        }
+        catch (_) {
+            _PROGRESSIVE_MIP_ENABLED = true;
+        }
+    }
+    return _PROGRESSIVE_MIP_ENABLED;
+}
+
+function _afterLevelInjected(gl, glTextureId, bindTarget, isWebGL2, isSub, levelArg, xoffsetArg, yoffsetArg) {
+    if (!_isProgressiveMipEnabled())
+        return;
+    if (!isWebGL2)
+        return; 
+    if (bindTarget !== 0x0DE1)
+        return; 
+    
+    
+    
+    if (isSub && (xoffsetArg !== 0 || yoffsetArg !== 0))
+        return;
+    var st = _MIP_PROGRESS_STATES[glTextureId];
+    if (!st) {
+        st = { levels: {}, appliedBase: -1 };
+        _MIP_PROGRESS_STATES[glTextureId] = st;
+    }
+    
+    if (levelArg === 0 && st.levels[0]) {
+        st = { levels: {}, appliedBase: -1 };
+        _MIP_PROGRESS_STATES[glTextureId] = st;
+    }
+    st.levels[levelArg] = true;
+    
+    var top = levelArg;
+    for (var lv in st.levels) {
+        var n = +lv;
+        if (n > top)
+            top = n;
+    }
+    var k = top;
+    while (k > 0 && st.levels[k - 1])
+        k--;
+    if (k !== st.appliedBase) {
+        try {
+            gl.texParameteri(bindTarget, GL_TEXTURE_BASE_LEVEL, k);
+            st.appliedBase = k;
+        }
+        catch (e) {
+            
+            _PROGRESSIVE_MIP_ENABLED = false;
+            try {
+                log('warn', '[ASTC progressive mip] disabled after texParameteri failure');
+            }
+            catch (_) { }
+        }
+    }
 }
 
 
@@ -329,9 +457,22 @@ export async function bootstrapWebGPUASTC(opts) {
     var _ic = _resolveNum(opts.injectCountPerFrame) || _resolveNum(cfg.injectCountPerFrame);
     if (_ic != null)
         DEFAULT_INJECT_COUNT_PER_FRAME = _ic;
-    var _pt = _resolveNum(opts.probeTimeoutMs) || _resolveNum(cfg.probeTimeoutMs);
-    if (_pt != null)
-        _PROBE_TIMEOUT_MS = _pt;
+    
+    
+    
+    
+    
+    
+    
+    
+    function _resolveTier(v) {
+        return (typeof v === 'number' && v >= 1 && v <= 3) ? Math.floor(v) : null;
+    }
+    _PENDING_MIN_TIER = _resolveTier(opts.minGPUTier) || _resolveTier(cfg.minGPUTier) || 2;
+    _PENDING_ALLOW_UNKNOWN = (typeof opts.allowUnknownGPU === 'boolean')
+        ? opts.allowUnknownGPU
+        : (typeof cfg.allowUnknownGPU === 'boolean' ? cfg.allowUnknownGPU : false);
+    _ADMISSION_PENDING = true;
     
     
     
@@ -354,6 +495,8 @@ export async function bootstrapWebGPUASTC(opts) {
         log('info', 'skip: non-pc platform');
         return { enabled: false, reason: 'non-pc' };
     }
+    
+    
     
     var probe = await wxIsWebGPUSupported(timeoutMs);
     if (!probe.supported) {
@@ -472,6 +615,8 @@ export async function bootstrapWebGPUASTC(opts) {
         else {
             gl.texImage2D(imageTarget, levelArg, uploadInternalFormat, width, height, 0, uploadFormat, gl.UNSIGNED_BYTE, pixels);
         }
+        
+        _afterLevelInjected(gl, glTextureId, bindTarget, isWebGL2, isSub, levelArg, xoffsetArg, yoffsetArg);
     }
     var decoderProxy = {
                 decodeAndInjectToGLTexture: function (glTextureId, astcData, width, height, blockWidth, blockHeight, meta) {
@@ -588,16 +733,12 @@ export async function bootstrapWebGPUASTC(opts) {
                 reject(new Error((err && err.errMsg) || 'prewarm failed'));
             },
         });
-    }).then(async function () {
+    }).then(function () {
         if (_initFailed)
             return;
         
-        var passed = await _runProbe();
-        if (!passed) {
-            GameGlobal._webgpuASTCEnabled = false;
-            log('warn', 'probe timeout, keep CPU soft-decode', { timeout: _PROBE_TIMEOUT_MS });
+        if (_ADMISSION_REJECTED)
             return;
-        }
         GameGlobal._webgpuASTCEnabled = true;
         log('info', 'pipeline warmed up, WebGPU ASTC enabled', { warmupMs: Math.round(mark() - warmupT0) });
     }).catch(function (e) {
@@ -614,6 +755,24 @@ export async function bootstrapWebGPUASTC(opts) {
 }
 
 export function bindDecoderGLContextOnce(GLctx, GL) {
+    
+    
+    
+    
+    if (_ADMISSION_PENDING && GLctx) {
+        _ADMISSION_PENDING = false;
+        var admission = checkGPUAdmissionWithGL(GLctx, _PENDING_MIN_TIER, _PENDING_ALLOW_UNKNOWN);
+        GameGlobal._webgpuASTCGPUAdmission = admission; 
+        log(admission.passed ? 'info' : 'warn', '[admission][gl-bind]', 'renderer=' + (admission.renderer || 'n/a'), 'matched=' + (admission.matchedKey || 'none'), 'score=' + (admission.score != null ? admission.score : 'unknown'), 'tier=' + admission.tier + ' (min=' + admission.minTier + ')', admission.passed ? 'passed' : ('BLOCKED: ' + admission.reason));
+        if (!admission.passed) {
+            
+            _ADMISSION_REJECTED = true;
+            GameGlobal._webgpuASTCEnabled = false;
+            GameGlobal._webgpuASTCDecoder = null;
+            _GL = GL;
+            return;
+        }
+    }
     if (GameGlobal._webgpuASTCDecoder && typeof GameGlobal._webgpuASTCDecoder.setGLContext === 'function') {
         GameGlobal._webgpuASTCDecoder.setGLContext(GLctx);
     }

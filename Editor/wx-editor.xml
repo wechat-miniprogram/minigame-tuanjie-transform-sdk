@@ -709,10 +709,18 @@
             默认 4；与 injectBytesPerFrame 共同构成双重预算，先到者限流；设 -1 表示不限（Infinity，关闭节流）。
             </summary>
         </member>
-        <member name="F:WeChatWASM.CompileOptions.webgpuAstcProbeTimeoutMs">
+        <member name="F:WeChatWASM.CompileOptions.webgpuAstcMinGPUTier">
             <summary>
-            准入探测超时（毫秒）。预热完成后发一次探测解码，在此时间内回包才启用 WebGPU，否则保持 CPU 软解。
-            默认 300；设 -1 表示不限超时（Infinity，等待回包为止，诊断用）。
+            【实验】PC WebGPU ASTC GPU 档位准入：允许启用该能力的最低 GPU 档位（仅在 enablePCWebGPUAstc=true 时生效）。
+            插件侧用本地 GPU 天梯分表把机型分为三档：1=低档（核显/老卡）、2=中档、3=高档。
+            1=低档也放行；2=中档及以上（默认，拦截低档）；3=仅高档。
+            被拦截的设备不会创建任何 WebGPU 上下文，全程走 CPU 软解。
+            </summary>
+        </member>
+        <member name="F:WeChatWASM.CompileOptions.webgpuAstcAllowUnknownGPU">
+            <summary>
+            【实验】GPU 型号未收录进插件本地天梯分表（或拿不到 renderer）时的准入策略。
+            false=保守拦截，走 CPU 软解（默认）；true=放行（激进，适合灰度观察未覆盖机型）。
             </summary>
         </member>
         <member name="F:WeChatWASM.FontOptions.CJK_Unified_Ideographs">
