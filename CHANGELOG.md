@@ -6,7 +6,7 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2026-8-11 v0.1.33 【普通更新】
+## 2026-8-18 v0.1.33 【普通更新】
 ### Feature
 * 普通：升级基础库版本
 * 普通：线程支持相关优化
@@ -22,6 +22,7 @@ Others - 其他
 * 普通：修复语音房和webaudio的冲突问题
 * 普通：兼容新版启动插件isErasableFile回调的relativePath，避免AB文件被误清理
 * 普通：iOS平台屏蔽getCommonFont拉取系统字体能力
+* 普通：补全 WX_SyncFunction_tnnt 桥接实现
 
 ## 2026-3-16 v0.1.32 【普通更新】
 ### Feature
