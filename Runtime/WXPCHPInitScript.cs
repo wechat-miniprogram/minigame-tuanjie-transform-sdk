@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.36";
-        public const string PCHP_BUILD_DATE = "2026-08-03 (sync bridge: CallWXAPISyncBridge + SendAppEventSync 伪同步 + 清理 SendMsgSync 死锁代码)";
+        public const string PCHP_VERSION = "0.1.37";
+        public const string PCHP_BUILD_DATE = "2026-08-24 (build: 去掉 wxapkg 打包，保留原始 Standalone 产物)";
 
         #region DLL Imports
 
@@ -897,7 +897,16 @@ namespace WeChatWASM
         #region Public Methods - Window Control
 
         /// <summary>
-        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        /// [已废弃] 控制嵌入式原生窗口是否置顶于 Chromium 自有的子 HWND 之上。
+        ///
+        /// 此能力已迁移到 pc-adapter JS 侧：NativeGlobal.pchp.windowControl.pinupNativeWindow(bool)。
+        /// 内核通过 xWebBinding.api.nativeGameSDK.pinupNativeWindow 直接暴露给 JS，
+        /// C# 侧保留仅为向后兼容，后续版本将删除。
+        ///
+        /// 迁移指南：
+        /// - TS 适配方：调用 NativeGlobal.pchp.windowControl.pinupNativeWindow(pinup)
+        /// - 游戏 C# 代码：通过 WXSDKManager 生成代码桥接到 JS 侧，或暂保留调用（会触发编译警告）
+        ///
         /// 典型用法：弹出 toast / 原生 UI 前 pinup=false 让宿主覆盖游戏窗口，
         /// UI 关闭后 pinup=true 恢复游戏输入与光标行为。
         /// </summary>
@@ -912,9 +921,10 @@ namespace WeChatWASM
         ///    若后续操作强依赖层级已变更（例如紧接着 ShowWindow），调用方需自行做时序同步。
         /// 3. DllNotFoundException 会被 catch 兜底，非 Windows 平台或 DLL 缺失时返回 false 且不崩游戏。
         /// </remarks>
+        [Obsolete("已迁移到 pc-adapter JS 侧 NativeGlobal.pchp.windowControl.pinupNativeWindow，C# 侧将删除。详见方法 XML 注释。")]
         public bool SetNativeWindowPinup(bool pinup)
         {
-            Debug.Log($"[WXPCHPInitScript] ▶ SetNativeWindowPinup({pinup})");
+            Debug.Log($"[WXPCHPInitScript] ▶ SetNativeWindowPinup({pinup}) [DEPRECATED, 迁移至 JS NativeGlobal.pchp.windowControl]");
             try
             {
                 bool queued = PinupNativeWindow(pinup);
@@ -934,19 +944,23 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 查询当前原生窗口的置顶请求状态。默认值为 true。
+        /// [已废弃] 查询当前原生窗口的置顶请求状态。默认值为 true。
+        ///
+        /// 此能力已迁移到 pc-adapter JS 侧：NativeGlobal.pchp.windowControl.isNativeWindowPinup()。
+        /// C# 侧保留仅为向后兼容，后续版本将删除。
         /// </summary>
         /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
         /// <remarks>
         /// 与 <see cref="SetNativeWindowPinup"/> 一致，不做 IsInitialized 守卫。
         /// DLL 未加载时返回默认值 true（对齐 DLL 侧默认行为）。
         /// </remarks>
+        [Obsolete("已迁移到 pc-adapter JS 侧 NativeGlobal.pchp.windowControl.isNativeWindowPinup，C# 侧将删除。详见方法 XML 注释。")]
         public bool IsNativeWindowPinupEnabled()
         {
             try
             {
                 bool v = IsNativeWindowPinup();
-                Debug.Log($"[WXPCHPInitScript] ✓ IsNativeWindowPinupEnabled → {v}");
+                Debug.Log($"[WXPCHPInitScript] ✓ IsNativeWindowPinupEnabled → {v} [DEPRECATED]");
                 return v;
             }
             catch (DllNotFoundException)
@@ -1898,7 +1912,11 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 控制嵌入式原生窗口是否置顶于 Chromium 自有子 HWND 之上。
+        /// [已废弃] 控制嵌入式原生窗口是否置顶于 Chromium 自有子 HWND 之上。
+        ///
+        /// 此能力已迁移到 pc-adapter JS 侧：NativeGlobal.pchp.windowControl.pinupNativeWindow(bool)。
+        /// C# 侧保留仅为向后兼容，后续版本将删除。
+        ///
         /// 弹出原生 UI（toast 等）前置 false 让宿主覆盖游戏窗口，关闭后置 true。
         /// </summary>
         /// <param name="pinup">true=置顶（默认）；false=允许宿主 UI 覆盖</param>
@@ -1907,6 +1925,7 @@ namespace WeChatWASM
         /// 返回值仅表示请求已投递，浏览器侧窗口层级变更是异步的。
         /// 调用方若需严格的时序保证，应自行做同步等待。
         /// </remarks>
+        [Obsolete("已迁移到 pc-adapter JS 侧 NativeGlobal.pchp.windowControl.pinupNativeWindow，C# 侧将删除。")]
         public bool SetNativeWindowPinup(bool pinup)
         {
             if (_initScript == null)
@@ -1918,9 +1937,13 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 查询当前原生窗口的置顶请求状态（默认 true）。
+        /// [已废弃] 查询当前原生窗口的置顶请求状态（默认 true）。
+        ///
+        /// 此能力已迁移到 pc-adapter JS 侧：NativeGlobal.pchp.windowControl.isNativeWindowPinup()。
+        /// C# 侧保留仅为向后兼容，后续版本将删除。
         /// </summary>
         /// <returns>true=已请求置顶；false=已请求降级或平台不支持</returns>
+        [Obsolete("已迁移到 pc-adapter JS 侧 NativeGlobal.pchp.windowControl.isNativeWindowPinup，C# 侧将删除。")]
         public bool IsNativeWindowPinupEnabled()
         {
             return _initScript?.IsNativeWindowPinupEnabled() ?? true;
