@@ -305,42 +305,14 @@ namespace WeChatWASM
                     // 复制 pchp_sdk.dll
                     WXPCHPBuildHelper.CopyPCHPNativeDllPublic(fullExportPath, buildTarget);
 
-                    // 打包 wxapkg
-                    EditorUtility.DisplayProgressBar("PC高性能模式", "正在打包 wxapkg...", 0.8f);
-                    string wxapkgOutputDir = fullExportPath;
-                    string tempWxapkgPath = Path.Combine(Path.GetDirectoryName(fullExportPath), $"{WXPCHPBuildHelper.PCHPOutputDir}_temp.wxapkg");
-                    string finalWxapkgPath = Path.Combine(wxapkgOutputDir, $"{WXPCHPBuildHelper.PCHPOutputDir}.wxapkg");
+                    // 不打包 wxapkg：uploader 插件直接使用原始 Standalone 产物（.exe/.app + _Data）
+                    EditorUtility.ClearProgressBar();
 
-                    if (WXApkgPacker.Pack(fullExportPath, tempWxapkgPath))
+                    if (EditorUtility.DisplayDialog("构建成功",
+                        $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {fullExportPath}",
+                        "打开目录", "关闭"))
                     {
-                        Directory.Delete(fullExportPath, true);
-                        Directory.CreateDirectory(wxapkgOutputDir);
-                        File.Move(tempWxapkgPath, finalWxapkgPath);
-
-                        string gameJsPath = Path.Combine(wxapkgOutputDir, "game.js");
-                        File.WriteAllText(gameJsPath, "");
-                        Debug.Log($"[PC高性能模式] wxapkg 打包完成: {finalWxapkgPath}");
-                        EditorUtility.ClearProgressBar();
-
-                        if (EditorUtility.DisplayDialog("构建成功",
-                            $"PC高性能模式构建完成!\n\n平台: {platformName}\n耗时: {report.summary.totalTime.TotalSeconds:F2}秒\n输出: {wxapkgOutputDir}\n\n产物:\n• {WXPCHPBuildHelper.PCHPOutputDir}.wxapkg\n• game.js",
-                            "打开目录", "关闭"))
-                        {
-                            EditorUtility.RevealInFinder(wxapkgOutputDir);
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[PC高性能模式] wxapkg 打包失败，保留原始构建产物");
-                        if (File.Exists(tempWxapkgPath)) File.Delete(tempWxapkgPath);
-                        EditorUtility.ClearProgressBar();
-
-                        if (EditorUtility.DisplayDialog("构建成功（未打包）",
-                            $"PC高性能模式构建完成，但 wxapkg 打包失败。\n\n原始构建产物保留在: {fullExportPath}",
-                            "打开目录", "关闭"))
-                        {
-                            EditorUtility.RevealInFinder(fullExportPath);
-                        }
+                        EditorUtility.RevealInFinder(fullExportPath);
                     }
                 }
                 else
