@@ -6,7 +6,7 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2026-8-18 v0.1.34 【普通更新】
+## 2026-8-25 v0.1.34 【普通更新】
 ### Feature
 * 普通：优化 EmscriptenGLX 对象 id 生成机制，避免宿主多 gl context id 冲突导致渲染异常
 ### Fixed
