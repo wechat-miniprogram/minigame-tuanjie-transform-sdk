@@ -287,7 +287,7 @@ namespace WeChatWASM
                     else
                     {
                         var rootPath = Directory.GetParent(Application.dataPath).FullName;
-                        string webglDir = WXExtEnvDef.GETDEF("WEIXINMINIGAME") ? "WeixinMiniGame" : "WebGL";
+                        string webglDir = WXExtEnvDef.GETDEF("PLATFORM_WEIXINMINIGAME") ? "WeixinMiniGame" : "WebGL";
 #if PLATFORM_PLAYABLEADS
                         webglDir = "PlayableAds";
 #endif
