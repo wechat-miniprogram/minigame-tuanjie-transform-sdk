@@ -2,7 +2,7 @@
 #include <emscripten/emscripten.h>
 
 lua_Debug* lua_newdebugar() { return malloc(sizeof(lua_Debug)); }
-void lua_deletedebugar(lua_Debug* ar) { return free(ar); }
+void lua_deletedebugar(lua_Debug** ar) { if (ar && *ar) { free(*ar); *ar = NULL; } }
 
 const char* lua_Debug_getname(lua_Debug* ar) { return ar->name; }
 char* lua_Debug_getshortsrc(lua_Debug* ar) { return ar->short_src; }
