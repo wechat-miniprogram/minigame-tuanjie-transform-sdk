@@ -121,6 +121,14 @@ namespace WeChatWASM
                 EditorGUILayout.EndVertical();
             }
 
+            foldPCHighPerformance = EditorGUILayout.Foldout(foldPCHighPerformance, "PC高性能模式选项");
+            if (foldPCHighPerformance)
+            {
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
+                OnSettingPCHighPerformance();
+                EditorGUILayout.EndVertical();
+            }
+
             foldDebugOptions = EditorGUILayout.Foldout(foldDebugOptions, "调试编译选项");
             if (foldDebugOptions)
             {
@@ -233,6 +241,14 @@ namespace WeChatWASM
                 EditorGUILayout.EndVertical();
             }
 
+            foldPCHighPerformance = EditorGUILayout.Foldout(foldPCHighPerformance, "PC高性能模式");
+            if (foldPCHighPerformance)
+            {
+                EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
+                OnSettingPCHighPerformance();
+                EditorGUILayout.EndVertical();
+            }
+
             foldDebugOptions = EditorGUILayout.Foldout(foldDebugOptions, "调试编译选项");
             if (foldDebugOptions)
             {
@@ -261,7 +277,7 @@ namespace WeChatWASM
                     {
                         var ProjectConf = miniGameProperty.FindPropertyRelative("ProjectConf");
                         string identifier = ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue;
-                        string[] identifiers = identifier.Split(";");
+                        string[] identifiers = identifier.Split(';');
                         string idStr = "";
                         foreach (string id in identifiers)
                         {
@@ -374,6 +390,11 @@ namespace WeChatWASM
             formCheckbox("disableMultiTouch", "禁止多点触控");
         }
 
+        private void OnSettingPCHighPerformance()
+        {
+            formCheckbox("enablePCHighPerformance", "PC高性能模式(?)", "勾选后将在构建时同时构建PC端高性能版本，构建产物会放到导出路径下的PCHP目录");
+        }
+
         private void OnSettingDebugOptions(bool showDevBuild)
         {
             EditorGUILayout.BeginVertical("frameBox", GUILayout.ExpandWidth(true));
@@ -390,7 +411,7 @@ namespace WeChatWASM
             this.formCheckbox("webgl2", "WebGL2.0");
             this.formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
             this.formCheckbox("EmscriptenGLX", "EmscriptenGLX(?)", "是否使用EmscriptenGLX渲染方案");
-            this.formCheckbox("iOSMetal", "iOSMetal(?)", "使用iOSMetal渲染，需开启iOS高性能+模式，降低功耗、提升性能，仅支持团结引擎，不支持Unity，有引擎源码可自行适配");
+            this.formCheckbox("iOSMetal", "iOSMetal(?)", "是否使用iOSMetal渲染方案，需要开启iOS高性能+模式，有助于提升运行性能，降低iOS功耗");
             this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
             this.formCheckbox("cleanBuild", "Clean WebGL Build");
             // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
@@ -459,9 +480,6 @@ namespace WeChatWASM
             if (GUILayout.Button(new GUIContent("WebGL转小游戏(不常用)"), GUILayout.Width(150), GUILayout.Height(25)))
             {
                 this.saveData();
-#if TUANJIE_1_9_OR_NEWER
-                WXConvertCore.RefreshEnableRenderThread();
-#endif
                 if (WXConvertCore.DoExport(false) == WXConvertCore.WXExportError.SUCCEED)
                 {
                     window.ShowNotification(new GUIContent("转换完成"));
@@ -473,9 +491,6 @@ namespace WeChatWASM
             if (GUILayout.Button(new GUIContent("生成并转换"), GUILayout.Width(100), GUILayout.Height(25)))
             {
                 this.saveData();
-#if TUANJIE_1_9_OR_NEWER
-                WXConvertCore.RefreshEnableRenderThread();
-#endif
                 if (WXConvertCore.DoExport() == WXConvertCore.WXExportError.SUCCEED)
                 {
                     if (!WXConvertCore.IsInstantGameAutoStreaming())
@@ -525,6 +540,7 @@ namespace WeChatWASM
         private bool foldBaseInfo = true;
         private bool foldLoadingConfig = true;
         private bool foldSDKOptions = true;
+        private bool foldPCHighPerformance = true;
         private bool foldDebugOptions = true;
         private bool foldInstantGame = false;
         private bool foldFontOptions = false;
@@ -663,6 +679,7 @@ namespace WeChatWASM
             this.setData("loadingBarWidth", ProjectConf.loadingBarWidth.ToString());
             this.setData("needCheckUpdate", ProjectConf.needCheckUpdate);
             this.setData("disableHighPerformanceFallback", ProjectConf.disableHighPerformanceFallback);
+            this.setData("enablePCHighPerformance", ProjectConf.EnablePCHighPerformance);
         }
 
         private void loadSDKOptionsData(SDKOptions SDKOptions)
@@ -689,11 +706,6 @@ namespace WeChatWASM
             this.setData("iOSMetal", CompileOptions.enableiOSMetal);
             this.setData("EmscriptenGLX", CompileOptions.enableEmscriptenGLX);
             this.setData("fbslim", CompileOptions.fbslim);
-#if !TUANJIE_1_9_OR_NEWER
-            // #if TUANJIE_2022_3_OR_NEWER
-            this.setData("enableRenderThread", CompileOptions.enableRenderThread);
-            // #endif
-#endif
             this.setData("autoAdaptScreen", CompileOptions.autoAdaptScreen);
             this.setData("showMonitorSuggestModal", CompileOptions.showMonitorSuggestModal);
             this.setData("enableProfileStats", CompileOptions.enableProfileStats);
@@ -795,6 +807,7 @@ namespace WeChatWASM
             ProjectConf.loadingBarWidth = int.Parse(this.getDataInput("loadingBarWidth"));
             ProjectConf.needCheckUpdate = this.getDataCheckbox("needCheckUpdate");
             ProjectConf.disableHighPerformanceFallback = this.getDataCheckbox("disableHighPerformanceFallback");
+            ProjectConf.EnablePCHighPerformance = this.getDataCheckbox("enablePCHighPerformance");
         }
 
         private void saveSDKOptionsData(SDKOptions SDKOptions)
@@ -821,11 +834,6 @@ namespace WeChatWASM
             CompileOptions.enableiOSMetal = this.getDataCheckbox("iOSMetal");
             CompileOptions.enableEmscriptenGLX = this.getDataCheckbox("EmscriptenGLX");
             CompileOptions.fbslim = this.getDataCheckbox("fbslim");
-#if !TUANJIE_1_9_OR_NEWER
-            // #if TUANJIE_2022_3_OR_NEWER
-            CompileOptions.enableRenderThread = this.getDataCheckbox("enableRenderThread");
-            // #endif
-#endif
 
             CompileOptions.autoAdaptScreen = this.getDataCheckbox("autoAdaptScreen");
             CompileOptions.showMonitorSuggestModal = this.getDataCheckbox("showMonitorSuggestModal");
@@ -889,6 +897,7 @@ namespace WeChatWASM
             _ProjectConf.loadingBarWidth = ProjectConf.FindPropertyRelative("loadingBarWidth").intValue;
             _ProjectConf.needCheckUpdate = ProjectConf.FindPropertyRelative("needCheckUpdate").boolValue;
             _ProjectConf.disableHighPerformanceFallback = ProjectConf.FindPropertyRelative("disableHighPerformanceFallback").boolValue;
+            _ProjectConf.EnablePCHighPerformance = ProjectConf.FindPropertyRelative("EnablePCHighPerformance").boolValue;
         }
         private void serializeProjectConf(WXProjectConf _ProjectConf, SerializedProperty ProjectConf)
         {
@@ -918,6 +927,7 @@ namespace WeChatWASM
             ProjectConf.FindPropertyRelative("loadingBarWidth").intValue = _ProjectConf.loadingBarWidth;
             ProjectConf.FindPropertyRelative("needCheckUpdate").boolValue = _ProjectConf.needCheckUpdate;
             ProjectConf.FindPropertyRelative("disableHighPerformanceFallback").boolValue = _ProjectConf.disableHighPerformanceFallback;
+            ProjectConf.FindPropertyRelative("EnablePCHighPerformance").boolValue = _ProjectConf.EnablePCHighPerformance;
 
             //miniGameProperty.FindPropertyRelative("m_AutomaticFillInstantGame").boolValue = getDataCheckbox("m_AutomaticFillInstantGame");
 

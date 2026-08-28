@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { formatJsonStr, uid, onEventCallback, offEventCallback, getListObject, convertDataToPointer, convertInfoToPointer, formatResponse, heapBufferSlice } from '../utils';
+import { formatJsonStr, uid, onEventCallback, offEventCallback, getListObject, convertDataToPointer, convertInfoToPointer, formatResponse } from '../utils';
 const UDPSocketList = {};
 const wxUDPSocketCloseList = {};
 const wxUDPSocketErrorList = {};
@@ -137,7 +137,7 @@ function WX_UDPSocketSendBuffer(id, dataPtr, dataLength, param) {
     const config = formatJsonStr(param);
     obj.send({
         address: config.address,
-        message: heapBufferSlice(GameGlobal.Module.HEAPU8, dataPtr, dataLength),
+        message: GameGlobal.Module.HEAPU8.buffer.slice(dataPtr, dataPtr + dataLength),
         port: config.port,
         length: config.length,
         offset: config.offset,
@@ -172,7 +172,7 @@ function WX_UDPSocketWriteBuffer(id, dataPtr, dataLength, param) {
     const config = formatJsonStr(param);
     obj.write({
         address: config.address,
-        message: heapBufferSlice(GameGlobal.Module.HEAPU8, dataPtr, dataLength),
+        message: GameGlobal.Module.HEAPU8.buffer.slice(dataPtr, dataPtr + dataLength),
         port: config.port,
         length: config.length,
         offset: config.offset,

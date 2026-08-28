@@ -277,11 +277,6 @@ export default {
         formatResponse(returnType, res);
         return JSON.stringify(res);
     },
-    WX_SyncFunction_tnnt(functionName, returnType, param1, param2, param3) {
-        const res = WX_SyncFunction(functionName, param1, param2, param3);
-        formatResponse(returnType, res);
-        return JSON.stringify(res);
-    },
     WX_ClassConstructor(functionName, returnType, successType, failType, completeType, conf) {
         const config = formatJsonStr(conf);
         const callbackId = uid();
