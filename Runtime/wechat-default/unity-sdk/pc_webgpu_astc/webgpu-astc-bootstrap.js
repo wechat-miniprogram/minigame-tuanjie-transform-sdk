@@ -1,5 +1,6 @@
 import { checkGPUAdmissionWithGL, getRendererFromGL } from './gpu-admission';
 var DEFAULT_TIMEOUT_MS = 2000;
+var WARMUP_STALL_WARN_MS = 15000;
 var _GL = null;
 
 
@@ -182,6 +183,52 @@ function wxDecodeASTC(params) {
             pixels: (params.width > 0 && params.height > 0) ? params.width * params.height : 0,
         });
         _drainWxDecodeQueue();
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var WARMUP_ASTC_BLOCK_4X4 = new Uint8Array([
+    0xFC, 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+]).buffer;
+function warmupViaDecodeASTC() {
+    return new Promise(function (resolve, reject) {
+        try {
+            wx.decodeASTC({
+                data: WARMUP_ASTC_BLOCK_4X4,
+                width: 4,
+                height: 4,
+                blockWidth: 4,
+                blockHeight: 4,
+                success: function (res) {
+                    if (res && res.rgba)
+                        resolve();
+                    else
+                        reject(new Error('warmup decode: empty response'));
+                },
+                fail: function (err) {
+                    reject(new Error((err && err.errMsg) || 'warmup decode failed'));
+                },
+            });
+        }
+        catch (e) {
+            reject(e);
+        }
     });
 }
 var _INJECT_QUEUE = [];
@@ -724,37 +771,45 @@ export async function bootstrapWebGPUASTC(opts) {
     
     GameGlobal._webgpuASTCEnabled = false;
     
-    if (typeof wx === 'undefined' || typeof wx.prewarmWebGPUDecoder !== 'function') {
-        GameGlobal._webgpuASTCEnabled = true;
-        log('info', 'wx.prewarmWebGPUDecoder absent, enable WebGPU ASTC immediately (legacy behavior)');
-        return { enabled: true, costMs: mark() - t0 };
-    }
+    
+    
     
     
     var warmupT0 = mark();
-    new Promise(function (resolve, reject) {
-        wx.prewarmWebGPUDecoder({
-            success: function (res) {
-                (res && res.ready) ? resolve() : reject(new Error('prewarm not ready'));
-            },
-            fail: function (err) {
-                reject(new Error((err && err.errMsg) || 'prewarm failed'));
-            },
-        });
-    }).then(function () {
-        if (_initFailed)
+    var warmupSettled = false;
+    function _onWarmupReady() {
+        if (warmupSettled)
             return;
+        warmupSettled = true;
+        if (_initFailed)
+            return; 
         
         if (_ADMISSION_REJECTED)
             return;
         GameGlobal._webgpuASTCEnabled = true;
         log('info', 'pipeline warmed up, WebGPU ASTC enabled', { warmupMs: Math.round(mark() - warmupT0) });
-    }).catch(function (e) {
+    }
+    function _onWarmupFailed(e) {
+        if (warmupSettled)
+            return;
+        warmupSettled = true;
+        
         
         GameGlobal._webgpuASTCEnabled = false;
         GameGlobal._webgpuASTCDecoder = null;
-        log('warn', 'warmup failed, fallback to CPU soft-decode for this session', e && e.message);
-    });
+        log('warn', 'warmup failed, fallback to CPU soft-decode for this session', (e && (e.message || e.errMsg)) || e);
+    }
+    warmupViaDecodeASTC()
+        .then(_onWarmupReady)
+        .catch(_onWarmupFailed);
+    
+    
+    setTimeout(function () {
+        if (!warmupSettled) {
+            log('warn', 'warmup still pending after ' + WARMUP_STALL_WARN_MS
+                + 'ms, session stays on CPU soft-decode');
+        }
+    }, WARMUP_STALL_WARN_MS);
     var costMs = mark() - t0;
     
     
