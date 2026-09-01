@@ -227,8 +227,10 @@ namespace WeChatWASM
                 Debug.LogError("性能分析工具只能用于Development Build, 终止导出!");
                 return WXExportError.BUILD_WEBGL_FAILED;
             }
-            dynamic config = isPlayableBuild ? UnityUtil.GetPlayableEditorConf() : UnityUtil.GetEditorConf();
-            if (config.ProjectConf.relativeDST == string.Empty)
+            string relativeDST = isPlayableBuild
+                ? UnityUtil.GetPlayableEditorConf().ProjectConf.relativeDST
+                : UnityUtil.GetEditorConf().ProjectConf.relativeDST;
+            if (relativeDST == string.Empty)
             {
                 Debug.LogError("请先配置游戏导出路径");
                 return WXExportError.BUILD_WEBGL_FAILED;
@@ -333,6 +335,36 @@ namespace WeChatWASM
                     finishExport();
                 }
             }
+
+            // PC高性能模式：在小游戏构建完成后构建PC版本
+            if (buildWebGL && WXPCHPBuildHelper.IsPCHighPerformanceEnabled())
+            {
+                Debug.Log("[微信小游戏] 小游戏构建完成，开始构建PC高性能版本...");
+                
+                if (!WXPCHPBuildHelper.BuildPCHighPerformance(config.ProjectConf.DST))
+                {
+                    Debug.LogError("[微信小游戏] PC高性能模式构建失败");
+                    EditorUtility.DisplayDialog("PC高性能模式构建失败", 
+                        "PC高性能版本构建失败，但小游戏版本已构建成功。", "确定");
+                }
+                else
+                {
+                    Debug.Log("[微信小游戏] PC高性能版本构建完成!");
+                }
+
+                // 路径A（转换工具链）：构建完成后恢复到小游戏平台
+                // 如果构建进入了两阶段异步模式（等待 Domain Reload），不在此处恢复平台
+                // 恢复操作将在 WXPCHPBuildHelper.OnDomainReload 中异步完成
+                if (!WXPCHPBuildHelper.IsBuildDeferred)
+                {
+                    WXPCHPBuildHelper.RestoreToMiniGamePlatform();
+                }
+                else
+                {
+                    Debug.Log("[微信小游戏] PC高性能构建进入异步模式，平台恢复将在编译完成后自动执行");
+                }
+            }
+
             return WXExportError.SUCCEED;
         }
 
@@ -416,14 +448,21 @@ namespace WeChatWASM
             {
                 // WxPerfJsBridge.jslib
                 var wxPerfJSBridgeImporter = AssetImporter.GetAtPath(wxPerfPlugins[0]) as PluginImporter;
+                if (wxPerfJSBridgeImporter != null)
+                {
 #if PLATFORM_PLAYABLEADS
-				wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, config.CompileOptions.enablePerfAnalysis);
+				    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.PlayableAds, config.CompileOptions.enablePerfAnalysis);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
+                    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, config.CompileOptions.enablePerfAnalysis);
 #else
-                wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
+                    wxPerfJSBridgeImporter.SetCompatibleWithPlatform(BuildTarget.WebGL, config.CompileOptions.enablePerfAnalysis);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[0], config.CompileOptions.enablePerfAnalysis);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[0], config.CompileOptions.enablePerfAnalysis);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[0]}，跳过");
+                }
             }
 
             {
@@ -431,15 +470,21 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2022Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202203OrNewer();
 
                 var wxPerf2022Importer = AssetImporter.GetAtPath(wxPerfPlugins[1]) as PluginImporter;
-
+                if (wxPerf2022Importer != null)
+                {
 #if PLATFORM_PLAYABLEADS
-				wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2022Plugin);
+				    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2022Plugin);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
+                    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2022Plugin);
 #else
-                wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
+                    wxPerf2022Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2022Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[1], bShouldEnablePerf2022Plugin);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[1]}，跳过");
+                }
             }
 
             {
@@ -447,14 +492,21 @@ namespace WeChatWASM
                 bool bShouldEnablePerf2021Plugin = config.CompileOptions.enablePerfAnalysis && IsCompatibleWithUnity202102To202203();
 
                 var wxPerf2021Importer = AssetImporter.GetAtPath(wxPerfPlugins[2]) as PluginImporter;
+                if (wxPerf2021Importer != null)
+                {
 #if PLATFORM_PLAYABLEADS
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.PlayableAds, bShouldEnablePerf2021Plugin);
 #elif PLATFORM_WEIXINMINIGAME
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, bShouldEnablePerf2021Plugin);
 #else
-                wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
+                    wxPerf2021Importer.SetCompatibleWithPlatform(BuildTarget.WebGL, bShouldEnablePerf2021Plugin);
 #endif
-                SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+                    SetPluginCompatibilityByModifyingMetadataFile(wxPerfPlugins[2], bShouldEnablePerf2021Plugin);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[WXConvertCore] ProcessWxPerfBinaries: 找不到插件 {wxPerfPlugins[2]}，跳过");
+                }
             }
             AssetDatabase.Refresh();
         }
@@ -1662,6 +1714,7 @@ namespace WeChatWASM
             }
             ModifyWeChatConfigs(isFromConvert);
             ModifySDKFile();
+            InsertPCHPCode();
             ClearFriendRelationCode();
             GameJsPlugins();
 
@@ -1772,6 +1825,42 @@ namespace WeChatWASM
             Debug.LogWarning("[WeChat Preview] InsertPreviewCode End");
         }
 
+        /// <summary>
+        /// PC高性能模式：在 game.js 中注入 PCHP 插件初始化代码
+        /// </summary>
+        private static void InsertPCHPCode()
+        {
+            if (!WXPCHPBuildHelper.IsPCHighPerformanceEnabled())
+            {
+                return;
+            }
+
+            Debug.Log("[PC高性能模式] 开始注入 game.js 插件初始化代码");
+            Rule[] rules =
+            {
+                // game.js 嵌入：在 managerConfig 前初始化 PCHP 插件
+                new Rule()
+                {
+                    old = "const managerConfig = {",
+                    newStr =
+                    "const pchpInstance = requirePlugin('MiniGamePCHighPerformance', {\n" +
+                    "    enableRequireHostModule: true,\n" +
+                    "    customEnv: {\n" +
+                    "      wx,\n" +
+                    "    },\n" +
+                    "  }).default();\n" +
+                    "\n" +
+                    "  // 触发PC高性能模式的启动流程\n" +
+                    "  pchpInstance.launch()\n" +
+                    "\n" +
+                    "const managerConfig = {",
+                },
+            };
+            string[] files = { "game.js" };
+            ReplaceFileContent(files, rules);
+            Debug.Log("[PC高性能模式] game.js 插件初始化代码注入完成");
+        }
+
         private static int Brotlib(string filename, string sourcePath, string targetPath)
         {
             UnityEngine.Debug.LogFormat("[Converter] Starting to generate Brotlib file");
@@ -1862,7 +1951,9 @@ namespace WeChatWASM
             string content = File.ReadAllText(filePath, Encoding.UTF8);
             JsonData gameJson = JsonMapper.ToObject(content);
 
-            if (!config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat || config.CompileOptions.autoAdaptScreen)
+            bool needWriteBack = !config.SDKOptions.UseFriendRelation || !config.SDKOptions.UseMiniGameChat || config.CompileOptions.autoAdaptScreen || WXPCHPBuildHelper.IsPCHighPerformanceEnabled();
+
+            if (needWriteBack)
             {
                 JsonWriter writer = new JsonWriter();
                 writer.IndentValue = 2;
@@ -1890,6 +1981,21 @@ namespace WeChatWASM
                 if (config.CompileOptions.autoAdaptScreen)
                 {
                     gameJson["displayMode"] = "desktop";
+                }
+
+                // PC高性能模式：注入 MiniGamePCHighPerformance 插件
+                if (WXPCHPBuildHelper.IsPCHighPerformanceEnabled() && gameJson.ContainsKey("plugins"))
+                {
+                    var pchpPlugin = new JsonData();
+                    pchpPlugin["version"] = "0.0.14";
+                    pchpPlugin["provider"] = "wxda43d86614939198";
+                    var contexts = new JsonData();
+                    var ctx = new JsonData();
+                    ctx["type"] = "isolatedContext";
+                    contexts.Add(ctx);
+                    pchpPlugin["contexts"] = contexts;
+                    gameJson["plugins"]["MiniGamePCHighPerformance"] = pchpPlugin;
+                    Debug.Log("[PC高性能模式] 已注入 MiniGamePCHighPerformance 插件到 game.json");
                 }
 
                 // 将配置写回到文件夹
