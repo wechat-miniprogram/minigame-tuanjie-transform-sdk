@@ -1851,7 +1851,7 @@ namespace WeChatWASM
                     "  }).default();\n" +
                     "\n" +
                     "  // 触发PC高性能模式的启动流程\n" +
-                    "  pchpInstance.start()\n" +
+                    "  pchpInstance.launch()\n" +
                     "\n" +
                     "const managerConfig = {",
                 },
@@ -1987,7 +1987,7 @@ namespace WeChatWASM
                 if (WXPCHPBuildHelper.IsPCHighPerformanceEnabled() && gameJson.ContainsKey("plugins"))
                 {
                     var pchpPlugin = new JsonData();
-                    pchpPlugin["version"] = "0.0.12";
+                    pchpPlugin["version"] = "0.0.14";
                     pchpPlugin["provider"] = "wxda43d86614939198";
                     var contexts = new JsonData();
                     var ctx = new JsonData();
