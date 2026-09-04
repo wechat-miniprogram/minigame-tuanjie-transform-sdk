@@ -122,9 +122,6 @@
         <member name="M:WeChatWASM.WXGameProtectWindow.IsControlFlowFlatteningEnabled">
             <summary>是否启用控制流平坦化</summary>
         </member>
-        <member name="M:WeChatWASM.WXGameProtectWindow.IsEntryGateEnabled">
-            <summary>是否启用入口 Gate</summary>
-        </member>
         <member name="M:WeChatWASM.WXGameProtectWindow.IsNameStrippingEnabled">
             <summary>是否启用函数名剥离（默认关闭，不提供 UI 开关）</summary>
         </member>
@@ -135,12 +132,19 @@
              在 BuildPipeline.BuildPlayer 完成后、WXConvertCore.convertDataPackage 之前触发：
              1) 精确解析 webgl.data 容器头（TuanjieWebData1.0/UnityWebData1.0），
                 定位出 global-metadata.dat 这一个条目的真实 offset/size，只加密这一段
-                （⚠️ 之前的实现是"从魔数打到文件末尾"，会把紧跟在 metadata 后面的
-                Resources/tuanjie_default_resources 一起加密坏掉，已修复，见下方注释）
-             2) 用锚点字符串替换，把运行期解密逻辑注入到 framework.js 的 doRun() 闭包内部
-                （替换 "if (shouldRunNow) callMain(args);" 这一行，而不是在文件末尾追加 IIFE——
-                后者拿不到真实的 FS/callMain，是已验证失效的方案，见
-                doc/metadata-encryption/06-落地方案-运行期解密.md）
+             2) 用锚点正则替换，把运行期解密逻辑注入到 framework.js 的 doRun() 闭包内部
+            
+             加密算法：ChaCha20（RFC 8439），密码学安全流密码。
+               - 替代了旧的循环 XOR（循环 XOR 可被已知明文攻击推 key）
+               - 32 字节 key + 12 字节 nonce，counter 从 0 开始
+               - C# 端和 JS 端实现完全对齐
+            
+             密钥存储：KeyMaterial 拆分混淆（方向2）。
+               - 32 字节 key 拆成 4 个 8 字节分片
+               - 每个分片独立随机掩码 XOR 混淆
+               - Fisher-Yates 洗牌打乱存储顺序
+               - JS 端重建逻辑与 C# 端逐行对应
+               - 替代了旧的 new Uint8Array([...]) 明文存储
             
              注意：本文件位于 Protected/WXSDKEditor，编译进 wx-editor.dll（经 Obfuscar 混淆）。
              因此不能直接引用外层明文 .cs（如 WXConvertCore），需通过 UnityUtil/WXExtEnvDef 访问。
@@ -152,6 +156,34 @@
             找到路径中含 "global-metadata.dat" 的那个条目，返回其在容器内的 offset 和 size。
             </summary>
         </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ChaCha20Crypt(System.Byte[],System.Int32,System.Int32,System.Byte[],System.Byte[])">
+            <summary>
+            ChaCha20 流密码加密/解密（对称操作，原地修改 data）。
+            key: 32 字节，nonce: 12 字节，counter 从 0 开始。
+            只处理 data[offset, offset+size) 这一段，不越界。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXMetadataEncryptor.KeyMaterial">
+            <summary>
+            把 32 字节真实密钥拆分成混淆形态存储：
+              - 拆成 4 个 8 字节分片
+              - 每个分片独立随机掩码 XOR 混淆
+              - Fisher-Yates 洗牌打乱存储顺序
+            重建时需要同时拥有 FragHex + MaskHex + Order 三个数组才能还原 key。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.KeyMaterial.FromKey(System.Byte[])">
+            <summary>
+            从 32 字节真实密钥生成混淆存储材料。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.GenerateKeyAndNonce(System.Byte[]@,System.Byte[]@)">
+            <summary>
+            为本次构建生成密码学安全随机密钥（32 字节）+ nonce（12 字节）。
+            使用 RNGCryptoServiceProvider（.NET Framework / Unity Mono 均可用）。
+            密钥仅在本次构建流程内存中存在，随构建结束即丢弃，不做持久化。
+            </summary>
+        </member>
         <member name="T:WeChatWASM.WXWasmFunctionProtector">
              <summary>
              WASM 定向函数加固器（编译进 wx-editor.dll）。
@@ -159,9 +191,9 @@
              在 Unity/IL2CPP 已生成 webgl.wasm 后、微信转换压缩 wasmcode 前运行：
              1. 读取构建前的 wx-wasm-obfuscation-markers.json；
              2. 解析 WASM name custom section，建立函数索引与 IL2CPP 函数名的映射；
-             3. 对 Light 级别执行 i32/i64 常量编码；
-             4. Medium 在常量保护之上，在入口和函数体内 block/loop 体内起始处插入运行期 Gate；
-             5. Heavy 在 Medium 之上，在函数最终 end 前插入尾部不透明控制流岛，并在 if 分支起始处插入额外 Gate；
+             3. Light：指令替换（MBA）；
+             4. Medium：指令替换 + 局部变量噪声 + 虚假控制流；
+             5. Heavy：Medium 之上 + 控制流平坦化；
              6. 校验改写后的结构后写回 webgl.wasm，后续 WXConvertCore 会将它压缩并复制至 minigame/wasmcode。
             
              这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
@@ -178,16 +210,27 @@
             获取指定函数（按全局 function index）的参数个数。
             </summary>
         </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionResultCount(System.UInt32)">
+            <summary>
+            获取指定函数（按全局 function index）的返回值个数。
+            控制流平坦化需要它来决定"最后一个块 / return 处"是否要 return 栈顶返回值。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.BuildFuncSigMap">
+            <summary>
+            构建 funcIdx → (paramCount, resultTypes) 的映射，供 CFF MiniInterpreter 精确追踪 call 指令的栈效果。
+            resultTypes 使用 byte[] 存储 WASM value type（0x7f=i32, 0x7e=i64, 0x7d=f32, 0x7c=f64）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryGetTypeSignature(System.UInt32,System.Int32@,System.Byte[]@)">
+            <summary>
+            通过 typeIdx 直接查签名（供 call_indirect 使用）。
+            </summary>
+        </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.StripFunctionNames(System.Collections.Generic.HashSet{System.UInt32})">
             <summary>
             从 name section 中剥离指定函数的名称。
             返回重新构建的完整 name section（含 section header），或 null 表示整个 section 为空可删除。
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.InsertMidBlockGates(System.Byte[],System.Int32,WeChatWASM.WXWasmFunctionProtector.WasmInstrumentTarget,System.UInt32,System.UInt32,WeChatWASM.WXWasmFunctionProtector.WasmModule.WasmFunctionSignature,WeChatWASM.WXWasmFunctionProtector.WasmModule.WasmFunctionSignature,System.Int32@)">
-            <summary>
-            在函数体内的 block/loop/if 体内起始处插入自包含的 if/else/end Gate。
-            这些 Gate 是完整的 if 块（不包裹原指令），净栈效果为零，不改变原有 br 深度。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.SkipBlockType(System.Byte[],System.Int32@,System.Int32)">
@@ -197,29 +240,33 @@
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:WeChatWASM.WXWasmFunctionProtector.WasmModule.BuildBogusBlock(System.Int32,System.Int32,System.Int32)" -->
-        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.SplitIntoBasicBlocks(System.Byte[],System.Int32,WeChatWASM.WXWasmFunctionProtector.WasmInstrumentTarget)">
-            <summary>
-            将指令流分割为基本块。
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.VerifyFunctionStackBalance(System.Byte[])">
+             <summary>
+             平坦化产出后的本地栈平衡兜底校验。
             
-            核心安全不变量：切割后的每个新块在进入时值栈为空。
-            平坦化会把每个块包在独立的 block...end 中，通过 br_table 调度，
-            每个块入口时值栈保证为空。
+             这不是完整的 WASM 类型检查器，而是一个"分支目标栈高度一致性"的保守校验，
+             专门拦截平坦化最容易引入的错误——"br/br_if/br_table 跳到某个 block 时，
+             当前栈高度与该 block 期望的入口/结果栈高度不一致"（正是运行时报
+             "expected N elements on the stack for br to @X, found M" 的根源）。
             
-            切割策略：只在"已确认栈为空"的安全点切割：
-            - 顶层 void block/if/loop 的 end 之后（WASM 规范保证 void end 后栈不变）
-            - 在纯简单指令序列（无 call）中精确跟踪到 stackDepth==0 的位置
-            </summary>
+             校验思路（单遍线性 + 结构化控制流栈）：
+               - 维护值栈高度 stack 与控制流 frame 栈（每层记录：类型、进入时栈高、
+                 该 label 作为 br 目标时期望的栈高）；
+               - 对 block/if：br 到它 = 跳到它的 end 之后，目标栈高 = 进入前栈 + 产出值数；
+               - 对 loop：br 到它 = 跳回 loop 入口，目标栈高 = 进入时栈（loop 无参数时为进入前栈）；
+               - 遇到 br/br_if/br_table，比对"当前栈高 - (br 消耗)"是否等于目标 label 期望栈高；
+               - 任何不一致 / 无法确定（遇到 call 等改变栈且无法精确推断结果时用保守放行）→
+                 只在"能确定的地方"报不平衡；不能确定的地方不误杀（保守放行，交由真实引擎兜底）。
+            
+             返回 true = 未发现明确的栈不平衡（可接受）；false = 发现明确不平衡（应回退）。
+             注意：为避免误杀正常函数，遇到无法精确建模的指令时倾向于"放行"，
+             真正的最终防线仍是微信/浏览器引擎的 WebAssembly 校验；此处只拦截高置信度的错误。
+             </summary>
         </member>
-        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetTopLevelStackEffect(System.Byte)">
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetPreciseStackEffect(System.Byte)">
             <summary>
             计算单条顶层指令对值栈深度的净效果。
             返回 int.MinValue 表示无法确定（call 等指令的栈效果取决于函数签名）。
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.ContainsTopLevelBranch(System.Collections.Generic.List{System.Byte[]})">
-            <summary>
-            检查基本块列表中是否有块包含跳出到函数体隐式顶层块的 br/br_if 指令。
-            平坦化会在每个块外面包裹额外的嵌套 block，导致这些 br 的 depth 语义被破坏。
             </summary>
         </member>
         <member name="T:WeChatWASM.WXWasmObfuscationMarkerCollector">

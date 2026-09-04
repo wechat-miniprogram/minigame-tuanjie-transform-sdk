@@ -9612,20 +9612,6 @@
             解码构建期写入的整数常量。
             </summary>
         </member>
-        <member name="M:WeChatWASM.WasmObfuscationRuntime.IsGateOpen(System.Int32)">
-             <summary>
-             返回恒真的运行期门控条件。
-            
-             两次调用 Mix 使用同一个初始化后不再变化的 GateSeed，结果相同；
-             由于 Mix 是禁止内联的运行期函数，IL2CPP 不应把调用点直接折叠为常量。
-             </summary>
-        </member>
-        <member name="M:WeChatWASM.WasmObfuscationRuntime.Touch(System.Int32)">
-            <summary>
-            Gate 的假分支触发的无业务副作用操作。
-            正常情况下 IsGateOpen 恒为 true，因此此方法不会执行。
-            </summary>
-        </member>
         <member name="T:WeChatWASM.WasmStringDecryptor">
             <summary>
             运行时字符串解密器。
