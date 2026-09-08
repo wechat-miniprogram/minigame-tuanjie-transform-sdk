@@ -340,6 +340,18 @@ namespace WeChatWASM
         }
 
         /// <summary>
+        /// [wx.enterChatToolMode(Object object)](https://developers.weixin.qq.com/minigame/dev/api/chattool/wx.enterChatToolMode.html)
+        /// 需要基础库： `3.12.0`
+        /// 进入聊天工具开放能力模式。
+        ///  1. 不传入聊天室id列表时，微信会拉起聊天列表让用户选择，用户选择后绑定聊天室进入聊天工具模式。
+        ///  2. 传入聊天室id列表时（群聊为opengid），会直接绑定这批聊天室进入。
+        /// </summary>
+        public static void EnterChatToolMode(EnterChatToolModeOption callback)
+        {
+            WXSDKManagerHandler.Instance.EnterChatToolMode(callback);
+        }
+
+        /// <summary>
         /// [wx.exitChatTool(Object object)](https://developers.weixin.qq.com/minigame/dev/api/chattool/wx.exitChatTool.html)
         /// 需要基础库： `3.7.12`
         /// 退出聊天工具开放能力模式
