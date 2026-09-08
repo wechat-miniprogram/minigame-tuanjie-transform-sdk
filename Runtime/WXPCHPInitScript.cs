@@ -1181,7 +1181,17 @@ namespace WeChatWASM
                 // 手动 pump 消息队列以处理响应
                 if (_messageQueue.TryDequeue(out var messageJson))
                 {
-                    try { ProcessIncomingMessage(messageJson); } catch { }
+                    // 之前 catch 直接吞，导致 ProcessIncomingMessage 解析异常时回调不识别 → 超时
+                    // 改成异常打日志，便于排查
+                    try
+                    {
+                        ProcessIncomingMessage(messageJson);
+                    }
+                    catch (Exception e)
+                    {
+                        var preview = messageJson?.Length > 200 ? messageJson.Substring(0, 200) + "..." : messageJson;
+                        Debug.LogError($"[WXPCHPInitScript] ProcessIncomingMessage 异常（消息已丢）: {e.Message}, preview={preview}");
+                    }
                 }
                 System.Threading.Thread.Sleep(1);
             }
@@ -1281,7 +1291,17 @@ namespace WeChatWASM
             {
                 if (_messageQueue.TryDequeue(out var messageJson))
                 {
-                    try { ProcessIncomingMessage(messageJson); } catch { }
+                    // 之前 catch 直接吞，导致 ProcessIncomingMessage 解析异常时 syncResponse 不识别 → 超时
+                    // 改成异常打日志，便于排查 syncResponse 解析失败场景
+                    try
+                    {
+                        ProcessIncomingMessage(messageJson);
+                    }
+                    catch (Exception e)
+                    {
+                        var preview = messageJson?.Length > 200 ? messageJson.Substring(0, 200) + "..." : messageJson;
+                        Debug.LogError($"[WXPCHPInitScript] ProcessIncomingMessage 异常（消息已丢）: {e.Message}, preview={preview}");
+                    }
                 }
                 System.Threading.Thread.Sleep(1);
             }
@@ -1695,13 +1715,22 @@ namespace WeChatWASM
 
                 if (instance != null)
                 {
-                    // 触发原始消息事件
-                    instance.OnMessageReceived?.Invoke(buffer);
-
-                    // 转为字符串，加入消息队列（主线程处理）
+                    // 先转字符串 + 入队，确保消息不丢
+                    // 之前是先触发 OnMessageReceived 事件，订阅者抛异常会让 Enqueue 不执行 → 消息丢失 →
+                    // SendAppEventSync while 循环拿不到响应 → 10s 超时（偶发现象）
                     string message = System.Text.Encoding.UTF8.GetString(buffer);
                     Debug.Log($"[WXPCHPInitScript] ◀ 收到原始消息: {message}");
                     instance._messageQueue.Enqueue(message);
+
+                    // 后触发事件，订阅者异常不影响消息入队
+                    try
+                    {
+                        instance.OnMessageReceived?.Invoke(buffer);
+                    }
+                    catch (Exception evEx)
+                    {
+                        Debug.LogError($"[WXPCHPInitScript] OnMessageReceived 订阅者异常（消息已入队，不影响）: {evEx.Message}");
+                    }
                 }
                 else
                 {
