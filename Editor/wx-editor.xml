@@ -132,56 +132,38 @@
              在 BuildPipeline.BuildPlayer 完成后、WXConvertCore.convertDataPackage 之前触发：
              1) 精确解析 webgl.data 容器头（TuanjieWebData1.0/UnityWebData1.0），
                 定位出 global-metadata.dat 这一个条目的真实 offset/size，只加密这一段
-             2) 用锚点正则替换，把运行期解密逻辑注入到 framework.js 的 doRun() 闭包内部
+             2) 把密钥材料原地 patch 进 webgl.wasm 的固定密钥槽（wx_metadata_protect.c 预留）
+             3) 在 framework.js 注入最小 JS 桥接（仅调用 WASM 导出，不含密钥和算法）
             
              加密算法：ChaCha20（RFC 8439），密码学安全流密码。
-               - 替代了旧的循环 XOR（循环 XOR 可被已知明文攻击推 key）
                - 32 字节 key + 12 字节 nonce，counter 从 0 开始
-               - C# 端和 JS 端实现完全对齐
+               - C# 端加密与原生 C 端解密实现完全对齐
             
-             密钥存储：KeyMaterial 拆分混淆（方向2）。
-               - 32 字节 key 拆成 4 个 8 字节分片
-               - 每个分片独立随机掩码 XOR 混淆
-               - Fisher-Yates 洗牌打乱存储顺序
-               - JS 端重建逻辑与 C# 端逐行对应
-               - 替代了旧的 new Uint8Array([...]) 明文存储
+             密钥存储：构建后 WASM 固定槽原地 patch。
+               - 密钥材料只进入最终 webgl.wasm 二进制
+               - framework.js 不再包含密钥、mask、nonce 和解密算法
+               - 每次构建随机 key + nonce，不进版本库、不做持久化
             
              注意：本文件位于 Protected/WXSDKEditor，编译进 wx-editor.dll（经 Obfuscar 混淆）。
              因此不能直接引用外层明文 .cs（如 WXConvertCore），需通过 UnityUtil/WXExtEnvDef 访问。
              </summary>
         </member>
-        <member name="M:WeChatWASM.WXMetadataEncryptor.TryLocateMetadataEntry(System.Byte[],System.Int32@,System.Int32@,System.String@)">
+        <member name="M:WeChatWASM.WXMetadataEncryptor.SlotMask(System.Int32)">
             <summary>
-            按 TuanjieWebData1.0 / UnityWebData1.0 容器格式，解析文件头，
-            找到路径中含 "global-metadata.dat" 的那个条目，返回其在容器内的 offset 和 size。
+            位置相关 XOR mask，必须与 wx_metadata_protect.c 中 slot_mask() 完全一致。
             </summary>
         </member>
-        <member name="M:WeChatWASM.WXMetadataEncryptor.ChaCha20Crypt(System.Byte[],System.Int32,System.Int32,System.Byte[],System.Byte[])">
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ScrambleSlot(System.Byte[],System.Int32)">
             <summary>
-            ChaCha20 流密码加密/解密（对称操作，原地修改 data）。
-            key: 32 字节，nonce: 12 字节，counter 从 0 开始。
-            只处理 data[offset, offset+size) 这一段，不越界。
+            对 slot 的每个字节做 XOR 混淆。
+            patch 后调用，使 HEAD_MAGIC/TAIL_MAGIC 不再以明文形式出现在最终 WASM 中。
             </summary>
         </member>
-        <member name="T:WeChatWASM.WXMetadataEncryptor.KeyMaterial">
+        <member name="M:WeChatWASM.WXMetadataEncryptor.BuildNativeBridge">
             <summary>
-            把 32 字节真实密钥拆分成混淆形态存储：
-              - 拆成 4 个 8 字节分片
-              - 每个分片独立随机掩码 XOR 混淆
-              - Fisher-Yates 洗牌打乱存储顺序
-            重建时需要同时拥有 FragHex + MaskHex + Order 三个数组才能还原 key。
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXMetadataEncryptor.KeyMaterial.FromKey(System.Byte[])">
-            <summary>
-            从 32 字节真实密钥生成混淆存储材料。
-            </summary>
-        </member>
-        <member name="M:WeChatWASM.WXMetadataEncryptor.GenerateKeyAndNonce(System.Byte[]@,System.Byte[]@)">
-            <summary>
-            为本次构建生成密码学安全随机密钥（32 字节）+ nonce（12 字节）。
-            使用 RNGCryptoServiceProvider（.NET Framework / Unity Mono 均可用）。
-            密钥仅在本次构建流程内存中存在，随构建结束即丢弃，不做持久化。
+            构建最小 JS 桥接 payload。
+            只调用 WASM 导出函数 wrt0()，不包含任何密钥、nonce 和解密算法。
+            错误时阻止 callMain 继续执行。
             </summary>
         </member>
         <member name="T:WeChatWASM.WXWasmFunctionProtector">
@@ -203,6 +185,12 @@
             <summary>
             足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
             解析 type、import、function、name、code section，并保持其他 section 的原始字节不变。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindExactFunctionIndex(System.String)">
+            <summary>
+            在 WASM name section 中精确查找指定名称的函数。
+            用于定位 C 原生插件编译的函数（如 wrt0、sc_process），与前缀匹配互补。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionParameterCount(System.UInt32)">
