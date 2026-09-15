@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.39";
-        public const string PCHP_BUILD_DATE = "2026-09-09 (plugin version 0.0.16)";
+        public const string PCHP_VERSION = "0.1.40";
+        public const string PCHP_BUILD_DATE = "2026-09-15";
 
         #region DLL Imports
 
@@ -131,6 +131,17 @@ namespace WeChatWASM
 
         // SendMsgSync / FreeMsgData 已删除：Mojo 同步调用死锁，不可用（详见 issue #13020 §1.7）
         // 如需恢复，参考 README.md 同步通信章节 + 历史代码
+
+        // 查询 Mojo IPC 通道是否就绪（host_remote 是否已绑定）
+        // ToHostSendMsgAsync 不检查 host_remote_not_bound，消息直接进 Mojo 队列缓存，
+        // 等浏览器侧 PchpManager::ConnectPchp 真正 bind 后批量 flush（实测 ~10s）。
+        // 本接口让 C# 在调 SendAppEventSync 前轮询等就绪，避开 Mojo 队列缓存延迟。
+        //
+        // ⚠️ 优雅降级：dll 未导出此函数时 EntryPointNotFoundException 会被
+        // _channelReadyProbe 尝试一次后捕获并置 _channelReadyAvailable=false，后续直接走 5 次重试 fallback。
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private static extern bool IsChannelReady();
 
         // 注册同步消息 handler（接住来自 JS 侧 sendMsgSync 的同步请求，跑在 SDK IPC 线程）
         // 内核 Initialize 流程要求必须注册
@@ -287,6 +298,24 @@ namespace WeChatWASM
     private volatile string _pendingSyncResponse;
     /// <summary>SendAppEventSync 伪同步是否完成</summary>
     private volatile bool _syncResponseCompleted;
+
+    /// <summary>
+    /// 首次 SendAppEventSync 是否已完成（成功或重试成功后置 true）。
+    ///
+    /// 背景：exe 启动后 EstablishConnection 返回成功但 Mojo IPC 通道的 msg_handler_
+    /// 可能还未注册（基础库引擎回调链未就绪）。期间 SendMsgAsync 收到消息后会被静默丢弃
+    /// （pchp_sdk.cc:223 的 msg_handler_ == nullptr 分支）。
+    /// 首次 SendAppEventSync 在 10s 超时期间引擎回调链大概率已就绪，重试时消息立即送达。
+    /// 后续调用 msg_handler_ 已注册，走原 10s 路径不再重试。
+    /// </summary>
+    private volatile bool _firstSyncCallDone = false;
+
+    /// <summary>
+    /// dll 是否导出 IsChannelReady 函数（首次 probe 后缓存结果）。
+    /// 旧 dll 不导出此函数时走 fallback 路径（5 次重试 × 3s）。
+    /// 新 dll 导出后走优先路径（轮询等就绪 + 单次调用）。
+    /// </summary>
+    private bool? _channelReadyAvailable = null;
 
         /// <summary>
         /// Host → TS 业务事件回调委托（biz 前缀事件走此委托）
@@ -1280,6 +1309,66 @@ namespace WeChatWASM
 
             Debug.Log($"[WXPCHPInitScript] SendAppEventSync (伪同步): {eventName}");
 
+            // 优先路径：dll 暴露 IsChannelReady 时，轮询等就绪 + 单次调用
+            // toHostSendMsgAsync 不检查 host_remote_not_bound，消息进 Mojo 队列缓存，
+            // 等浏览器侧 PchpManager::ConnectPchp 真正 bind 后批量 flush（实测 ~10s）。
+            // 轮询 IsChannelReady 等 host_remote bind 完成，再调 SendAppEventSync，
+            // 几毫秒就能拿到 syncResponse，不会卡在 Mojo 队列里。
+            if (IsChannelReadyAvailable())
+            {
+                if (WaitForChannelReady(15000))
+                {
+                    // 通道就绪，单次 5s 足够（消息立即送达几毫秒拿响应）
+                    return SendAppEventSyncInternal(eventName, jsonStr, 5000);
+                }
+                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 等待通道就绪超时(15s): {eventName}");
+                return "";
+            }
+
+            // Fallback 路径：dll 未暴露 IsChannelReady，走首次多次重试逻辑
+            // 首次调用：5 次重试 × 3s，覆盖 host_remote bind 延迟窗口（实测 ~10s）
+            // 后续调用：单次 10s（host_remote 已绑定，消息立即送达）
+            string result;
+            if (!_firstSyncCallDone)
+            {
+                result = "";
+                for (int attempt = 1; attempt <= 5; attempt++)
+                {
+                    result = SendAppEventSyncInternal(eventName, jsonStr, 3000);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        if (attempt > 1)
+                        {
+                            Debug.Log($"[WXPCHPInitScript] SendAppEventSync 第 {attempt} 次重试成功: {eventName}");
+                        }
+                        _firstSyncCallDone = true;
+                        break;
+                    }
+                    if (attempt < 5)
+                    {
+                        Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 第 {attempt} 次超时(3s), 通道可能未就绪, 重试: {eventName}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 5 次重试均失败, 放弃: {eventName}");
+                    }
+                }
+            }
+            else
+            {
+                // 后续调用：host_remote 已绑定，单次 10s 足够
+                result = SendAppEventSyncInternal(eventName, jsonStr, 10000);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// SendAppEventSync 内部实现：发请求 + 阻塞等响应。
+        /// 抽出来供首次重试调用，避免重复代码。
+        /// </summary>
+        private string SendAppEventSyncInternal(string eventName, string jsonStr, int timeoutMs)
+        {
             // 异步发（走 SendMsgAsync，不阻塞 IPC 线程，不死锁）
             _syncResponseCompleted = false;
             _pendingSyncResponse = null;
@@ -1287,7 +1376,7 @@ namespace WeChatWASM
 
             // 阻塞等 syncResponse 回包（HandleAsyncMessage 在 IPC 线程入队，调用线程轮询取）
             var startTime = DateTime.UtcNow;
-            while (!_syncResponseCompleted && (DateTime.UtcNow - startTime).TotalMilliseconds < 10000)
+            while (!_syncResponseCompleted && (DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
             {
                 if (_messageQueue.TryDequeue(out var messageJson))
                 {
@@ -1308,12 +1397,73 @@ namespace WeChatWASM
 
             if (!_syncResponseCompleted)
             {
-                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时(10s): {eventName}");
+                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时({timeoutMs}ms): {eventName}");
             }
 
             return _pendingSyncResponse ?? "";
         }
 
+        /// <summary>
+        /// 探测 dll 是否导出 IsChannelReady 函数。
+        /// 首次调用 try/catch EntryPointNotFoundException，结果缓存到 _channelReadyAvailable。
+        /// </summary>
+        private bool IsChannelReadyAvailable()
+        {
+            if (_channelReadyAvailable.HasValue) return _channelReadyAvailable.Value;
+            try
+            {
+                // 一次 probe：调用 IsChannelReady，不关心返回值，能调到说明 dll 暴露此函数
+                _ = IsChannelReady();
+                _channelReadyAvailable = true;
+                Debug.Log("[WXPCHPInitScript] IsChannelReady available ✓, 走优先路径（轮询等就绪）");
+            }
+            catch (EntryPointNotFoundException)
+            {
+                _channelReadyAvailable = false;
+                Debug.LogWarning("[WXPCHPInitScript] IsChannelReady not exported, fallback 到 5 次重试路径");
+            }
+            catch (Exception e)
+            {
+                // dll 加载失败 / 其他异常，保守起见 fallback
+                _channelReadyAvailable = false;
+                Debug.LogWarning($"[WXPCHPInitScript] IsChannelReady probe 失败, fallback 到 5 次重试路径: {e.Message}");
+            }
+            return _channelReadyAvailable.Value;
+        }
+
+        /// <summary>
+        /// 轮询等待 Mojo IPC 通道就绪（host_remote 已 bind）。
+        /// 阻塞主线程，但每 100ms 让出（Thread.Sleep(100)），主线程卡顿分批不影响渲染。
+        /// </summary>
+        /// <param name="timeoutMs">最大等待时间（毫秒）</param>
+        /// <returns>true=通道就绪，false=超时未就绪</returns>
+        private bool WaitForChannelReady(int timeoutMs)
+        {
+            var startTime = DateTime.UtcNow;
+            while ((DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
+            {
+                try
+                {
+                    if (IsChannelReady())
+                    {
+                        var elapsed = (DateTime.UtcNow - startTime).TotalMilliseconds;
+                        if (elapsed > 100)
+                        {
+                            Debug.Log($"[WXPCHPInitScript] IsChannelReady=true (等待 {elapsed:F0}ms 后就绪)");
+                        }
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // dll 异常时不阻塞后续逻辑，立即返回 false 让上层 fallback
+                    Debug.LogWarning($"[WXPCHPInitScript] IsChannelReady 调用异常: {e.Message}");
+                    return false;
+                }
+                System.Threading.Thread.Sleep(100);
+            }
+            return false;
+        }
         /// <summary>
         /// 把 (eventName, jsonStr) 包成与 AHP 对齐的下行协议 { eventName, data }。
         /// AHP 底层 Java WVAAppSDKProvider.sendAppEvent(eventName, jsonStr) 是双参数；
