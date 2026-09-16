@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.40";
-        public const string PCHP_BUILD_DATE = "2026-09-15";
+        public const string PCHP_VERSION = "0.1.41";
+        public const string PCHP_BUILD_DATE = "2026-09-16 (SendAppEventSync 优先路径超时 5s→15s + 回包往返耗时/迟到告警)";
 
         #region DLL Imports
 
@@ -298,6 +298,10 @@ namespace WeChatWASM
     private volatile string _pendingSyncResponse;
     /// <summary>SendAppEventSync 伪同步是否完成</summary>
     private volatile bool _syncResponseCompleted;
+    /// <summary>SendAppEventSync 请求发出时刻（UTC），用于回包到达时计算往返耗时</summary>
+    private DateTime _syncRequestStartTime;
+    /// <summary>是否有等待中的 SendAppEventSync（超时返回后置 false；用于识别迟到回包）</summary>
+    private volatile bool _syncCallActive;
 
     /// <summary>
     /// 首次 SendAppEventSync 是否已完成（成功或重试成功后置 true）。
@@ -1314,12 +1318,16 @@ namespace WeChatWASM
             // 等浏览器侧 PchpManager::ConnectPchp 真正 bind 后批量 flush（实测 ~10s）。
             // 轮询 IsChannelReady 等 host_remote bind 完成，再调 SendAppEventSync，
             // 几毫秒就能拿到 syncResponse，不会卡在 Mojo 队列里。
+            // ⚠️ 但 IsChannelReady 只验证 exe 侧通道就绪，不覆盖浏览器侧 ConnectPchp bind
+            // 延迟——实测（issue 斗地主 2026-09-15 日志）：IsChannelReady 秒过，回包仍 5.02s 才到
+            // （冷启动 Mojo flush 窗口）。超时必须覆盖 ~10s 窗口，与 fallback 总预算 15s 对齐。
             if (IsChannelReadyAvailable())
             {
                 if (WaitForChannelReady(15000))
                 {
-                    // 通道就绪，单次 5s 足够（消息立即送达几毫秒拿响应）
-                    return SendAppEventSyncInternal(eventName, jsonStr, 5000);
+                    // 单次 15s：覆盖冷启动 Mojo flush 窗口（~10s）+ 余量。
+                    // 实测样本：2026-09-15 斗地主 getDeviceInfo 回包往返 5020ms（旧值 5000ms 超时差 20ms 失败）。
+                    return SendAppEventSyncInternal(eventName, jsonStr, 15000);
                 }
                 Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 等待通道就绪超时(15s): {eventName}");
                 return "";
@@ -1372,10 +1380,12 @@ namespace WeChatWASM
             // 异步发（走 SendMsgAsync，不阻塞 IPC 线程，不死锁）
             _syncResponseCompleted = false;
             _pendingSyncResponse = null;
+            _syncRequestStartTime = DateTime.UtcNow;
+            _syncCallActive = true;
             SendAppEvent(eventName, jsonStr);
 
             // 阻塞等 syncResponse 回包（HandleAsyncMessage 在 IPC 线程入队，调用线程轮询取）
-            var startTime = DateTime.UtcNow;
+            var startTime = _syncRequestStartTime;
             while (!_syncResponseCompleted && (DateTime.UtcNow - startTime).TotalMilliseconds < timeoutMs)
             {
                 if (_messageQueue.TryDequeue(out var messageJson))
@@ -1399,6 +1409,9 @@ namespace WeChatWASM
             {
                 Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时({timeoutMs}ms): {eventName}");
             }
+
+            // 标记本次调用结束（迟到的 syncResponse 到达时会打 LATE 告警）
+            _syncCallActive = false;
 
             return _pendingSyncResponse ?? "";
         }
@@ -1808,7 +1821,16 @@ namespace WeChatWASM
                     {
                         _pendingSyncResponse = hostData;
                         _syncResponseCompleted = true;
-                        Debug.Log($"[WXPCHPInitScript] ← syncResponse received, unlocking SendAppEventSync: len={hostData?.Length ?? 0}");
+                        // 往返耗时 + 迟到回包告警（迟到 = 调用方已超时返回，结果被丢弃）
+                        double elapsedMs = (DateTime.UtcNow - _syncRequestStartTime).TotalMilliseconds;
+                        if (_syncCallActive)
+                        {
+                            Debug.Log($"[WXPCHPInitScript] ← syncResponse received, unlocking SendAppEventSync: len={hostData?.Length ?? 0}, roundTrip={elapsedMs:F0}ms");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[WXPCHPInitScript] ← syncResponse LATE (调用方已超时返回，结果丢弃): len={hostData?.Length ?? 0}, roundTrip={elapsedMs:F0}ms —— 超时窗口不够，考虑加大 timeoutMs");
+                        }
                         return;
                     }
 
