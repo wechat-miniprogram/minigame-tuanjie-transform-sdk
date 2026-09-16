@@ -1486,22 +1486,6 @@ namespace WeChatWASM
             if (!_syncResponseCompleted)
             {
                 Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 超时({timeoutMs}ms): {eventName}");
-
-                // ★ GetDeviceInfo 超时本地兜底（业务依赖 platform 字段，超时返回空导致崩溃）
-                //   病根：host_remote_not_bound 时消息进 Mojo pending 队列，等 browser 侧 ConnectPchp
-                //   bind 完成才 flush。bind 延迟实测 5-16s 不可预测，C# 超时窗口覆盖不稳。
-                //   兜底：deviceInfo 字段大部分可从 Unity API 本地构造（CPUType/memorySize/platform 等），
-                //   业务拿到兜底数据可继续后续流程（isMiniGameIOS 等分支判断正常）。
-                //   ⚠️ SDKVersion/PCKernelVersion 是基础库版本号，C# 层独立拿不到真实值，
-                //   PCKernelVersion 从 WMPF_SDK_VERSION 环境变量解析（exe 启动时可用），
-                //   SDKVersion 暂用 null，业务侧容错。
-                if (jsonStr != null && jsonStr.Contains("GetDeviceInfo"))
-                {
-                    string fallback = BuildLocalDeviceInfo();
-                    Debug.LogWarning($"[WXPCHPInitScript] ★ GetDeviceInfo 本地兜底返回（host_remote 未 bind，使用本地构造）: {fallback}");
-                    _syncCallActive = false;
-                    return fallback;
-                }
             }
 
             // 标记本次调用结束（迟到的 syncResponse 到达时会打 LATE 告警）
@@ -1525,7 +1509,7 @@ namespace WeChatWASM
         /// 安全性：
         ///   - 用唯一 _preheatRequestId 标记预热请求,避免被误识别为当前 SendAppEventSync 调用回包
         ///   - SendAppEvent 是 fire-and-forget,主线程不阻塞
-        ///   - 即使预热失败/host 未就绪,不影响后续 SendAppEventSync 正常调用 + BuildLocalDeviceInfo 兜底
+        ///   - 即使预热失败/host 未就绪,不影响后续 SendAppEventSync 正常调用（超时返回空,跟改前一致）
         /// </summary>
         private void PreheatGetDeviceInfo()
         {
@@ -1543,96 +1527,14 @@ namespace WeChatWASM
             }
         }
 
-        /// <summary>
-        /// 构造本地兜底 deviceInfo（host_remote 未 bind 时返回，避免业务崩）。
-        ///
-        /// 字段来源（诚实标注，非全字段本地可取）：
-        ///   ✓ CPUType        — SystemInfo.processorType（Unity API 真实）
-        ///   ✓ memorySize     — SystemInfo.systemMemorySize（Unity API 真实，单位 MB）
-        ///   ✓ platform       — Application.platform（Unity API 真实，WindowsPlayer→windows / OSXPlayer→mac）
-        ///   ✓ statusBarHeight— 0（PC 无状态栏固定）
-        ///   ✓ deviceOrientation— "landscape"（PC HP 模式合理默认，竖屏游戏会偏差但极少见）
-        ///   ✓ benchmarkLevel — -1（PC 模式默认）
-        ///   ⚠ brand/model    — null（host 查 WMI 取厂商/型号，C# 不查 WMI，业务容错）
-        ///   ⚠ system         — BuildSystemString() 构造，格式对齐 host（"Windows 11 x64"）
-        ///   ⚠ PCKernelVersion— 从 WMPF_SDK_VERSION 环境变量解析（exe 启动时可用,实测 9-11/9-15 日志）
-        ///   ❌ SDKVersion     — null（基础库版本号,C# 独立拿不到真实值,业务容错）
-        /// </summary>
-        private static string BuildLocalDeviceInfo()
-        {
-            // 平台：PC HP 模式运行时已知
-            string platformStr;
-            string brandDefault;
-            if (Application.platform == RuntimePlatform.WindowsPlayer)
-            {
-                platformStr = "windows";
-                brandDefault = "microsoft";
-            }
-            else if (Application.platform == RuntimePlatform.OSXPlayer)
-            {
-                platformStr = "mac";
-                brandDefault = "apple";
-            }
-            else
-            {
-                platformStr = "dev";
-                brandDefault = null;
-            }
-
-            // PC 内核版本：从 WMPF_SDK_VERSION 环境变量解析
-            // 实测日志（9-11/9-15）exe 启动时此环境变量可用，值如 "2.5.7.25713"
-            string pcKernelVer = "2.5.7";
-            try
-            {
-                string wmpfVer = Environment.GetEnvironmentVariable("WMPF_SDK_VERSION");
-                if (!string.IsNullOrEmpty(wmpfVer))
-                {
-                    var parts = wmpfVer.Split('.');
-                    if (parts.Length >= 3)
-                        pcKernelVer = $"{parts[0]}.{parts[1]}.{parts[2]}";
-                }
-            }
-            catch { /* 环境变量读取失败，用默认值 */ }
-
-            var info = new System.Collections.Generic.Dictionary<string, object>
-            {
-                { "CPUType", SystemInfo.processorType },
-                { "benchmarkLevel", -1 },
-                { "brand", brandDefault },
-                { "deviceOrientation", "landscape" },
-                { "memorySize", SystemInfo.systemMemorySize },
-                { "model", brandDefault },
-                { "platform", platformStr },
-                { "system", BuildSystemString() },
-                { "statusBarHeight", 0 },
-                { "SDKVersion", null },          // 基础库版本号 C# 拿不到,业务容错
-                { "PCKernelVersion", pcKernelVer },
-            };
-
-            // 用 LitJson 序列化（项目已依赖,见 WXSDKManagerHandlerBase.cs 等）
-            var sb = new System.Text.StringBuilder();
-            JsonMapper.ToJson(info, new JsonWriter(sb));
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// 构造 system 字符串（对齐 host 返回格式："Windows 11 x64" / "Windows 10 x86"）
-        /// </summary>
-        private static string BuildSystemString()
-        {
-            try
-            {
-                var v = Environment.OSVersion.Version;
-                bool is64 = Environment.Is64BitOperatingSystem;
-                // Win11 = 10.0.22000+，Win10 = 10.0.10xxx 以下
-                string winVer = (v.Major == 10 && v.Build >= 22000) ? "Windows 11" : "Windows 10";
-                return $"{winVer} x{(is64 ? 64 : 86)}";
-            }
-            catch
-            {
-                return Environment.OSVersion.VersionString;
-            }
-        }
+        // 注：原 BuildLocalDeviceInfo / BuildSystemString 已移除
+        //   原因：单一接口兜底治标不治本——GetDeviceInfo 拿假数据了,但业务调 getLaunchOptionsSync /
+        //   getSystemSetting / 其他同步 API 撞同一 bind 窗口同样会超时崩。问题本质是 host_remote_not_bound
+        //   导致的 Mojo pending 队列阻塞,跟具体 API 无关。
+        //   保留通用方案：
+        //   1. Windows 消息泵（while 阻塞期间防 Windows 5s 未响应判定）
+        //   2. GetDeviceInfo 预热缓存（启动后立即发请求,真实数据早到,后续调用毫秒级返回）
+        //   3. 真正根治需要 DLL 层 IsChannelReady 真等 host_remote bind（待 pchp_sdk 维护方排期）
 
         /// <summary>
         /// 探测 dll 是否导出 IsChannelReady 函数。
