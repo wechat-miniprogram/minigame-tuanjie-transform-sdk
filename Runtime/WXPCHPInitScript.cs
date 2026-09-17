@@ -100,8 +100,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.41";
-        public const string PCHP_BUILD_DATE = "2026-09-16 (SendAppEventSync 优先路径超时 5s→15s + 回包往返耗时/迟到告警)";
+        public const string PCHP_VERSION = "0.1.42";
+        public const string PCHP_BUILD_DATE = "2026-09-17 (IsChannelReady 真等 host_remote bind - pchp_sdk 语义变更适配,WaitForChannelReady→30s,SyncInternal→5s)";
 
         #region DLL Imports
 
@@ -132,10 +132,18 @@ namespace WeChatWASM
         // SendMsgSync / FreeMsgData 已删除：Mojo 同步调用死锁，不可用（详见 issue #13020 §1.7）
         // 如需恢复，参考 README.md 同步通信章节 + 历史代码
 
-        // 查询 Mojo IPC 通道是否就绪（host_remote 是否已绑定）
-        // ToHostSendMsgAsync 不检查 host_remote_not_bound，消息直接进 Mojo 队列缓存，
-        // 等浏览器侧 PchpManager::ConnectPchp 真正 bind 后批量 flush（实测 ~10s）。
-        // 本接口让 C# 在调 SendAppEventSync 前轮询等就绪，避开 Mojo 队列缓存延迟。
+        // 查询 Mojo IPC 通道是否就绪（host_remote 是否已 bind）
+        //
+        // ★ pchp_sdk v0.1.x+ 语义变更（2026-09-17 适配）:
+        //   旧版语义:只验证 exe 侧通道就绪,不覆盖 browser 侧 ConnectPchp bind 延迟
+        //            → IsChannelReady 秒过,但 host_remote 没 bind → SendMsgAsync 消息进 pending 队列
+        //            → 撞 bind 窗口,实测 9-16 故障回包 15613ms 才到
+        //   新版语义:真正等 browser 侧 ConnectPchp 完成 host_remote bind 才返回 true
+        //            → WaitForChannelReady 返回 true 时 bind 已完成,SendMsgAsync 立即送达
+        //            → 业务调用毫秒级拿到回包,根治"撞 bind 窗口"问题
+        //
+        // ToHostSendMsgAsync 仍不检查 host_remote_not_bound（消息进 Mojo 队列缓存）,
+        // 但只要先走 WaitForChannelReady 等 IsChannelReady=true,就不会进 pending 队列。
         //
         // ⚠️ 优雅降级：dll 未导出此函数时 EntryPointNotFoundException 会被
         // _channelReadyProbe 尝试一次后捕获并置 _channelReadyAvailable=false，后续直接走 5 次重试 fallback。
@@ -1374,23 +1382,26 @@ namespace WeChatWASM
 
             Debug.Log($"[WXPCHPInitScript] SendAppEventSync (伪同步): {eventName}");
 
-            // 优先路径：dll 暴露 IsChannelReady 时，轮询等就绪 + 单次调用
-            // toHostSendMsgAsync 不检查 host_remote_not_bound，消息进 Mojo 队列缓存，
-            // 等浏览器侧 PchpManager::ConnectPchp 真正 bind 后批量 flush（实测 ~10s）。
-            // 轮询 IsChannelReady 等 host_remote bind 完成，再调 SendAppEventSync，
-            // 几毫秒就能拿到 syncResponse，不会卡在 Mojo 队列里。
-            // ⚠️ 但 IsChannelReady 只验证 exe 侧通道就绪，不覆盖浏览器侧 ConnectPchp bind
-            // 延迟——实测（issue 斗地主 2026-09-15 日志）：IsChannelReady 秒过，回包仍 5.02s 才到
-            // （冷启动 Mojo flush 窗口）。超时必须覆盖 ~10s 窗口，与 fallback 总预算 15s 对齐。
+            // 优先路径：dll 暴露 IsChannelReady 时，轮询等 host_remote bind 完成 + 单次调用
+            //
+            // ★ pchp_sdk v0.1.x+ 语义变更（2026-09-17 适配）:
+            //   旧版 IsChannelReady 只验证 exe 侧通道就绪 → 秒过 → SendMsgAsync 消息进 pending 队列
+            //   → 撞 host_remote bind 窗口 → 回包超时（实测 9-16 故障 15613ms）
+            //   新版 IsChannelReady 真等 browser 侧 ConnectPchp bind 完成 → WaitForChannelReady 返回 true 时
+            //   bind 已完成 → SendMsgAsync 立即送达 → 回包毫秒级
+            //
+            // 超时配置:
+            //   - WaitForChannelReady(30000):真等 bind 完成,覆盖冷启动最长 bind 窗口（实测 5-16s）+ 余量
+            //   - SendAppEventSyncInternal(5000):bind 完成后回包必毫秒级（实测 4-5ms）,5s 绰绰有余
+            //     若 5s 内未收到回包,说明 bind 状态判断有误或 Mojo 通道异常,无需继续阻塞
             if (IsChannelReadyAvailable())
             {
-                if (WaitForChannelReady(15000))
+                if (WaitForChannelReady(30000))
                 {
-                    // 单次 15s：覆盖冷启动 Mojo flush 窗口（~10s）+ 余量。
-                    // 实测样本：2026-09-15 斗地主 getDeviceInfo 回包往返 5020ms（旧值 5000ms 超时差 20ms 失败）。
-                    return SendAppEventSyncInternal(eventName, jsonStr, 15000);
+                    // bind 已完成,回包必毫秒级。5s 超时是兜底（异常情况下也尽快返回）
+                    return SendAppEventSyncInternal(eventName, jsonStr, 5000);
                 }
-                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 等待通道就绪超时(15s): {eventName}");
+                Debug.LogWarning($"[WXPCHPInitScript] SendAppEventSync 等待通道就绪超时(30s): {eventName}");
                 return "";
             }
 
@@ -1534,7 +1545,7 @@ namespace WeChatWASM
         //   保留通用方案：
         //   1. Windows 消息泵（while 阻塞期间防 Windows 5s 未响应判定）
         //   2. GetDeviceInfo 预热缓存（启动后立即发请求,真实数据早到,后续调用毫秒级返回）
-        //   3. 真正根治需要 DLL 层 IsChannelReady 真等 host_remote bind（待 pchp_sdk 维护方排期）
+        //   3. ✓ 已实现（pchp_sdk v0.1.x+ 2026-09-17 语义变更: IsChannelReady 真等 host_remote bind）
 
         /// <summary>
         /// 探测 dll 是否导出 IsChannelReady 函数。
@@ -1566,6 +1577,12 @@ namespace WeChatWASM
 
         /// <summary>
         /// 轮询等待 Mojo IPC 通道就绪（host_remote 已 bind）。
+        ///
+        /// ★ pchp_sdk v0.1.x+ 语义（2026-09-17 适配）:
+        ///   IsChannelReady() 真等 browser 侧 ConnectPchp 完成 host_remote bind 才返回 true。
+        ///   本方法轮询直到 bind 完成（返回 true）或超时（返回 false）。
+        ///   一旦返回 true,后续 SendAppEventSyncInternal 的回包必毫秒级（实测 4-5ms）。
+        ///
         /// 阻塞主线程，但每 100ms 让出（Thread.Sleep(100)），主线程卡顿分批不影响渲染。
         /// </summary>
         /// <param name="timeoutMs">最大等待时间（毫秒）</param>
