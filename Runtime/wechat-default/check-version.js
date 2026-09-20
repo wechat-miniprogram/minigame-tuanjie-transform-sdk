@@ -22,6 +22,7 @@ export const isPc = platform === 'windows' || platform === 'mac';
 export const isIOS = platform === 'ios';
 export const isAndroid = platform === 'android';
 export const isDevtools = platform === 'devtools';
+export const isHarmony = platform === 'ohos';
 export const isMobile = !isPc && !isDevtools;
 export const isDevelop = envVersion === 'develop';
 // 是否禁止**开通了高性能模式**的小游戏在不支持的iOS设备上回退成普通模式，回退可能导致无法正常体验游戏
@@ -79,7 +80,7 @@ const isMobileInvalid = isMobile && !isLibVersionValid;
 // 基础库/客户端不支持iOS高性能模式
 const isIOSH5Invalid = (isH5Renderer && !isH5LibVersionValid) || (!isH5Renderer && disableHighPerformanceFallback);
 // 是否支持VideoPlayer组件，注意：开发者工具需要1.06.2310312以上版本
-export const isSupportVideoPlayer = (isIOS && compareVersion(SDKVersion, '3.1.1')) || (isAndroid && compareVersion(SDKVersion, '3.0.0')) || ((isPc || isDevtools) && compareVersion(SDKVersion, '3.2.1'));
+export const isSupportVideoPlayer = (isIOS && compareVersion(SDKVersion, '3.1.1')) || (isAndroid && compareVersion(SDKVersion, '3.0.0')) || ((isPc || isDevtools) && compareVersion(SDKVersion, '3.2.1')) || (isHarmony && compareVersion(version, '8.0.16'));
 // 视情况添加，没用到对应能力就不需要判断
 // 是否支持webgl2
 const isWebgl2SystemVersionInvalid = () => isWebgl2() && ((!isIOSWebgl2SystemVersionValid && isIOS) || (isAndroid && !isAndroidWebGL2ClientVersionValid));
