@@ -55,7 +55,7 @@ namespace WeChatWASM
             if (go == null)
             {
                 go = new GameObject(CallbackGameObjectName);
-                Object.DontDestroyOnLoad(go);
+                UnityEngine.Object.DontDestroyOnLoad(go);
             }
             if (go.GetComponent<WXWebGPUFrameCaptureReceiver>() == null)
             {
