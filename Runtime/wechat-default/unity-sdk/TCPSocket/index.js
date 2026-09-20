@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { formatJsonStr, uid, onEventCallback, offEventCallback, getListObject, convertInfoToPointer, formatResponse, convertDataToPointer, heapBufferSlice } from '../utils';
+import { formatJsonStr, uid, onEventCallback, offEventCallback, getListObject, convertInfoToPointer, formatResponse, convertDataToPointer } from '../utils';
 const TCPSocketList = {};
 const wxTCPSocketBindWifiList = {};
 const wxTCPSocketCloseList = {};
@@ -48,7 +48,7 @@ function WX_TCPSocketWriteBuffer(id, dataPtr, dataLength) {
     if (!obj) {
         return;
     }
-    obj.write(heapBufferSlice(GameGlobal.Module.HEAPU8, dataPtr, dataLength));
+    obj.write(GameGlobal.Module.HEAPU8.buffer.slice(dataPtr, dataPtr + dataLength));
 }
 function WX_TCPSocketOffBindWifi(id) {
     const obj = getTCPSocketObject(id);

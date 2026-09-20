@@ -1074,6 +1074,11 @@ mergeInto(LibraryManager.library, {
         stringToUTF8(returnStr, buffer, bufferSize);
         return buffer;
     },
+    WX_CaptureWebGPUFrame: function(gameObjectName, methodName, timeoutMs) {
+        if (window.WXWASMSDK && window.WXWASMSDK.WX_CaptureWebGPUFrame) {
+            window.WXWASMSDK.WX_CaptureWebGPUFrame(_WXPointer_stringify_adaptor(gameObjectName), _WXPointer_stringify_adaptor(methodName), timeoutMs);
+        }
+    },
     WX_SetPreferredFramesPerSecond: function(fps) {
         window.WXWASMSDK.WX_SetPreferredFramesPerSecond(fps);
     }

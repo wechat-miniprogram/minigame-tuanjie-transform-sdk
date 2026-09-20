@@ -5,7 +5,7 @@ import { isAndroid, isPc, webAudioNeedResume, isSupportBufferURL, isSupportPlayB
 import { WEBAudio, unityAudioVolume } from './store';
 import { TEMP_DIR_PATH } from './const';
 import { createInnerAudio, destroyInnerAudio, printErrMsg, resumeWebAudio } from './utils';
-import { debugLog, heapBufferSlice } from '../utils';
+import { debugLog } from '../utils';
 
 const defaultSoundLength = 441000;
 
@@ -974,7 +974,7 @@ export default {
         if (!WEBAudio.audioContext || WEBAudio.audioWebEnabled === 0) {
             return 0;
         }
-        const audioData = heapBufferSlice(GameGlobal.unityNamespace.Module.HEAPU8, ptr, length);
+        const audioData = GameGlobal.unityNamespace.Module.HEAPU8.buffer.slice(ptr, ptr + length);
         
         if (length > 131072) {
             decompress = 0;
@@ -1050,7 +1050,7 @@ export default {
         if (WEBAudio.audioWebSupport === 0 || WEBAudio.audioWebEnabled === 0) {
             return;
         }
-        if (WEBAudio.audioContext && WEBAudio.audioContext.state !== 'suspended' && WEBAudio.audioContext.state !== 'interrupted') {
+        if (WEBAudio.audioContext && WEBAudio.audioContext.state !== 'suspended') {
             return;
         }
         resumeWebAudio();

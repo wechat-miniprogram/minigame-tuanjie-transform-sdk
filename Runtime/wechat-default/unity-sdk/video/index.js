@@ -112,14 +112,6 @@ function _JS_Video_Create(url) {
         };
         // eslint-disable-next-line no-plusplus
         videoInstances[++videoInstanceIdCounter] = videoInstance;
-        // @ts-ignore
-        const needMediaAudioPlayer = !videoDecoder.avSync && typeof wx.createMediaAudioPlayer === 'function';
-        let mediaAudioPlayer = null;
-        let _audioLoopCount = 0;
-        if (needMediaAudioPlayer) {
-            // @ts-ignore
-            mediaAudioPlayer = wx.createMediaAudioPlayer();
-        }
         
         videoDecoder.remove();
         videoDecoder.on('start', (res) => {
@@ -137,42 +129,11 @@ function _JS_Video_Create(url) {
             else {
                 videoInstance.paused = false;
                 videoInstance.stoped = false;
-                if (mediaAudioPlayer && !videoInstance._audioStarted) {
-                    const isLoopRestart = _audioLoopCount > 0;
-                    _audioLoopCount++;
-                    (async () => {
-                        try {
-                            
-                            if (isLoopRestart) {
-                                await new Promise(resolve => setTimeout(resolve, 50));
-                            }
-                            await mediaAudioPlayer.start();
-                            await mediaAudioPlayer.addAudioSource(videoDecoder);
-                            videoInstance._audioStarted = true;
-                            
-                            mediaAudioPlayer.volume = videoInstance.muted ? 0 : (videoInstance.volume ?? 1);
-                        }
-                        catch (e) {
-                            console.error('MediaAudioPlayer启动失败:', e);
-                        }
-                    })();
-                }
-                
-                if (videoInstance._pendingOnReady) {
-                    const { onready, ref } = videoInstance._pendingOnReady;
-                    videoInstance._pendingOnReady = null;
-                    dynCall_vi(onready, ref);
-                }
             }
         });
         videoDecoder.on('stop', (res) => {
             debugLog('wxVideoDecoder stop:', res);
             videoInstance.stoped = true;
-            
-            if (videoInstance._pendingLoopRestart) {
-                videoInstance._pendingLoopRestart = false;
-                videoDecoder.start(startOption);
-            }
         });
         videoDecoder.on('bufferchange', (res) => {
             debugLog('wxVideoDecoder bufferchange:', res);
@@ -180,24 +141,7 @@ function _JS_Video_Create(url) {
         videoDecoder.on('ended', (res) => {
             debugLog('wxVideoDecoder ended:', res);
             if (videoInstance.loop) {
-                // @ts-ignore
-                if (videoDecoder.avSync) {
-                    videoInstance.seek(0);
-                }
-                else {
-                    if (mediaAudioPlayer && videoInstance._audioStarted) {
-                        try {
-                            mediaAudioPlayer.removeAudioSource(videoDecoder);
-                            mediaAudioPlayer.stop();
-                        }
-                        catch (e) {  }
-                        videoInstance._audioStarted = false;
-                    }
-                    
-                    videoInstance._pendingLoopRestart = true;
-                    videoDecoder.stop();
-                    videoInstance.stoped = true;
-                }
+                videoInstance.seek(0);
             }
             else {
                 videoInstance.ended = true;
@@ -214,8 +158,6 @@ function _JS_Video_Create(url) {
                 videoInstance.frameData?.close?.();
             }
             videoInstance.frameData = res;
-            
-            videoInstance._hasFrameEvent = true;
         });
         const startOption = {
             source,
@@ -241,39 +183,11 @@ function _JS_Video_Create(url) {
         };
         videoInstance.seek = (time) => {
             // @ts-ignore
-            if (videoDecoder.avSync && videoDecoder.emitter) {
-                try {
-                    // @ts-ignore
-                    videoDecoder.avSync.seek({ stamp: time });
-                    videoInstance.seeking = true;
-                    videoDecoder.emitter.emit('seek', {});
-                }
-                catch (e) {
-                    // @ts-ignore
-                    videoDecoder.seek(time);
-                    videoInstance.seeking = true;
-                }
-            }
-            else {
-                // @ts-ignore
-                videoDecoder.seek(time);
-                videoInstance.seeking = true;
-            }
+            videoDecoder.avSync.seek({ stamp: time });
+            videoInstance.seeking = true;
+            videoDecoder.emitter.emit('seek', {});
         };
-        
-        videoInstance.mediaAudioPlayer = mediaAudioPlayer;
         videoInstance.destroy = () => {
-            if (mediaAudioPlayer) {
-                try {
-                    mediaAudioPlayer.removeAudioSource(videoDecoder);
-                    mediaAudioPlayer.stop();
-                    mediaAudioPlayer.destroy();
-                }
-                catch (e) {  }
-                mediaAudioPlayer = null;
-                videoInstance.mediaAudioPlayer = null;
-                videoInstance._audioStarted = false;
-            }
             if (needCache) {
                 videoDecoder.stop();
                 cacheVideoDecoder.push(videoDecoder);
@@ -426,19 +340,7 @@ function jsVideoAllAudioTracksAreDisabled(v) {
 function _JS_Video_Play(video, muted) {
     debugLog('_JS_Video_Play', video, muted);
     const v = videoInstances[video];
-    const shouldMute = muted || jsVideoAllAudioTracksAreDisabled(v);
-    v.muted = shouldMute;
-    
-    if (!isWebVideo) {
-        const decoder = v.videoDecoder;
-        if (decoder && decoder.mute) {
-            decoder.mute(shouldMute);
-        }
-    }
-    
-    if (v.mediaAudioPlayer) {
-        v.mediaAudioPlayer.volume = shouldMute ? 0 : (v.volume ?? 1);
-    }
+    v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
     v.play();
     _JS_Video_SetLoop(video, v.loop);
 }
@@ -465,19 +367,7 @@ function _JS_Video_SetErrorHandler(video, ref, onerror) {
 function _JS_Video_SetMute(video, muted) {
     debugLog('_JS_Video_SetMute', video, muted);
     const v = videoInstances[video];
-    const shouldMute = muted || jsVideoAllAudioTracksAreDisabled(v);
-    v.muted = shouldMute;
-    
-    if (!isWebVideo) {
-        const decoder = v.videoDecoder;
-        if (decoder && decoder.mute) {
-            decoder.mute(shouldMute);
-        }
-    }
-    
-    if (v.mediaAudioPlayer) {
-        v.mediaAudioPlayer.volume = shouldMute ? 0 : (v.volume ?? 1);
-    }
+    v.muted = muted || jsVideoAllAudioTracksAreDisabled(v);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_Video_SetPlaybackRate(video, rate) {
@@ -500,25 +390,12 @@ function _JS_Video_SetReadyHandler(video, ref, onready) {
         });
     }
     else {
-        const vi = v;
-        
-        if (vi.isReady) {
-            if (!vi.stoped) {
-                
-                dynCall_vi(onready, ref);
-            }
-            else {
-                
-                vi._pendingOnReady = { onready, ref };
-            }
-            return;
-        }
         const fn = () => {
             console.log('_JS_Video_SetReadyHandler onCanPlay');
             dynCall_vi(onready, ref);
-            vi.videoDecoder?.off('bufferchange', fn);
+            v.videoDecoder?.off('bufferchange', fn);
         };
-        vi.videoDecoder?.on('bufferchange', fn);
+        v.videoDecoder?.on('bufferchange', fn);
     }
 }
 function _JS_Video_SetSeekedOnceHandler(video, ref, onseeked) {
@@ -537,19 +414,7 @@ function _JS_Video_SetSeekedOnceHandler(video, ref, onseeked) {
 }
 function _JS_Video_SetVolume(video, volume) {
     debugLog('_JS_Video_SetVolume');
-    const v = videoInstances[video];
-    v.volume = volume;
-    
-    if (!isWebVideo) {
-        const decoder = v.videoDecoder;
-        if (decoder && decoder.player) {
-            decoder.player.volume = volume;
-        }
-    }
-    
-    if (v.mediaAudioPlayer && !v.muted) {
-        v.mediaAudioPlayer.volume = volume;
-    }
+    videoInstances[video].volume = volume;
 }
 function _JS_Video_Time(video) {
     return videoInstances[video].currentTime;
@@ -559,20 +424,6 @@ function _JS_Video_UpdateToTexture(video, tex) {
     const v = videoInstances[video];
     if (!(v.videoWidth > 0 && v.videoHeight > 0)) {
         return false;
-    }
-    if (!isWebVideo && !v._hasFrameEvent && v.videoDecoder && !v.stoped) {
-        const fd = v.videoDecoder?.getFrameData?.();
-        if (fd && fd.data) {
-            if (supportVideoFrame || GameGlobal.mtl) {
-                v.frameData?.close?.();
-            }
-            const ts = (fd.pkPts !== undefined) ? fd.pkPts : fd.pts;
-            v.frameData = fd;
-            v.currentTime = (ts || 0) / 1000;
-        }
-        else if (!v.frameData) {
-            return false;
-        }
     }
     if (v.lastUpdateTextureTime === v.currentTime) {
         return false;

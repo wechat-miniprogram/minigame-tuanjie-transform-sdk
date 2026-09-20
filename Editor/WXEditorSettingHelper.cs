@@ -77,7 +77,7 @@ namespace WeChatWASM
         public Texture tex;
         public void OnSettingsGUI(EditorWindow window)
         {
-            PluginUpdateManager.CheckUpdateOnce();
+            // PluginUpdateManager.CheckUpdateOnce();
             scrollRoot = EditorGUILayout.BeginScrollView(scrollRoot);
 
             GUIStyle linkStyle = GetLinkStyle();
@@ -390,7 +390,7 @@ namespace WeChatWASM
             this.formCheckbox("webgl2", "WebGL2.0");
             this.formCheckbox("iOSPerformancePlus", "iOSPerformancePlus(?)", "是否使用iOS高性能+渲染方案，有助于提升渲染兼容性、降低WebContent进程内存");
             this.formCheckbox("EmscriptenGLX", "EmscriptenGLX(?)", "是否使用EmscriptenGLX渲染方案");
-            this.formCheckbox("iOSMetal", "iOSMetal(?)", "使用iOSMetal渲染，需开启iOS高性能+模式，降低功耗、提升性能，仅支持团结引擎，不支持Unity，有引擎源码可自行适配");
+            this.formCheckbox("iOSMetal", "iOSMetal(?)", "是否使用iOSMetal渲染方案，需要开启iOS高性能+模式，有助于提升运行性能，降低iOS功耗");
             this.formCheckbox("deleteStreamingAssets", "Clear Streaming Assets");
             this.formCheckbox("cleanBuild", "Clean WebGL Build");
             // this.formCheckbox("cleanCloudDev", "Clean Cloud Dev");
@@ -405,6 +405,7 @@ namespace WeChatWASM
             this.formCheckbox("enableProfileStats", "显示性能面板");
             this.formCheckbox("enableRenderAnalysis", "显示渲染日志(dev only)");
             this.formCheckbox("brotliMT", "brotli多线程压缩(?)", "开启多线程压缩可以提高出包速度，但会降低压缩率。如若不使用wasm代码分包请勿用多线程出包上线");
+            this.formCheckbox("webgpuDebugLibs", "WebGPU Debug 库(?)", "链接微信 WebGPU SDK 的 -debug 静态库：对象会带 label，validation error 更易定位。有额外开销，上线前请关闭", false, null, WXWebGPUDebugLibs.Set);
 #if UNITY_6000_0_OR_NEWER
             this.formCheckbox("enableWasm2023", "WebAssembly 2023(?)", "WebAssembly 2023包括对WebAssembly.Table和BigInt的支持。（Android (Android 10 or later recommended), iOS (iOS 15 or later recommended)）");
 #endif
@@ -459,9 +460,6 @@ namespace WeChatWASM
             if (GUILayout.Button(new GUIContent("WebGL转小游戏(不常用)"), GUILayout.Width(150), GUILayout.Height(25)))
             {
                 this.saveData();
-#if TUANJIE_1_9_OR_NEWER
-                WXConvertCore.RefreshEnableRenderThread();
-#endif
                 if (WXConvertCore.DoExport(false) == WXConvertCore.WXExportError.SUCCEED)
                 {
                     window.ShowNotification(new GUIContent("转换完成"));
@@ -473,9 +471,6 @@ namespace WeChatWASM
             if (GUILayout.Button(new GUIContent("生成并转换"), GUILayout.Width(100), GUILayout.Height(25)))
             {
                 this.saveData();
-#if TUANJIE_1_9_OR_NEWER
-                WXConvertCore.RefreshEnableRenderThread();
-#endif
                 if (WXConvertCore.DoExport() == WXConvertCore.WXExportError.SUCCEED)
                 {
                     if (!WXConvertCore.IsInstantGameAutoStreaming())
@@ -689,16 +684,12 @@ namespace WeChatWASM
             this.setData("iOSMetal", CompileOptions.enableiOSMetal);
             this.setData("EmscriptenGLX", CompileOptions.enableEmscriptenGLX);
             this.setData("fbslim", CompileOptions.fbslim);
-#if !TUANJIE_1_9_OR_NEWER
-            // #if TUANJIE_2022_3_OR_NEWER
-            this.setData("enableRenderThread", CompileOptions.enableRenderThread);
-            // #endif
-#endif
             this.setData("autoAdaptScreen", CompileOptions.autoAdaptScreen);
             this.setData("showMonitorSuggestModal", CompileOptions.showMonitorSuggestModal);
             this.setData("enableProfileStats", CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", CompileOptions.brotliMT);
+            this.setData("webgpuDebugLibs", WXWebGPUDebugLibs.Enabled); // 状态存在 .a 的 meta 里，不进 config
 #if UNITY_6000_0_OR_NEWER
             this.setData("enableWasm2023", CompileOptions.enableWasm2023);
 #endif      
@@ -821,11 +812,6 @@ namespace WeChatWASM
             CompileOptions.enableiOSMetal = this.getDataCheckbox("iOSMetal");
             CompileOptions.enableEmscriptenGLX = this.getDataCheckbox("EmscriptenGLX");
             CompileOptions.fbslim = this.getDataCheckbox("fbslim");
-#if !TUANJIE_1_9_OR_NEWER
-            // #if TUANJIE_2022_3_OR_NEWER
-            CompileOptions.enableRenderThread = this.getDataCheckbox("enableRenderThread");
-            // #endif
-#endif
 
             CompileOptions.autoAdaptScreen = this.getDataCheckbox("autoAdaptScreen");
             CompileOptions.showMonitorSuggestModal = this.getDataCheckbox("showMonitorSuggestModal");

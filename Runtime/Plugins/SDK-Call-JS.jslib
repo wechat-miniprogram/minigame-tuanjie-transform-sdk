@@ -115,20 +115,6 @@ WX_SyncFunction_tnn: function(functionName, returnType, param1, param2){
     stringToUTF8((res || ''), buffer, bufferSize);
     return buffer;
 },
-WX_SyncFunction_tnnt: function(functionName, returnType, param1, param2, param3, length){
-    var arr = [];
-    if (param3 && length > 0) {
-        var i32 = param3 >> 2;
-        for (var i = 0; i < length; i++) {
-            arr.push(HEAP32[i32 + i]);
-        }
-    }
-    var res = window.WXWASMSDK.WX_SyncFunction_tnnt(_WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(returnType), param1, param2, arr);
-    var bufferSize = lengthBytesUTF8(res || '') + 1;
-    var buffer = _malloc(bufferSize);
-    stringToUTF8((res || ''), buffer, bufferSize);
-    return buffer;
-},
 WX_ClassConstructor:function(functionName, returnType, successType, failType, completeType, conf) {
     var res = window.WXWASMSDK.WX_ClassConstructor(_WXPointer_stringify_adaptor(functionName), _WXPointer_stringify_adaptor(returnType), _WXPointer_stringify_adaptor(successType), _WXPointer_stringify_adaptor(failType), _WXPointer_stringify_adaptor(completeType), _WXPointer_stringify_adaptor(conf));
     var bufferSize = lengthBytesUTF8(res || '') + 1;

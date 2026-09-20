@@ -30,16 +30,7 @@ namespace WeChatWASM
             bool result = true;
             if (!string.IsNullOrEmpty(buildProfile.buildPath))
             {
-                if (WXSettingsHelper.IsAbsolutePath(buildProfile.buildPath))
-                {
-                    this.ProjectConf.DST = buildProfile.buildPath;
-                    this.ProjectConf.relativeDST = Path.GetRelativePath(Path.GetFullPath(Application.dataPath + "/../"), buildProfile.buildPath);
-                }
-                else
-                {
-                    this.ProjectConf.DST = Path.Combine(Path.GetFullPath(Application.dataPath + "/../"), buildProfile.buildPath);
-                    this.ProjectConf.relativeDST = buildProfile.buildPath;
-                }
+                this.ProjectConf.DST = buildProfile.buildPath;
             }
             else
             {

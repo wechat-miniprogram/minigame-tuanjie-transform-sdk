@@ -2,6 +2,32 @@ import moduleHelper from './module-helper';
 import { launchEventType } from '../plugin-config';
 import { setArrayBuffer, uid } from './utils';
 import '../events';
+
+function getWebGPUCaptureFrame() {
+    const targetCanvas = canvas
+        || (typeof GameGlobal !== 'undefined' && GameGlobal.canvas)
+        || (typeof window !== 'undefined' && window.canvas);
+    if (!targetCanvas) {
+        return null;
+    }
+    
+    const el = targetCanvas.offscreenCanvas || targetCanvas;
+    let ctx = null;
+    try {
+        ctx = el.getContext('webgpu');
+    }
+    catch (e) {
+        return null;
+    }
+    if (!ctx) {
+        return null;
+    }
+    const api = ctx.webgpu || ctx;
+    if (!api || typeof api.captureFrame !== 'function') {
+        return null;
+    }
+    return api.captureFrame.bind(api);
+}
 export default {
     WXReportGameStart() {
         GameGlobal.manager.reportCustomLaunchInfo();
@@ -178,5 +204,33 @@ export default {
         if (GameGlobal.manager && GameGlobal.manager.fs.setSyncReadCacheEnabled) {
             GameGlobal.manager.fs.setSyncReadCacheEnabled(!!enabled);
         }
+    },
+        WX_CaptureWebGPUFrame(gameObjectName, methodName, timeoutMs) {
+        const send = (path) => {
+            if (!gameObjectName || !methodName) {
+                return;
+            }
+            const sendMessage = GameGlobal.Module && GameGlobal.Module.SendMessage;
+            if (sendMessage) {
+                sendMessage(gameObjectName, methodName, path || '');
+            }
+        };
+        const captureFrame = getWebGPUCaptureFrame();
+        if (!captureFrame) {
+            console.warn('[WX WebGPU] CaptureWebGPUFrame 不可用：当前不存在可用的 WebGPU 上下文');
+            send('');
+            return Promise.resolve('');
+        }
+        return Promise.resolve()
+            .then(() => captureFrame(timeoutMs && timeoutMs > 0 ? timeoutMs : undefined))
+            .then((path) => {
+            send(path);
+            return path || '';
+        })
+            .catch((err) => {
+            console.warn('[WX WebGPU] CaptureWebGPUFrame 失败:', err);
+            send('');
+            return '';
+        });
     }
 };
