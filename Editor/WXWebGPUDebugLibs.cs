@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,9 +45,31 @@ namespace WeChatWASM
                 UnityEngine.Debug.LogError("[WX WebGPU] 找不到 " + path);
                 return;
             }
-            importer.SetCompatibleWithPlatform(BuildTarget.WeixinMiniGame, enabled);
-            importer.SetExcludeFromAnyPlatform(BuildTarget.WeixinMiniGame, !enabled);
-            importer.SaveAndReimport();
+
+            // WeixinMiniGame 是虚拟构建 target，PluginImporter.SetCompatibleWithPlatform +
+            // SaveAndReimport 的改动不会持久化，读回 Enabled 仍是旧值（表现为面板勾选立即被重置）。
+            // 与 WXConvertCore.SetPluginCompatibilityByModifyingMetadataFile 一致：
+            // 直接改写 .meta 里 WeixinMiniGame 段的 enabled 标志，再 ForceUpdate 重导入。
+            try
+            {
+                string metaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
+                string metaContent = File.ReadAllText(metaPath);
+                int tagIdx = metaContent.IndexOf("WeixinMiniGame: WeixinMiniGame");
+                int enabledIdx = tagIdx >= 0 ? metaContent.IndexOf("enabled: ", tagIdx) : -1;
+                if (enabledIdx < 0)
+                {
+                    UnityEngine.Debug.LogError("[WX WebGPU] " + metaPath + " 中找不到 WeixinMiniGame enabled 标志");
+                    return;
+                }
+                enabledIdx += "enabled: ".Length;
+                metaContent = metaContent.Remove(enabledIdx, 1).Insert(enabledIdx, enabled ? "1" : "0");
+                File.WriteAllText(metaPath, metaContent);
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            }
+            catch (System.Exception ex)
+            {
+                UnityEngine.Debug.LogError("[WX WebGPU] 切换 " + path + " 失败: " + ex.Message);
+            }
         }
     }
 }

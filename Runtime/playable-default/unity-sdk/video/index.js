@@ -3,15 +3,18 @@
 import { isH5Renderer, isSupportVideoPlayer, isPc, isDevtools } from '../../check-version';
 import { debugLog } from '../utils';
 let FrameworkData = null;
-
+// 高性能+模式下用 video 会崩
 const isWebVideo = (isH5Renderer && !GameGlobal.isIOSHighPerformanceModePlus) || isPc || isDevtools;
 const needCache = true;
 const cacheVideoDecoder = [];
 const supportVideoFrame = !!GameGlobal.isIOSHighPerformanceModePlus;
 const videoInstances = {};
+/**
+ * 判断video是否可用，此函数为video组件第一个调用的函数
+ */
 function _JS_Video_CanPlayFormat(format, data) {
-    
-    
+    // TODO 判断是否是支持的类型
+    // console.log(data.UTF8ToString(format));
     FrameworkData = data;
     return !!isSupportVideoPlayer;
 }
@@ -71,7 +74,7 @@ function _JS_Video_Create(url) {
         };
         // eslint-disable-next-line no-plusplus
         videoInstances[++videoInstanceIdCounter] = videoInstance;
-        
+        // needCache 模式下 videoDecoder 是反复使用的，remove 会取消所有事件监听，如果不取消监听，反复播放视频的情况，下面的事件一直在监听，有内存泄露的风险
         videoDecoder.remove();
         videoDecoder.on('start', (res) => {
             debugLog('wxVideoDecoder start:', res);
@@ -108,9 +111,9 @@ function _JS_Video_Create(url) {
         videoDecoder.on('frame', (res) => {
             // @ts-ignore
             videoInstance.currentTime = res.pts / 1000;
-            
+            //
             if (supportVideoFrame) {
-                
+                // 先把之前的 Frame close 掉，触发客户端的析构，否则会有内存泄露问题
                 videoInstance.frameData?.close?.();
             }
             videoInstance.frameData = res;
@@ -184,7 +187,7 @@ function _JS_Video_Duration(video) {
 }
 function _JS_Video_EnableAudioTrack(video, trackIndex, enabled) {
     const v = videoInstances[video];
-    
+    // console.log('_JS_Video_EnableAudioTrack', v.enabledTracks);
     if (!v.enabledTracks) {
         v.enabledTracks = [];
     }
@@ -202,7 +205,7 @@ function _JS_Video_EnableAudioTrack(video, trackIndex, enabled) {
     }
 }
 function _JS_Video_GetAudioLanguageCode(video, trackIndex) {
-    
+    // console.log('_JS_Video_GetAudioLanguageCode');
     const tracks = videoInstances[video].audioTracks;
     if (!tracks) {
         return '';
@@ -250,7 +253,7 @@ function _JS_Video_SetLoop(video, loop = false) {
     }
     v.loop = loop;
     if (loop) {
-        
+        // 判断当前时间是否小于缓存时间，如果是的话，说明循环播放了，通知到Unity
         v.loopEndPollInterval = setInterval(() => {
             if (typeof v.currentTime !== 'undefined' && typeof v.lastSeenPlaybackTime !== 'undefined') {
                 const cur = Math.floor(v.currentTime);
@@ -320,15 +323,15 @@ function _JS_Video_SetMute(video, muted) {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_Video_SetPlaybackRate(video, rate) {
-    
-    
-    
-    
-    
-    
+    // if (isDebug) {
+    //   console.log('_JS_Video_SetPlaybackRate', video, rate);
+    // }
+    // if (rate !== 1) {
+    //   console.error('暂不支持设置playbackRate');
+    // }
     return;
-    
-    
+    // 2022Unity版本有bug，安卓客户端版本也有bug
+    // videoInstances[video].playbackRate = rate;
 }
 function _JS_Video_SetReadyHandler(video, ref, onready) {
     debugLog('_JS_Video_SetReadyHandler', video, ref, onready);
@@ -369,7 +372,7 @@ function _JS_Video_Time(video) {
     return videoInstances[video].currentTime;
 }
 function _JS_Video_UpdateToTexture(video, tex) {
-    
+    // console.log('_JS_Video_UpdateToTexture', video, tex);
     const v = videoInstances[video];
     if (!(v.videoWidth > 0 && v.videoHeight > 0)) {
         return false;
@@ -384,7 +387,7 @@ function _JS_Video_UpdateToTexture(video, tex) {
     const Module = GameGlobal.manager.gameInstance.Module;
     const { GL, GLctx } = FrameworkData;
     const gl = GL.currentContext.GLctx;
-    
+    // emscriptenGLX begin
     if (!isWebVideo && Module._glxVideoUpdateToTexture && gl.emscriptenGLX) {
         const data = v.frameData?.data;
         const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
@@ -399,14 +402,14 @@ function _JS_Video_UpdateToTexture(video, tex) {
                 Module.HEAPU8.set(source, sourceIdOrPtr);
             }
         }
-        
+        // console.warn("_glxVideoUpdateToTexture ", video, supportVideoFrame, sourceIdOrPtr);
         Module._glxVideoUpdateToTexture(v, supportVideoFrame, tex, v.videoWidth, v.videoHeight, sourceIdOrPtr);
         return true;
     }
-    
+    // emscriptenGLX end
     GLctx.pixelStorei(GLctx.UNPACK_FLIP_Y_WEBGL, true);
-    
-    
+    //   const internalFormat = adjustToLinearspace ? hasSRGBATextures ? GLctx.SRGB8_ALPHA8 : GLctx.SRGB8 : GLctx.RGBA;
+    //   const format = adjustToLinearspace ? hasSRGBATextures ? GLctx.RGBA : GLctx.RGB : GLctx.RGBA;
     const internalFormat = GLctx.RGBA;
     const format = GLctx.RGBA;
     const width = v.videoWidth;
@@ -424,10 +427,10 @@ function _JS_Video_UpdateToTexture(video, tex) {
             v.render();
         }
         else {
-            
+            // VideoFrame模式，frameData.data 就是 VideoFrame
             const data = v.frameData?.data;
             const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-            
+            // 走 VideoFrame 模式必须要用6参数版本
             if (supportVideoFrame) {
                 GLctx.texImage2D(GLctx.TEXTURE_2D, 0, internalFormat, format, GLctx.UNSIGNED_BYTE, source);
             }
@@ -446,7 +449,7 @@ function _JS_Video_UpdateToTexture(video, tex) {
         else {
             const data = v.frameData?.data;
             const source = supportVideoFrame ? data : new Uint8ClampedArray(data);
-            
+            // 走 VideoFrame 模式必须要用6参数版本
             if (supportVideoFrame) {
                 GLctx.texImage2D(GLctx.TEXTURE_2D, 0, internalFormat, format, GLctx.UNSIGNED_BYTE, source);
             }

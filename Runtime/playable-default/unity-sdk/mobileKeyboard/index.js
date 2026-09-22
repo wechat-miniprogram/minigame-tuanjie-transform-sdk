@@ -22,16 +22,16 @@ let hasExistingMobileInput = false;
 let mobile_input_hide_delay = null;
 let mobile_input_ignore_blur_event = false;
 function _JS_MobileKeybard_GetIgnoreBlurEvent() {
-    
-    
-    
+    // On some platforms, such as iOS15, a blur event is sent to the window after the keyboard
+    // is closed. This causes the game to be paused in the blur event handler in ScreenManagerWebGL.
+    // It checks this return value to see if it should ignore the blur event.
     return mobile_input_ignore_blur_event;
 }
 function _JS_MobileKeyboard_GetKeyboardStatus() {
     const kKeyboardStatusVisible = 0;
     const kKeyboardStatusDone = 1;
-    
-    
+    // var kKeyboardStatusCanceled = 2;
+    // var kKeyboardStatusLostFocus = 3;
     if (!hasExistingMobileInput) {
         return kKeyboardStatusDone;
     }
@@ -44,7 +44,7 @@ function _JS_MobileKeyboard_GetText(buffer, bufferSize) {
     return FrameworkData.lengthBytesUTF8(keyboardSetting.value);
 }
 function _JS_MobileKeyboard_GetTextSelection(outStart, outLength) {
-    
+    // 未支持，光标始终在最后
     const n = keyboardSetting.value.length;
     FrameworkData.HEAP32[outStart >> 2] = n;
     FrameworkData.HEAP32[outLength >> 2] = 0;
@@ -60,19 +60,19 @@ function _JS_MobileKeyboard_Hide(delay) {
         }
         hasExistingMobileInput = false;
         mobile_input_hide_delay = null;
-        
-        
-        
-        
+        // mobile_input_ignore_blur_event was set to true so that ScreenManagerWebGL will ignore
+        // the blur event it might get from the closing of the keyboard. But it might not get that
+        // blur event, too, depending on the browser. So we want to clear the flag, as soon as we
+        // can, but some time after the blur event has been potentially fired.
         setTimeout(() => {
             mobile_input_ignore_blur_event = false;
         }, 100);
     }
     if (delay) {
-        
-        
-        
-        
+        // Delaying the hide of the input/keyboard allows a new input to be selected and re-use the
+        // existing control. This fixes a problem where a quick tap select of a new element would
+        // cause it to not be displayed because it tried to be focused before the old keyboard finished
+        // sliding away.
         const hideDelay = 200;
         mobile_input_hide_delay = setTimeout(hideMobileKeyboard, hideDelay);
     }
@@ -91,7 +91,7 @@ function _JS_MobileKeyboard_SetText(text) {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _JS_MobileKeyboard_SetTextSelection(start, length) {
-    
+    // 未支持
 }
 function _JS_MobileKeyboard_Show(text, keyboardType, autocorrection, multiline, secure, alert, placeholder, characterLimit, data) {
     if (FrameworkData === null) {

@@ -6,7 +6,7 @@ export default {
     WXCreateVideo(conf) {
         const id = uid();
         const params = formatJsonStr(conf);
-        
+        // 如果是主屏下的视频，修改下全局标记，标记不清理透明度
         if (params.underGameView) {
             GameGlobal.enableTransparentCanvas = true;
         }

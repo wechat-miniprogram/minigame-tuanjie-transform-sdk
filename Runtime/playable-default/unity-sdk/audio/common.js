@@ -1,16 +1,22 @@
 import { WEBAudio, audios, unityAudioVolume, innerAudioVolume } from './store';
 import { resumeWebAudio, mkCacheDir } from './utils';
-
+// 游戏初始化时删除本地缓存音频文件
 mkCacheDir();
 export default {
-        WXGetAudioCount() {
+    /**
+     * 获取当前正在使用的音频总数
+     */
+    WXGetAudioCount() {
         return {
             innerAudio: Object.keys(audios).length,
             webAudio: WEBAudio.bufferSourceNodeLength,
             buffer: WEBAudio.audioBufferLength,
         };
     },
-        WXSetAudioMute(value) {
+    /**
+     * 全局静音
+     */
+    WXSetAudioMute(value) {
         if (typeof value !== 'boolean') {
             return;
         }
@@ -18,20 +24,20 @@ export default {
             return;
         }
         WEBAudio.isMute = value;
-        
+        // webAudio
         for (const channelInstance of Object.keys(WEBAudio.audioInstances)) {
             const channel = WEBAudio.audioInstances[+channelInstance];
             if (channel.source) {
                 channel.setVolume?.(value ? 0 : unityAudioVolume.get(channel) ?? 1);
             }
         }
-        
+        // innerAudio
         for (const innerAudio of Object.values(audios)) {
             innerAudio.volume = value ? 0 : innerAudioVolume.get(innerAudio) ?? 1;
         }
     },
 };
-
+// 声音被打断后自动帮用户恢复
 const HandleInterruption = {
     init() {
         let INTERRUPT_LIST = {};
