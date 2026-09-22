@@ -132,7 +132,7 @@ export default {
                             type: e.type,
                         })),
                     }));
-                    
+                    // 最后一个事件完成，结束监听
                     if (e.type === launchEventType.prepareGame) {
                         moduleHelper.send('RemoveLaunchProgressCallback', JSON.stringify({
                             callbackId: key,

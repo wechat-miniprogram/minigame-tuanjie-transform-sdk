@@ -1,0 +1,146 @@
+{
+  "project": {
+    "app": {
+      "name": "$GAME_NAME",
+      "appID": "$APP_ID"
+    },
+    "engine": {
+      "name": "Unity",
+      "version": "$UNITY_VERSION"
+    },
+    "convertPluginVersion": "$PLUGIN_VERSION"
+  },
+  "feature": $FEATURE_JSON,
+  "launch": {
+    "code": {
+      "fileMD5": "$CODE_MD5",
+      "useWasmCodeSplit": false
+    },
+    "data": {
+      "loadFromSubpackage": $LOAD_DATA_FROM_SUBPACKAGE,
+      "fileMD5": "$DATA_MD5",
+      "fileSize": $DATA_FILE_SIZE,
+      "optFileSize": $OPT_DATA_FILE_SIZE,
+      "isCompressed": $COMPRESS_DATA_PACKAGE,
+      "subPrefix": "$DATA_FILE_SUB_PREFIX"
+    }
+  },
+  "network": {
+    "dataFileCDN": "$DEPLOY_URL",
+    "streamingCDN": "$STREAM_CDN",
+    "usedAutoStreaming": $USED_AUTO_STREAMING,
+    "preload": {
+      "preloadList": ['$PRELOAD_LIST'
+      ],
+      "maxConcurrent": 10
+    }
+  },
+  "fileSystem": {
+    "maxStorage": $MAX_STORAGE_SIZE,
+    "releaseMemorySize": $DEFAULT_RELEASE_SIZE,
+    "streamingPrefix": "",
+    "assetPrefix": "Assets",
+    "assetBundle": {
+      "hashLength": $BUNDLE_HASH_LENGTH
+    },
+    "texture": {
+      "hashLength": $TEXTURE_HASH_LENGTH,
+      "subPrefix": "$TEXTURES_PATH"
+    }
+  },
+  "runtime": {
+    "colorSpace": "$UNITY_COLORSPACE",
+    "contextConfig": {
+      "contextType": $WEBGL_VERSION,
+      "contextAttributes": {
+        "alpha": false,
+        "stencil": true,
+        "antialias": false,
+        "powerPreference": "high-performance"
+      },
+      "contextExt": {
+        "enableGLX": $ENABLE_GLX,
+        "enableMetal": $ENABLE_METAL
+      }
+    },
+    "usedTextureCompression": false,
+    "useDotnetRuntime": $USE_DOTNET_RUNTIME,
+    "bootConfig": "$BOOT_CONFIG_INFO"
+  },
+  "develop": {
+    "hideTimeLogModal": true,
+    "enableDebugLog": false,
+    "enableRenderAnalysisLog": $ENABLE_RENDER_ANALYSIS_LOG,
+    "monitor": {
+      "showSuggestModal": $SHOW_SUGGEST_MODAL,
+      "enable": false,
+      "fps": 10,
+      "showResultAfterLaunch": true,
+      "duration": 30000
+    }
+  },
+  "sdk": {
+    "preloadWXFont": $PRELOAD_WXFONT
+  },
+  "wasmSplit": {
+    "subVersion": 0,
+    "pluginVersion": "",
+    "apiVersion": 0,
+    "redirBasePtr": 0
+  },
+  "unity": {
+    "useBrotliMT": $USE_BROTLI_MT,
+    "unityHeapReservedMemory": $UnityHeapReservedMemory,
+    "sendDataToPerfStream": $SEND_DATA_TO_PERF_STREAM
+  },
+  "loadingPage": {
+    "using": true,
+    "hideAfterCallMain": $HIDE_AFTER_CALLMAIN,
+    "totalLaunchTime": 7000,
+    "animationDuration": 100,
+    "designWidth": 0,
+    "designHeight": 0,
+    "scaleMode": "EXACT_FIT",
+    "visible": true,
+    "textConfig": {
+      "firstStartText": "首次加载请耐心等待",
+      "downloadingText": [
+        "正在加载资源"
+      ],
+      "compilingText": "编译中",
+      "initText": "初始化中",
+      "completeText": "开始游戏",
+      "textDuration": 1500,
+      "style": {
+        "bottom": 64,
+        "height": 24,
+        "width": 240,
+        "lineHeight": 24,
+        "color": "#ffffff",
+        "fontSize": 12
+      }
+    },
+    "barConfig": {
+      "style": {
+        "width": 240,
+        "height": 24,
+        "padding": 2,
+        "bottom": 64,
+        "backgroundColor": "#07C160"
+      }
+    },
+    "iconConfig": {
+      "visible": true,
+      "style": {
+        "width": 64,
+        "height": 23,
+        "bottom": 20
+      }
+    },
+    "materialConfig": {
+      "backgroundImage": "wx-game-kit/images/background.jpg",
+      "backgroundVideo": "$LOADING_VIDEO_URL",
+      "iconImage": "wx-game-kit/images/unity_logo.png"
+    }
+  }
+}

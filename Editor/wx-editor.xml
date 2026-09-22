@@ -163,8 +163,31 @@
             <summary>
             构建最小 JS 桥接 payload。
             只调用 WASM 导出函数 wrt0()，不包含任何密钥、nonce 和解密算法。
-            错误时阻止 callMain 继续执行。
+            fail-closed：wrt0 缺失 / 抛异常 / 返回非 0 时，抛出未捕获异常中断
+            启动，使 callMain(args) 不会在 metadata 仍是密文的状态下执行。
             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.BuildPermutation(System.Int32,System.UInt64)">
+            <summary>
+            由 seed 派生 [0,n) 的置换（Fisher–Yates + SplitMix64）。
+            必须与 wx_metadata_protect.c 中的实现完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ApplyMaskStream(System.Byte[],System.Int32,System.Int32,System.UInt64)">
+            <summary>
+            对 [offset, offset+window) 逐字节 XOR seed 派生的掩码流（自逆）。
+            必须与 wx_metadata_protect.c 中的实现完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ScrambleMetadataHeader(System.Byte[],System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            打乱 metadata 的 Il2CppGlobalMetadataHeader（前 256 字节）。
+            XOR 掩码流由 formatSeed 派生（与 body 掩码流不同的 XOR 常量，自逆）。
+            必须与 wx_metadata_protect.c 的 unscramble_metadata_header() 完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.SplitMix64(System.UInt64@)">
+            <summary>SplitMix64 variant that advances state and returns next value.</summary>
         </member>
         <member name="T:WeChatWASM.WXWasmFunctionProtector">
              <summary>
@@ -181,6 +204,30 @@
              这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
              </summary>
         </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryHijackMetadataLoaderForEncryption(System.Byte[],System.Byte[]@,System.String@)">
+            <summary>
+            metadata 加载器劫持（路线 A，供 WXMetadataEncryptor 在构建期调用）：
+            将 il2cpp::vm::MetadataLoader::LoadMetadataFile 的整个函数体替换为对
+            原生 C 函数 wrt1 的透传调用，使 IL2CPP 在内存中拿到解密后的标准
+            metadata，而磁盘文件永远保持加密 + header 打乱状态，不再有落盘明文。
+            任一步骤失败都返回 false（调用方回落 JS 桥接 wrt0 方案）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryRedirectMetadataCacheInit(System.Byte[],System.Byte[]@,System.String@)">
+             <summary>
+             Phase 1: MetadataCache::Initialize 重定向
+            
+             将 il2cpp::vm::MetadataCache::Initialize() 的函数体替换为对
+             原生 C 函数 mc_init() 的透传调用。
+            
+             mc_init 的签名：() -> void，与 MetadataCache::Initialize 一致。
+            
+             Phase 1 的 mc_init 是 no-op，验证重定向机制本身。
+             Phase 2 起，mc_init 内部将实现自定义格式的 metadata 解码逻辑。
+            
+             任一步骤失败返回 false（调用方记日志后继续，不影响加密流程）。
+             </summary>
+        </member>
         <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
             <summary>
             足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
@@ -193,9 +240,54 @@
             用于定位 C 原生插件编译的函数（如 wrt0、sc_process），与前缀匹配互补。
             </summary>
         </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindFunctionIndexContaining(System.String,System.Int32@)">
+            <summary>
+            按子串在 name section 中查找函数（IL2CPP C++ 符号为完整签名文本，
+            如 il2cpp::vm::MetadataLoader::LoadMetadataFile(char const*)）。
+            返回第一个命中的索引；matchCount 输出命中总数（调用方应要求恰好 1 个）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceFunctionBodyWithCall(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+            <summary>
+            将目标函数的函数体整体替换为「透传调用」：
+              0 locals; local.get 0; call callee; end
+            要求 target 与 callee 的 WASM 签名一致且均为本模块定义的 (i32) -> i32。
+            code section 重建逻辑与 InsertProtections 保持一致（body 尺寸可变）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceVoidVoidBody(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+            <summary>
+            将目标函数（() -> void 或 () -> i32）的函数体整体替换为对 callee（同签名）的无参透传调用：
+              0 locals; call callee; end
+            供 MetadataCache::Initialize → mc_init 重定向使用。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryRedirectInitializeViaClone(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+             <summary>
+             方案 A：把 MetadataCache::Initialize 的原始函数体 clone 到新函数，
+             再把 Initialize 替换为：call mc_init; call clone; end
+            
+             这样 mc_init 完成 name heap un-XOR 后，原始 Initialize 逻辑紧接着运行。
+            
+             步骤：
+               1. 读取 target 函数的签名类型索引 (typeIdx)
+               2. 读取 target 函数体原始字节
+               3. 重建 WASM：
+                  a. type section 不变（新函数复用同一 typeIdx）
+                  b. function section 追加 1 条 typeIdx 记录
+                  c. code section 末尾追加 1 个函数体（clone 的原始字节）
+                  d. target 函数体替换为 call mc_init; call newFuncIndex; end
+               4. 返回重建后的 wasm 字节
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionBodyBytes(System.Int32,System.String@)">
+            <summary>
+            读取第 definedBodyIndex 个本模块函数（0-based, 不含 import）的完整函数体字节。
+            </summary>
+        </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionParameterCount(System.UInt32)">
             <summary>
-            获取指定函数（按全局 function index）的参数个数。
+            获取指定函数（按全局 function index）的参数数量。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionResultCount(System.UInt32)">
@@ -496,9 +588,9 @@
         </member>
         <member name="M:WeChatWASM.UnityUtil.GetWxSDKRootPath">
             <summary>
-            获取当前插件模式下 WX-WASM-SDK-V2 的真实绝对路径；
-                如果是 Unity 版本，则返回的是 ...../Assets/WX-WASM-SDK-V2
-                如果是 Tuanjie 版本，若是导入插件模式，则也返回 ...../Assets/WX-WASM-SDK-V2
+            获取当前插件模式下 WX-WASM-SDK-V3 的真实绝对路径；
+                如果是 Unity 版本，则返回的是 ...../Assets/WX-WASM-SDK-V3
+                如果是 Tuanjie 版本，若是导入插件模式，则也返回 ...../Assets/WX-WASM-SDK-V3
                                    若是Package模式，则返回插件的真实路径，如 ..../temp/xxxxx/com.qq.wx.minigame
             </summary>
             <returns></returns>

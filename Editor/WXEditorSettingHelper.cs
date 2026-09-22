@@ -452,7 +452,7 @@ namespace WeChatWASM
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent("更多配置项"), GUILayout.Width(100), GUILayout.Height(25)))
             {
-                var minigameConfig = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/WX-WASM-SDK-V2/Editor/MiniGameConfig.asset");
+                var minigameConfig = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("Assets/WX-WASM-SDK-V3/Editor/MiniGameConfig.asset");
                 Selection.activeObject = minigameConfig;
                 GUIUtility.ExitGUI();
             }
@@ -546,8 +546,8 @@ namespace WeChatWASM
         }
         private void loadData()
         {
-            // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V2", "Runtime", "wechat-default", "unity-sdk", "index.js");
-            SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "unity-sdk", "index.js");
+            // SDKFilePath = Path.Combine(Application.dataPath, "WX-WASM-SDK-V3", "Runtime", "wechat-default", "unity-sdk", "index.js");
+            SDKFilePath = Path.Combine(UnityUtil.GetWxSDKRootPath(), "Runtime", "wechat-default", "wx-game-kit", "wx-wasm-sdk", "index.js");
             config = UnityUtil.GetEditorConf();
 
             // Instant Game

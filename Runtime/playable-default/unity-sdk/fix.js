@@ -1,11 +1,11 @@
 /* eslint-disable prefer-spread */
 /* eslint-disable prefer-rest-params */
-
+// 用来修复一些unity跟小游戏的差异问题
 export default {
     init() {
         this.fixTimer();
     },
-    
+    // 基础库现在返回的id都是固定值了，会导致unity拿到的id有问题，所以这里做个中间映射
     fixTimer() {
         const wm = {};
         const privateSetTimeout = window.setTimeout;
