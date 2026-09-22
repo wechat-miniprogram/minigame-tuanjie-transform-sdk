@@ -5,7 +5,7 @@ import { audios, localAudioMap, downloadingAudioMap, innerAudioVolume, WEBAudio 
 import { createInnerAudio, destroyInnerAudio, printErrMsg } from './utils';
 import { IGNORE_ERROR_MSG, INNER_AUDIO_UNDEFINED_MSG } from './const';
 const funs = {
-    // 获取完整路径
+    
     getFullUrl(v) {
         if (!/^https?:\/\//.test(v) && !/^wxfile:\/\//.test(v)) {
             const cdnPath = GameGlobal.manager.assetPath;
@@ -13,13 +13,13 @@ const funs = {
         }
         return v;
     },
-    // 下载并保存音频列表
+    
     downloadAudios(paths) {
         const list = paths.split(',');
         return Promise.all(list.map((v) => {
             const src = funs.getFullUrl(v);
             return new Promise((resolve, reject) => {
-                // 是否不在下载中
+                
                 if (!downloadingAudioMap[src]) {
                     downloadingAudioMap[src] = [
                         {
@@ -31,7 +31,7 @@ const funs = {
                         funs.handleDownloadEnd(src, true);
                     }
                     else if (!GameGlobal.unityNamespace.isCacheableFile(src)) {
-                        // console.warn(`${src} 不在的缓存路径内，\n如需保存本地，请按照 https://github.com/wechat-miniprogram/minigame-unity-webgl-transform/blob/main/Design/FileCache.md 设置配置`);
+                        
                         wx.downloadFile({
                             url: src,
                             success(res) {
@@ -75,7 +75,7 @@ const funs = {
             });
         }));
     },
-    // 下载完成回调
+    
     handleDownloadEnd(src, succeeded) {
         if (!downloadingAudioMap[src]) {
             return;
@@ -188,7 +188,7 @@ export default {
         if (startTime > 0) {
             getAudio.startTime = +startTime.toFixed(2);
         }
-        // 设置音量
+        
         let volumeValue;
         if (typeof volume === 'undefined') {
             volumeValue = 1;
@@ -203,7 +203,7 @@ export default {
         if (volumeValue !== 1) {
             getAudio.volume = volumeValue;
         }
-        // 低版本安卓有bug，不支持playbackRate
+        
         if (!isSupportPlayBackRate) {
             playbackRate = 1;
         }
@@ -212,19 +212,19 @@ export default {
         }
         return id;
     },
-    // 修改属性-布尔类型
+    
     WXInnerAudioContextSetBool(id, k, v) {
         if (!checkHasAudio(id)) {
             return;
         }
         audios[id][k] = Boolean(+v);
     },
-    // 修改属性-字符串类型
+    
     WXInnerAudioContextSetString(id, k, v) {
         if (!checkHasAudio(id)) {
             return;
         }
-        // 如果修改的是src，则需要做特殊处理，如果之前设定了这个audio needDownload，则触发下载
+        
         if (k === 'src') {
             funs.setAudioSrc(audios[id], v);
         }
@@ -235,7 +235,7 @@ export default {
             audios[id][k] = v;
         }
     },
-    // 修改属性-数字类型
+    
     WXInnerAudioContextSetFloat(id, k, v) {
         if (!checkHasAudio(id)) {
             return;
@@ -249,14 +249,14 @@ export default {
         }
         audios[id][k] = value;
     },
-    // 获取属性-数字类型
+    
     WXInnerAudioContextGetFloat(id, k) {
         if (!checkHasAudio(id)) {
             return 0;
         }
         return audios[id][k];
     },
-    // 获取属性-布尔类型
+    
     WXInnerAudioContextGetBool(id, k) {
         if (!checkHasAudio(id)) {
             return false;
@@ -267,7 +267,7 @@ export default {
         if (!checkHasAudio(id)) {
             return;
         }
-        // 如果isLoading存在，说明还没下载完，等待下载完成后播放，否则就直接播放
+        
         const url = audios[id].isLoading;
         if (url) {
             if (downloadingAudioMap[url]) {
@@ -313,14 +313,14 @@ export default {
         }
         audios[id].seek(+position.toFixed(3));
     },
-    // 监听事件
+    
     WXInnerAudioContextAddListener(id, key) {
         if (!checkHasAudio(id)) {
             return;
         }
         if (key === 'onCanplay') {
             audios[id][key](() => {
-                // 兼容基础库获取属性异常的bug
+                
                 // @ts-ignore
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { duration, buffered, referrerPolicy, volume } = audios[id];
@@ -336,7 +336,7 @@ export default {
             audios[id][key]((e) => {
                 if (key === 'onError') {
                     console.error(e);
-                    // 忽略安卓重复播放报错
+                    
                     if (e.errMsg && e.errMsg.indexOf(IGNORE_ERROR_MSG) > -1) {
                         return;
                     }

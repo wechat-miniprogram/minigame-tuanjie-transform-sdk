@@ -36,7 +36,7 @@ var WXAssetBundleLibrary = {
       }, {
         key: "delete",
         value: function _delete(key) {
-          this.size -= this.hash.get(this.rename(key)) | 0;
+          this.size -= this.hash.get(this.rename(key))|0;
           return this.hash.delete(this.rename(key));
         }
       }]);
@@ -45,36 +45,36 @@ var WXAssetBundleLibrary = {
     WXFS.WXABErrorSteps = {
       "kWebRequestResponse": 0,
       "kLoadBundleFromFile": 1,
-      "kCacheGet": 2
+      "kCacheGet" : 2
     };
-    WXFS.disk = new WXMap(WXGameKit.fs.wxAssetBundles, WXGameKit.fs.pathInFileOS);
+    WXFS.disk = new WXMap(unityNamespace.WXAssetBundles,unityNamespace.PathInFileOS);
     WXFS.msg = "";
     WXFS.fd2wxStream = new Map;
     WXFS.path2fd = new Map;
     WXFS.refRecord = new Map;
     WXFS.fs = wx.getFileSystemManager();
     WXFS.nowfd = FS.MAX_OPEN_FDS + 1;
-    WXFS.isWXAssetBundle = function (url) {
-      if (WXFS._url2path.has(url) || url.startsWith(WXGameKit.config.network.dataFileCDN) || url.startsWith('/vfs_streamingassets')) {
-        return WXGameKit.fs.isWXAssetBundle(WXFS.url2path(url));
+    WXFS.isWXAssetBundle = function(url){
+      if(WXFS._url2path.has(url)||url.startsWith(GameGlobal.unityNamespace.DATA_CDN)||url.startsWith('/vfs_streamingassets')){
+        return unityNamespace.isWXAssetBundle(WXFS.url2path(url));
       }
-      return WXGameKit.fs.isWXAssetBundle(url);
+      return unityNamespace.isWXAssetBundle(url);
     }
-    WXFS.newfd = function () {
+    WXFS.newfd = function(){
       return WXFS.nowfd++;
     }
-    WXFS.doWXAccess = function (path, amode) {
+    WXFS.doWXAccess = function(path, amode){
       if (amode & ~7) {
         return -28;
       }
-      try {
+      try{
         WXFS.fs.accessSync(path);
-      } catch (e) {
+      } catch(e){
         return -44;
       }
       return 0
     }
-
+    
     var WXFileCache = /*#__PURE__*/function () {
       function WXFileCache(ttl, capacity) {
         _classCallCheck(this, WXFileCache);
@@ -109,7 +109,7 @@ var WXAssetBundleLibrary = {
       }, {
         key: "put",
         value: function put(key, ab, cleanable) {
-          if (!ab) return;
+          if(!ab)return;
           cleanable = cleanable != undefined ? cleanable : true;
           var value = {
             ab: ab,
@@ -173,28 +173,28 @@ var WXAssetBundleLibrary = {
       }, {
         key: "delete",
         value: function _delete(key) {
-          this.size -= this.hash.get(key).ab.byteLength;
-          return this.hash.delete(key)
+            this.size -= this.hash.get(key).ab.byteLength;
+            return this.hash.delete(key)
         }
       }, {
         key: "has",
         value: function _has(key) {
-          return this.hash.has(key)
+            return this.hash.has(key)
         }
       }
       ]);
       return WXFileCache;
     }();
-
+    
     WXFS.cache = new WXFileCache(ttl, capacity);
-    if (WXGameKit.gameInstance.env.isIOS && WXGameKit.gameInstance.env.isH5Renderer) {
+    if(unityNamespace.isIOS && unityNamespace.isH5Renderer) {
       WXFS.cache.RegularCleaning(1);
     }
 
-    WXFS.wxstat = function (path) {
+    WXFS.wxstat = function(path){
       try {
         var fd = WXFS.path2fd.get(path)
-        if (fd !== undefined) {
+        if (fd !== undefined){
           var stat = {
             mode: 33206,
             size: WXFS.cache.get(fd).byteLength,
@@ -228,41 +228,41 @@ var WXAssetBundleLibrary = {
         stat.blksize = 4096;
         stat.blocks = Math.ceil(stat.size / stat.blksize);
         return stat;
-      } catch (e) {
+      } catch (e){
         console.error(e)
         throw e;
       }
     }
     WXFS._url2path = new Map();
-    WXFS.url2path = function (url) {
-      if (WXFS._url2path.has(url)) {
+    WXFS.url2path = function(url) {
+      if(WXFS._url2path.has(url)){
         return WXFS._url2path.get(url);
       }
       url = url.replaceAll(' ', '%20')
-      if (url.startsWith('/vfs_streamingassets/')) {
+      if(url.startsWith('/vfs_streamingassets/')){
         var path = url.replace('/vfs_streamingassets/', wx.env.USER_DATA_PATH + "/__GAME_FILE_CACHE/StreamingAssets/");
       }
-      else {
-        var path = url.replace(WXGameKit.config.network.dataFileCDN, wx.env.USER_DATA_PATH + '/__GAME_FILE_CACHE/');
+      else{
+        var path = url.replace(GameGlobal.unityNamespace.DATA_CDN, wx.env.USER_DATA_PATH+'/__GAME_FILE_CACHE/');
       }
-      if (path.indexOf('?') > -1) {
-        path = path.substring(0, path.indexOf("?"));
+      if(path.indexOf('?') > -1){
+        path = path.substring(0,path.indexOf("?"));
       }
       WXFS._url2path.set(url, path);
       return path;
     };
-    WXFS.LoadBundleFromFile = function (path) {
+    WXFS.LoadBundleFromFile = function(path){
       try {
         var res = WXFS.fs.readFileSync(path);
-      } catch (e) {
+      } catch(e) {
         var err_msg = !!e ? e.toString() : 'unknown';
       }
       var expected_size = WXFS.disk.get(path);
-      if (expected_size === 0) {
+      if(expected_size === 0){
         WXFS.disk.set(path, res.byteLength);
         expected_size = res.byteLength;
       }
-      if (!res || res.byteLength != expected_size) {
+      if(!res || res.byteLength != expected_size){
         var wxab_error = {
           stage: WXFS.WXABErrorSteps['kLoadBundleFromFile'],
           path: path,
@@ -270,15 +270,15 @@ var WXAssetBundleLibrary = {
           expected_size: expected_size,
           error: err_msg
         };
-        GameGlobal.WXGameKit.reporter.wxassetbundleReporter.reportEmptyContent(wxab_error);
-        GameGlobal.WXGameKit.Logger.pluginLog('[WXAssetBundle]readFileSync at path ' + path + ' return size ' + (!!res ? res.byteLength : 0) + ', different from expected size ' + expected_size + ' error: ' + err_msg);
-        wx.setStorageSync("wxfs_unserviceable", true);
+        GameGlobal.manager.reporter.wxAssetBundle.reportEmptyContent(wxab_error);
+        GameGlobal.manager.Logger.pluginLog('[WXAssetBundle]readFileSync at path ' + path + ' return size ' + (!!res?res.byteLength:0) + ', different from expected size ' + expected_size + ' error: ' + err_msg);
+        wx.setStorageSync("wxfs_unserviceable",true);
         GameGlobal.onCrash();
         return "";
       }
       return res;
     };
-    WXFS.read = function (stream, buffer, offset, length, position) {
+    WXFS.read = function(stream, buffer, offset, length, position){
       var contents = WXFS.cache.get(stream.fd);
       if (contents === -1) {
         var res = WXFS.LoadBundleFromFile(stream.path);
@@ -304,10 +304,10 @@ var WXAssetBundleLibrary = {
   UnCleanbyPath: function (ptr, fromFile) {
     var url = UTF8ToString(ptr);
     var path = WXFS.url2path(url);
-    if (fromFile && !GameGlobal.WXGameKit.fs.accessSync(path)) {
+    if(fromFile && !GameGlobal.manager.fs.accessSync(path)){
       return false;
     }
-    if (!WXFS.disk.has(path)) {
+    if(!WXFS.disk.has(path)){
       WXFS.disk.set(path, 0);
       WXFS.refRecord.set(path, 1);
     } else {
@@ -320,31 +320,31 @@ var WXAssetBundleLibrary = {
     var path = WXFS.url2path(UTF8ToString(ptr));
     var fd = WXFS.path2fd.get(path);
     var refCount = WXFS.refRecord.get(path);
-    if (!refCount) return;
+    if(!refCount) return;
     refCount -= 1;
     WXFS.refRecord.set(path, refCount);
-    if (!refCount) {
-      if (WXFS.cache.has(fd)) {
+    if(!refCount){
+      if(WXFS.cache.has(fd)){
         WXFS.cache.delete(fd);
       }
-      if (WXFS.disk.has(path)) {
+      if(WXFS.disk.has(path)){
         WXFS.disk.delete(path);
       }
     }
   },
 
   CheckWXFSReady: function () {
-    return WXFS.fs !== undefined;
+    return WXFS.fs!==undefined;
   },
 
-  WXGetBundleFromXML: function (url, id, callback, needRetry) {
-    needRetry = needRetry ? needRetry : true;
+  WXGetBundleFromXML: function(url, id, callback, needRetry){
+    needRetry = needRetry?needRetry:true;
     var _url = UTF8ToString(url);
     var _id = UTF8ToString(id);
     var len = lengthBytesUTF8(_id) + 1;
     var idPtr = _malloc(len);
     stringToUTF8(_id, idPtr, len);
-    var xhr = new WXGameKit.network.XMLHttpRequest;
+    var xhr = new GameGlobal.unityNamespace.UnityLoader.UnityCache.XMLHttpRequest;
     xhr.open('GET', _url, true);
     xhr.responseType = "arraybuffer";
     xhr.onload = function (e) {
@@ -352,7 +352,7 @@ var WXAssetBundleLibrary = {
         setTimeout(function () {
           _WXGetBundleFromXML(url, false);
         }, 1000);
-        xhr = null;
+        xhr=null;
         return false;
       }
       if (callback) {
@@ -376,7 +376,7 @@ var WXAssetBundleLibrary = {
               position: 0,
               stream_ops: MEMFS.stream_ops,
               ungotten: [],
-              node: { mode: 32768, usedBytes: xhrByteArray.length },
+              node:{mode:32768,usedBytes:xhrByteArray.length},
               error: false
             };
             wxStream.stream_ops.read = WXFS.read;
@@ -385,7 +385,7 @@ var WXAssetBundleLibrary = {
           WXFS.cache.put(numberfd, arrayBuffer, xhr.isReadFromCache);
           WXFS.disk.set(path, xhrByteArray.length);
           dynCall("viii", callback, [idPtr, kWebRequestOK, 0]);
-          if (xhr.isReadFromCache) {
+          if(xhr.isReadFromCache){
             _free(idPtr);
           }
         } else {
@@ -394,7 +394,7 @@ var WXAssetBundleLibrary = {
         }
       }
     };
-    xhr.onsave = function xhr_onsave(e) {
+    xhr.onsave = function xhr_onsave(e){
       WXFS.cache.cleanable(WXFS.path2fd.get(e));
       _free(idPtr);
     }
@@ -428,17 +428,17 @@ var WXAssetBundleLibrary = {
     xhr.send();
   },
 
-  WXGetBundleNumberInMemory: function () {
-    return WXFS && WXFS.cache && WXFS.cache.hash && WXFS.cache.hash.size;
+  WXGetBundleNumberInMemory: function () { 
+    return WXFS&&WXFS.cache&&WXFS.cache.hash&&WXFS.cache.hash.size; 
   },
-  WXGetBundleNumberOnDisk: function () {
-    return WXFS && WXFS.disk && WXFS.disk.hash && WXFS.disk.hash.size;
+  WXGetBundleNumberOnDisk: function () { 
+    return WXFS&&WXFS.disk&&WXFS.disk.hash&&WXFS.disk.hash.size; 
   },
-  WXGetBundleSizeInMemory: function () {
-    return WXFS && WXFS.cache && WXFS.cache.size;
+  WXGetBundleSizeInMemory: function () { 
+    return WXFS&&WXFS.cache&&WXFS.cache.size; 
   },
-  WXGetBundleSizeOnDisk: function () {
-    return WXFS && WXFS.disk && WXFS.disk.size;
+  WXGetBundleSizeOnDisk: function () { 
+    return WXFS&&WXFS.disk&&WXFS.disk.size; 
   }
 };
 

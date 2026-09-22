@@ -94,11 +94,6 @@ namespace WeChatWASM
 #else
             WXRuntimeExtEnvDef.SETDEF("TUANJIE_2022_3_OR_NEWER", false);
 #endif
-#if TUANJIE_EMSCRIPTEN_3_1_39
-            WXRuntimeExtEnvDef.SETDEF("TUANJIE_EMSCRIPTEN_3_1_39", true);
-#else
-            WXRuntimeExtEnvDef.SETDEF("TUANJIE_EMSCRIPTEN_3_1_39", false);
-#endif
 #if UNITY_6000_0_OR_NEWER
             WXRuntimeExtEnvDef.SETDEF("UNITY_6000_0_OR_NEWER", true);
 #else

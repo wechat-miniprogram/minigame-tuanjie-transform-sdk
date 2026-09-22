@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import moduleHelper from './module-helper';
 import { uid, formatResponse, formatJsonStr, stringifyRes } from './utils';
 const onEventLists = {};
@@ -20,24 +20,24 @@ function getClassObject(className, id) {
     return obj;
 }
 ;
-// OneWayNoCallback
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_OneWayNoFunction(functionName, ...params) {
     wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
 }
-// SyncFunction
-// 这些API在回调函数返回的对象是只读的
+
+
 const onlyReadResponse = [
     'getSystemSetting',
     'getAppAuthorizeSetting',
 ];
-// 需要在调用前解析json的API
+
 const needParseJson = ['WXMiniReportManagerReport'];
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_SyncFunction(functionName, ...params) {
     return wx[functionName.replace(/^\w/, (a) => a.toLowerCase())](...params);
 }
-// ClassFuntion
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function WX_ClassOneWayNoFunction(className, functionName, id, ...params) {
     const obj = getClassObject(className, id);
@@ -74,7 +74,7 @@ export default {
             ...config,
             success(res) {
                 formatResponse(successType, res);
-                // getGameExptInfo 的list需要转为string
+                
                 if (lowerFunctionName === 'getGameExptInfo') {
                     res.list = JSON.stringify(res.list);
                 }
@@ -389,8 +389,8 @@ export default {
             return;
         }
         ClassOnEventLists[className + functionName][id + eventName].forEach((v) => {
-            // WXVideoDecoder OffEvent 不规范 特殊处理
-            // update: 2025.9.27: 严重怀疑之前 WXPageManager 压根没有跑通过事件监听，跑到下面去了
+            
+            
             if (className === 'WXVideoDecoder' || className === 'WXPageManager') {
                 obj[functionName.replace(/^\w/, (a) => a.toLowerCase())](eventName, v);
             }
@@ -426,14 +426,14 @@ export default {
         WX_ClassOneWayNoFunction(className, functionName, id, param1);
     },
     WX_ClassOneWayFunction(className, functionName, id, successType, failType, completeType, conf, callbackId, usePromise = false) {
-        // console.log('!!! WX_ClassOneWayFunction', className, functionName, id, successType, failType, completeType, conf, callbackId);
+        
         const obj = getClassObject(className, id);
         if (!obj) {
             return;
         }
         const lowerFunctionName = functionName.replace(/^\w/, (a) => a.toLowerCase());
         const config = formatJsonStr(conf);
-        // console.log('!!! WX_ClassOneWayFunction 1', `${className}${functionName}Callback`);
+        
         if (usePromise) {
             obj[lowerFunctionName]({
                 ...config,

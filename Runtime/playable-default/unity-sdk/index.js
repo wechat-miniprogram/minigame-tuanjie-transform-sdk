@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import moduleHelper from './module-helper';
 import canvasHelper from './canvas';
 import fs from './fs';
@@ -18,7 +18,7 @@ const unityVersion = '$unityVersion$';
 GameGlobal.unityNamespace = GameGlobal.unityNamespace || {};
 GameGlobal.unityNamespace.unityVersion = unityVersion;
 window._ScaleRate = 1;
-// 兼容unity低版本高清屏的问题
+
 if (unityVersion && unityVersion.split('.').slice(0, 2)
     .join('') < '20193') {
     const width = window.innerWidth * window.devicePixelRatio;
@@ -59,10 +59,7 @@ Object.defineProperty(document, 'fullscreenEnabled', {
 });
 fix.init();
 const WXWASMSDK = {
-    /*
-        初始化
-       */
-    WXInitializeSDK() {
+        WXInitializeSDK() {
         moduleHelper.init();
         moduleHelper.send('Inited', 200);
     },

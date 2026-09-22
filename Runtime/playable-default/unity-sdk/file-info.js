@@ -1,21 +1,9 @@
-/**
- * 计算string或arraybuffer的大小，用于同步插件侧文件大小变更
- * string粗暴的判断length，不检查是否中文
- *
- * @export
- * @param {(string | ArrayBuffer)} data
- * @returns
- */
 function getObjectSize(data) {
     if (data && (typeof data === 'string' || data.byteLength)) {
         return data.byteLength || data.length || 0;
     }
     return 0;
 }
-/**
- * 开发者自己写入的文件，将文件信息同步到插件，开发者自行写入的文件，不纳入自动清理的范围
- * 20240510: 只处理writeFile(Sync)，unlink(Sync)
- */
 export const fileInfoHandler = {
     addFileInfo(filePath, data) {
         if (GameGlobal.manager.fs && GameGlobal.manager.fs.addFileInfo) {

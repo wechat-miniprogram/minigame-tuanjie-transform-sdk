@@ -97,11 +97,6 @@ namespace WeChatWASM
 #else
             WXExtEnvDef.SETDEF("TUANJIE_2022_3_OR_NEWER", false);
 #endif
-#if TUANJIE_EMSCRIPTEN_3_1_39
-            WXExtEnvDef.SETDEF("TUANJIE_EMSCRIPTEN_3_1_39", true);
-#else
-            WXExtEnvDef.SETDEF("TUANJIE_EMSCRIPTEN_3_1_39", false);
-#endif
 #if UNITY_6000_0_OR_NEWER
             WXExtEnvDef.SETDEF("UNITY_6000_0_OR_NEWER", true);
 #else
@@ -141,12 +136,12 @@ namespace WeChatWASM
             WXExtEnvDef.RegisterAction("UnityUtil.GetWxSDKRootPath", (args) =>
             {
 #if UNITY_2018
-                return Path.Combine(Application.dataPath, "WX-WASM-SDK-V3");
+                return Path.Combine(Application.dataPath, "WX-WASM-SDK-V2");
 #else
                 var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(WXExtEnvDef).Assembly);
                 if (packageInfo == null)
                 {
-                    return Path.Combine(Application.dataPath, "WX-WASM-SDK-V3");
+                    return Path.Combine(Application.dataPath, "WX-WASM-SDK-V2");
                 }
                 string packagePath = packageInfo.assetPath;
                 if (packageInfo.name == "WXSDK")

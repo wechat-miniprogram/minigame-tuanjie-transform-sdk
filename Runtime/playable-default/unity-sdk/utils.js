@@ -33,13 +33,7 @@ const interfaceTypeMap = {
     bool: 'boolean',
     object: 'object',
 };
-/**
- * 统一uid调用
- */
 export const uid = () => realUid(20, true);
-/**
- * 防止出现超过int类型的数据
- */
 export function formatIdentifier(identifier, eventType, changed) {
     if (changed && clearIdTicker[identifier]) {
         clearTimeout(clearIdTicker[identifier]);
@@ -67,9 +61,6 @@ export function formatIdentifier(identifier, eventType, changed) {
     }
     return id;
 }
-/**
- * 将坐标转换为Unity的坐标
- */
 export function formatTouchEvent(v, type, changed) {
     return {
         clientX: v.clientX * window.devicePixelRatio,
@@ -80,9 +71,6 @@ export function formatTouchEvent(v, type, changed) {
         pageY: (window.innerHeight - v.pageY) * window.devicePixelRatio,
     };
 }
-/**
- * 格式化JSAPI返回
- */
 export function formatResponse(type, data, id) {
     if (!data) {
         data = {};
@@ -94,7 +82,7 @@ export function formatResponse(type, data, id) {
     if (!conf) {
         return data;
     }
-    // 遍历提前声明的类型，看JSAPI是否有对应的返回，如果没有，则需要补充，如果返回类型错误，则需要修正
+    
     Object.keys(conf).forEach((key) => {
         if (data[key] === null || typeof data[key] === 'undefined') {
             if (typeof typeMap[conf[key]] === 'undefined') {
@@ -129,7 +117,7 @@ export function formatResponse(type, data, id) {
         }
         else if (conf[key] === 'arrayBuffer') {
             if (id) {
-                // arrayBuffer需要特殊处理，先存到缓存中
+                
                 cacheArrayBuffer(id, data[key]);
                 data.arrayBufferLength = data[key].byteLength;
                 data[key] = [];
@@ -153,7 +141,7 @@ export function formatResponse(type, data, id) {
             });
         }
         else if (typeof data[key] === 'object' && conf[key]) {
-            // 判断是数组还是对象
+            
             const array = conf[key].match(/(.+)\[\]/);
             if (array) {
                 for (const itemKey of Object.keys(data[key])) {
@@ -173,11 +161,11 @@ export function formatResponse(type, data, id) {
             }
         }
     });
-    // 如果有动态参数则不处理
+    
     if (conf.anyKeyWord) {
         return data;
     }
-    // 如果返回了协议中未定义的参数，则删除，防止C#侧解析出错
+    
     Object.keys(data).forEach((key) => {
         if (typeof conf[key] === 'undefined') {
             delete data[key];
@@ -194,10 +182,6 @@ export function formatResponse(type, data, id) {
     }
     return data;
 }
-/**
- * 解析从C#中传过来的参数
- * 参数解析不了就直接返回原始字符串
- */
 export function formatJsonStr(str, type) {
     if (!str) {
         return {};
@@ -219,10 +203,10 @@ export function formatJsonStr(str, type) {
             }
             Object.keys(conf).forEach((key) => {
                 if (data[key]) {
-                    if (conf[key] === 'arrayBuffer') { // 暂时用Array->ArrayBuffer,可统一为Base64String->ArrayBuffer
+                    if (conf[key] === 'arrayBuffer') { 
                         data[key] = new Uint8Array(data[key]).buffer;
                     }
-                    else if (conf[key] === 'string|arrayBuffer') { // string|Base64String->ArrayBuffer
+                    else if (conf[key] === 'string|arrayBuffer') { 
                         data[key] = convertBase64ToData(data[key]);
                     }
                 }
@@ -247,34 +231,22 @@ function base64ToArrayBuffer(base64) {
     }
     return bytes.buffer;
 }
-/**
- * 将Base64字符串转换为ArrayBuffer返回，若非Base64字符串则返回原字符串
- */
 function convertBase64ToData(input) {
     if (isBase64(input)) {
         return base64ToArrayBuffer(input);
     }
     return input;
 }
-/**
- * 把JSAPI返回的ArrayBuffer缓存
- */
 export function cacheArrayBuffer(callbackId, data) {
     if (!callbackId || !data) {
         return;
     }
     tempCacheObj[callbackId] = data;
 }
-/**
- * 把缓存的ArrayBuffer写入到C#对象
- */
 export function setArrayBuffer(buffer, offset, callbackId) {
     buffer.set(new Uint8Array(tempCacheObj[callbackId]), offset);
     delete tempCacheObj[callbackId];
 }
-/**
- * 从缓存中获取对象列表
- */
 export function getListObject(list, name) {
     return (id) => {
         if (!list) {
@@ -287,9 +259,6 @@ export function getListObject(list, name) {
         return obj;
     };
 }
-/**
- * 绑定事件并缓存到列表中
- */
 export function onEventCallback(list, eventName, id, callbackId) {
     if (!list[id]) {
         list[id] = [];
@@ -304,9 +273,6 @@ export function onEventCallback(list, eventName, id, callbackId) {
     list[id].push(callback);
     return callback;
 }
-/**
- * 解除绑定事件
- */
 export function offEventCallback(list, callback, id) {
     if (!list || !list[id]) {
         return;
@@ -319,7 +285,7 @@ function allocateAndSet(byteArray) {
     GameGlobal.Module.HEAPU8.set(byteArray, ptr);
     return ptr;
 }
-// 默认类型方法
+
 function convertNumberToPointer(num, ArrayType = Float64Array) {
     const byteArray = numberToUint8Array(num, ArrayType);
     return allocateAndSet(byteArray);
@@ -346,7 +312,7 @@ export function convertDataToPointer(data) {
     }
     return 0;
 }
-// 自定义类型通用方法
+
 function numberToUint8Array(num, ArrayType = Float64Array) {
     return new Uint8Array(new ArrayType([num]).buffer);
 }
@@ -354,12 +320,12 @@ function stringToUint8ArrayWithLength(str) {
     const strPtr = convertStringToPointer(str);
     const strBytesLength = GameGlobal.Module.lengthBytesUTF8(str);
     const strBytes = new Uint8Array(GameGlobal.Module.HEAPU8.buffer, strPtr, strBytesLength);
-    const lengthBytes = new Uint8Array(4); // 使用 4 字节存储长度信息
-    new DataView(lengthBytes.buffer).setUint32(0, strBytes.length, true); // 以小端序存储长度
+    const lengthBytes = new Uint8Array(4); 
+    new DataView(lengthBytes.buffer).setUint32(0, strBytes.length, true); 
     const result = new Uint8Array(4 + strBytes.length);
     result.set(lengthBytes);
     result.set(strBytes, 4);
-    GameGlobal.Module._free(strPtr); // 释放字符串在堆内存中占用的空间
+    GameGlobal.Module._free(strPtr); 
     return result;
 }
 function createUint8ArrayFromByteArrays(byteArrays) {
@@ -372,7 +338,7 @@ function createUint8ArrayFromByteArrays(byteArrays) {
     });
     return result;
 }
-// OnTouchStartListenerResult
+
 function touchToUint8Array(touch) {
     return createUint8ArrayFromByteArrays([
         numberToUint8Array(touch.clientX, Float32Array),
@@ -396,7 +362,7 @@ function onTouchStartListenerResultToUint8Array(result) {
 export function convertOnTouchStartListenerResultToPointer(result) {
     return allocateAndSet(onTouchStartListenerResultToUint8Array(result));
 }
-// LocalInfo & RemoteInfo
+
 function infoToUint8Array(info) {
     return createUint8ArrayFromByteArrays([
         stringToUint8ArrayWithLength(info.address),

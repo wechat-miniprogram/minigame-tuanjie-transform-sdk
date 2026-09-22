@@ -6,9 +6,9 @@ import { WEBAudio, unityAudioVolume } from './store';
 import { TEMP_DIR_PATH } from './const';
 import { createInnerAudio, destroyInnerAudio, printErrMsg, resumeWebAudio } from './utils';
 import { debugLog } from '../utils';
-// 当获取不到音频长度时，默认返回10秒，防止C#出错
+
 const defaultSoundLength = 441000;
-// 是否需要获取音频长度，获取音频长度需要单独创建一个音频对象，为了减少不必要的消耗默认为false
+
 const needGetLength = false;
 function jsAudioCreateUncompressedSoundClip(buffer, error, length) {
     const soundClip = {
@@ -21,7 +21,7 @@ function jsAudioCreateUncompressedSoundClip(buffer, error, length) {
         resetGain() { },
         getLength() {
             if (!this.buffer) {
-                // console.log('Trying to get length of sound which is not loaded.');
+                
                 return 0;
             }
             const sampleRateRatio = 44100 / this.buffer.sampleRate;
@@ -154,7 +154,7 @@ function jsAudioCreateUncompressedSoundClipFromPCM(channels, length, sampleRate,
     return jsAudioCreateUncompressedSoundClip(null, false, length);
 }
 export class AudioChannelInstance {
-    threeD = false; // 目前不支持3D音效
+    threeD = false; 
     source;
     gain;
     callback = 0;
@@ -162,8 +162,8 @@ export class AudioChannelInstance {
     loop = false;
     loopStart = 0;
     loopEnd = 0;
-    deleyTime = 0; // innerAudio使用，延迟播放适配
-    deleyOffset = 0; // innerAudio使用，播放修改时间适配
+    deleyTime = 0; 
+    deleyOffset = 0; 
     constructor(callback, userData) {
         if (WEBAudio.audioContext) {
             this.gain = WEBAudio.audioContext.createGain();
@@ -223,7 +223,7 @@ export class AudioChannelInstance {
                     this.source.isPlaying = true;
                     if (!this.source.loop && this.source.mediaElement) {
                         const { duration } = this.source.mediaElement;
-                        // 坑，duration可能为负数
+                        
                         if (duration > 0) {
                             if (this.source.stopTicker) {
                                 clearTimeout(this.source.stopTicker);
@@ -280,11 +280,11 @@ export class AudioChannelInstance {
                 debugLog('onError', e);
                 printErrMsg(e);
                 const { errMsg } = e;
-                // 如果不是play时触发的error，则不做任何处理
+                
                 if (errMsg && errMsg.indexOf('play audio fail') < 0) {
                     return;
                 }
-                // 如果是play时触发的error，会导致音频无法正常播放，则需要销毁音频对象
+                
                 if (typeof this.source !== 'undefined' && this.source.mediaElement) {
                     this.source._reset();
                     this.source.mediaElement.stop();
@@ -470,25 +470,20 @@ export class AudioChannelInstance {
             getSource.setPitch(pausedSource.playbackRate);
         }
     }
-    /**
-     * 设置音量
-     * @param volume 音量值
-     * @param isDefault 是否是首次播放
-     */
-    setVolume(volume, isDefault) {
+        setVolume(volume, isDefault) {
         if (!WEBAudio.audioContext) {
             return;
         }
         if (WEBAudio.isMute) {
             volume = 0;
         }
-        // 和默认值一样
+        
         if (isDefault && volume == 1) {
             return;
         }
         if (this.source) {
             if (this.source.buffer && this.gain) {
-                // this.gain.gain.setValueAtTime(volume, WEBAudio.audioContext.currentTime);
+                
                 this.gain.gain.value = volume;
             }
             else if (this.source.mediaElement) {
@@ -503,23 +498,23 @@ export class AudioChannelInstance {
         if (this.source && !this.source.isPausedMockNode) {
             if (!this.source.url) {
                 if (typeof url !== 'undefined') {
-                    // 从webAudio切换到innerAudio
+                    
                     this.stop(0);
                 }
                 else {
-                    // 从webAudio切换到webAudio不做特殊处理
+                    
                 }
             }
             else if (typeof url === 'undefined') {
                 if (typeof this.source !== 'undefined') {
-                    // 从innerAudio切换到webAudio
+                    
                     this.source._reset();
                 }
                 this.disconnectSource();
             }
             else {
-                // 从innerAudio切换到innerAudio
-                // 有bug，复用时会触发onStop，所以此处都先销毁
+                
+                
                 this.source._reset();
                 this.disconnectSource();
             }
@@ -552,11 +547,11 @@ export class AudioChannelInstance {
                 }
                 this.source.needCanPlay = true;
                 if (this.source.fixPlayTicker) {
-                    // 防止安卓重复触发导致error
+                    
                     clearTimeout(this.source.fixPlayTicker);
                     delete this.source.fixPlayTicker;
                 }
-                // 兜底，客户端有概率不会触发onCanplay或者没有触发onPlay
+                
                 this.source.fixPlayTicker = setTimeout(() => {
                     if (this.source && this.source.mediaElement && this.source.needCanPlay && !this.source.isPlaying) {
                         this.source.mediaElement.play();
@@ -571,7 +566,7 @@ export class AudioChannelInstance {
                             this.source.playAfterStop = true;
                         }
                         else if (!this.source.isPlaying) {
-                            // 安卓有一定概率调用play无任何反应
+                            
                             if (isAndroid) {
                                 innerFixPlay();
                             }
@@ -590,8 +585,8 @@ export class AudioChannelInstance {
                                 // @ts-ignore
                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 const { duration } = this.source.mediaElement;
-                                // this.source.mediaElement.offCanplay();
-                                // 3.0.0-3.0.2基础库对应的客户端offCanplay不支持不传入参数，所以这里要兼容
+                                
+                                
                                 this.source.canPlayFnList.forEach((fn) => {
                                     this.source?.mediaElement?.offCanplay(fn);
                                 });
@@ -602,7 +597,7 @@ export class AudioChannelInstance {
                                 this.source.playAfterStop = true;
                             }
                             else if (!this.source.isPlaying) {
-                                // 安卓有一定概率调用play无任何反应
+                                
                                 if (isAndroid) {
                                     innerFixPlay();
                                 }
@@ -659,7 +654,7 @@ export class AudioChannelInstance {
                     return;
                 }
                 innerPlay(() => {
-                    // 在onCanplay之前调用的seek没有作用，所以需要延迟调用
+                    
                     if (this.source && this.source.mediaElement) {
                         this.source.mediaElement.seek(offset);
                     }
@@ -767,14 +762,14 @@ export class AudioChannelInstance {
             });
             Object.defineProperty(source, 'playbackRateValue', {
                 get() {
-                    // get source.mediaElement.playbackRate 有bug，所以自己临时存一下
+                    
                     return source?.playbackRate ?? 1;
                 },
                 set(v) {
                     if (!source || !source.mediaElement) {
                         return;
                     }
-                    // 低版本安卓有bug，不支持playbackRate
+                    
                     if (!isSupportPlayBackRate) {
                         source.mediaElement.playbackRate = 1;
                     }
@@ -911,7 +906,7 @@ export default {
                 WEBAudio.audioContext?.suspend();
             });
             wx.onShow(() => {
-                // IOS 17.5以上有bug，退后台后WEBAudio.audioContext无法使用需要重新创建
+                
                 if (isIOS175) {
                     WEBAudio.audioContext?.close();
                     WEBAudio.audioContext = wx.createWebAudioContext();
@@ -922,7 +917,7 @@ export default {
                 }
             });
             if (webAudioNeedResume) {
-                // 旧客户端存在初始化被暂停的场景，需要延迟手动启用webAudio
+                
                 webAutoResumeTicker = setTimeout(() => {
                     resumeWebAudio();
                 }, 2000);
@@ -947,21 +942,21 @@ export default {
             return 0;
         }
         const audioData = GameGlobal.unityNamespace.Module.HEAPU8.buffer.slice(ptr, ptr + length);
-        // // 超过128K强制使用innerAudio，低于128K使用webAudio
-        // if (length > 131072) {
-        //   decompress = 0;
-        // } else {
-        //   decompress = 1;
-        // }
-        // // PC端强制用webAudio
-        // if (isPc) {
-        //   decompress = 1;
-        // }
-        // // 安卓低于8.0.38版本强制用webAudio，否则会偶现闪退
-        // if (isAndroid && !isSupportInnerAudio) {
-        //   decompress = 1;
-        // }
-        // 试玩无 inneraudio，强制使用 webaudio
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         decompress = 1;
         let soundClip;
         if (decompress && WEBAudio.audioWebSupport) {
