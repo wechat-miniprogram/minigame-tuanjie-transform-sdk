@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using LitJson;
 
 namespace WeChatWASM
@@ -100,8 +101,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.43";
-        public const string PCHP_BUILD_DATE = "2026-09-22 (同步请求超时收紧)";
+        public const string PCHP_VERSION = "0.1.44";
+        public const string PCHP_BUILD_DATE = "2026-09-22 (EventSystem 焦点兜底)";
 
         #region DLL Imports
 
@@ -465,10 +466,36 @@ namespace WeChatWASM
             Initialize();
         }
 
+        // ─── EventSystem 焦点兜底 ───
+        // PCHP 嵌入模式下 Unity 窗口被 SetParent 成 WS_CHILD，跨进程 reparent
+        // 会剥夺原顶层窗口的激活，且客户端侧（direct_window_win.cc）在 attach /
+        // pinup / show 全流程中从不调用 SetFocus 把焦点还给子窗口（刻意用
+        // SWP_NOACTIVATE / SW_SHOWNOACTIVATE 避免抢 host 激活）。
+        // 结果：Unity 的 Application.isFocused 从 attach 那一刻起永远为 false，
+        // OnApplicationFocus(false) 只在失焦瞬间发一次，之后再无焦点事件。
+        //
+        // 能否点击取决于大厅的 EventSystem 是否"听到"了那唯一一次 OnApplicationFocus(false)：
+        //   - 听到（EventSystem 当时已 enabled）→ m_HasFocus=false → StandaloneInputModule
+        //     的 ShouldIgnoreEventsOnNoFocus()（非 Editor 恒 return true）直接 return，
+        //     所有 pointer 事件不派发 → 点击失效
+        //   - 错过（EventSystem 当时还没 enabled/创建，m_HasFocus 默认 true）→ 能点
+        // 这是纯竞态，所以"能不能点"时好时坏。
+        //
+        // 兜底：嵌入模式下引擎焦点模型已失效，输入路由的真正闸门是 host 的
+        // Z-order/pinup/forward window，不是 Unity 的 isFocused。每帧把 EventSystem
+        // 的 m_HasFocus 强制置 true，让 UGUI 正常派发事件即可。副作用可忽略——
+        // 用户切到别的 OS 应用时鼠标事件到不了 Unity 子窗口；用户点 host 内的
+        // webview/面板时 host 会 pinup=0 把 container 压到 HWND_BOTTOM 拦截输入。
+        private System.Reflection.FieldInfo _esHasFocusField;
+        private double _lastFocusFixLogTime;
+
         private void Update()
         {
             // 在主线程中处理消息队列
             ProcessMessageQueue();
+
+            // 焦点兜底：每帧强制恢复 EventSystem 焦点（详见上方注释）
+            ForceEventSystemFocus();
         }
 
         /// <summary>
@@ -479,6 +506,52 @@ namespace WeChatWASM
         private void OnApplicationFocus(bool hasFocus)
         {
             Debug.Log($"[WXPCHPInitScript] OnApplicationFocus(hasFocus={hasFocus}) | runInBackground={Application.runInBackground} | isFocused={Application.isFocused}");
+            // 失焦时立即兜底一次，不等下一帧 Update（减少点击失效窗口）
+            if (!hasFocus)
+            {
+                ForceEventSystemFocus();
+            }
+        }
+
+        /// <summary>
+        /// 反射强制把 EventSystem.m_HasFocus 置 true。
+        /// 嵌入模式下引擎焦点模型失效，这是让 UGUI 恢复事件派发的最小侵入兜底。
+        /// 客户端侧根治方案（attach 后 SetFocus 还给子窗口）落地后可移除。
+        /// </summary>
+        private void ForceEventSystemFocus()
+        {
+            var es = EventSystem.current;
+            if (es == null || es.isFocused)
+            {
+                return;
+            }
+
+            try
+            {
+                if (_esHasFocusField == null)
+                {
+                    _esHasFocusField = typeof(EventSystem).GetField(
+                        "m_HasFocus",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                }
+
+                if (_esHasFocusField != null)
+                {
+                    _esHasFocusField.SetValue(es, true);
+
+                    // 限频日志（每 10s 一次），确认兜底在跑
+                    var now = Time.realtimeSinceStartup;
+                    if (now - _lastFocusFixLogTime > 10.0)
+                    {
+                        _lastFocusFixLogTime = now;
+                        Debug.Log("[WXPCHPInitScript] ForceEventSystemFocus: m_HasForce 已强制置 true（PCHP 嵌入模式焦点兜底）");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WXPCHPInitScript] ForceEventSystemFocus 异常: {e.Message}");
+            }
         }
 
         /// <summary>
