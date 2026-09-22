@@ -17,7 +17,7 @@ function runMethod(method, option, callbackId, isString = false) {
             config.encoding = 'utf-8';
             console.error('fs.readZipEntry不支持读取ArrayBuffer，已改为utf-8');
         }
-        
+        // console.warn(`fs.${method}`, config);
         fs[method]({
             ...config,
             success(res) {
@@ -57,7 +57,7 @@ function runMethod(method, option, callbackId, isString = false) {
                 }));
             },
             fail(res) {
-                
+                // console.warn(`fs.${method} fail:`, res);
                 moduleHelper.send('FileSystemManagerCallback', JSON.stringify({
                     callbackId, type: 'fail', res: JSON.stringify(res), method: isString ? `${method}_string` : method,
                 }));
@@ -76,7 +76,8 @@ function runMethod(method, option, callbackId, isString = false) {
     }
 }
 export default {
-        WXGetUserDataPath() {
+    /* env */
+    WXGetUserDataPath() {
         return wx.env.USER_DATA_PATH;
     },
     WXWriteFileSync(filePath, data, encoding) {
@@ -102,7 +103,7 @@ export default {
             return 'access:ok';
         }
         catch (e) {
-            
+            // console.error(e);
             if (e.message) {
                 return e.message;
             }
@@ -379,7 +380,7 @@ export default {
     WX_FileSystemManagerReaddirSync(dirPath) {
         const fs = wx.getFileSystemManager();
         try {
-            
+            // 偶现wk不报错但是返回undefined
             return JSON.stringify(fs.readdirSync(dirPath) || []);
         }
         catch (e) {

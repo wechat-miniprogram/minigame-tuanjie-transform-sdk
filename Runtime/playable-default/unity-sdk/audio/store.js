@@ -1,4 +1,4 @@
-
+// UnityAudio对象池
 export const WEBAudio = {
     audioInstanceIdCounter: 0,
     audioInstances: {},
@@ -19,15 +19,15 @@ export const WEBAudio = {
     bufferSourceNodeLength: 0,
     audioBufferLength: 0,
     isMute: false,
-    FAKEMOD_SAMPLERATE: 44100, 
+    FAKEMOD_SAMPLERATE: 44100, // 模拟采样率
 };
-
+// innerAudio对象池
 export const audios = {};
-
+// 当前生命周期内的临时音频路径
 export const localAudioMap = {};
-
+// 正在下载中的音频
 export const downloadingAudioMap = {};
-
+// 缓存音量设置
 export const unityAudioVolume = new WeakMap();
-
+// innerAudio缓存音量设置
 export const innerAudioVolume = new WeakMap();

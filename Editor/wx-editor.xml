@@ -95,6 +95,274 @@
             导出产物 minigame 目录，所有文件变动请勿离开该目录
             </summary>
         </member>
+        <member name="T:WeChatWASM.WXGameProtectWindow">
+            <summary>
+            游戏安全加固设置窗口。
+            菜单路径: 微信小游戏 / 安全加固设置
+            
+            统一管理所有加固保护的开关，避免修改代码中的硬编码 bool。
+            设置存储在 EditorPrefs（per-machine，不进版本控制），key 前缀 "WX_GameProtect_"。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsMetadataEncryptEnabled">
+            <summary>是否启用 global-metadata.dat 加密</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsWasmObfuscationEnabled">
+            <summary>是否启用 WASM 加固总开关</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsInstructionSubstitutionEnabled">
+            <summary>是否启用指令替换</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsLocalVariableNoiseEnabled">
+            <summary>是否启用局部变量噪声</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsBogusControlFlowEnabled">
+            <summary>是否启用虚假控制流</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsControlFlowFlatteningEnabled">
+            <summary>是否启用控制流平坦化</summary>
+        </member>
+        <member name="M:WeChatWASM.WXGameProtectWindow.IsNameStrippingEnabled">
+            <summary>是否启用函数名剥离（默认关闭，不提供 UI 开关）</summary>
+        </member>
+        <member name="T:WeChatWASM.WXMetadataEncryptor">
+             <summary>
+             global-metadata.dat 加密器（Protected 版，编译进 wx-editor.dll）。
+            
+             在 BuildPipeline.BuildPlayer 完成后、WXConvertCore.convertDataPackage 之前触发：
+             1) 精确解析 webgl.data 容器头（TuanjieWebData1.0/UnityWebData1.0），
+                定位出 global-metadata.dat 这一个条目的真实 offset/size，只加密这一段
+             2) 把密钥材料原地 patch 进 webgl.wasm 的固定密钥槽（wx_metadata_protect.c 预留）
+             3) 在 framework.js 注入最小 JS 桥接（仅调用 WASM 导出，不含密钥和算法）
+            
+             加密算法：ChaCha20（RFC 8439），密码学安全流密码。
+               - 32 字节 key + 12 字节 nonce，counter 从 0 开始
+               - C# 端加密与原生 C 端解密实现完全对齐
+            
+             密钥存储：构建后 WASM 固定槽原地 patch。
+               - 密钥材料只进入最终 webgl.wasm 二进制
+               - framework.js 不再包含密钥、mask、nonce 和解密算法
+               - 每次构建随机 key + nonce，不进版本库、不做持久化
+            
+             注意：本文件位于 Protected/WXSDKEditor，编译进 wx-editor.dll（经 Obfuscar 混淆）。
+             因此不能直接引用外层明文 .cs（如 WXConvertCore），需通过 UnityUtil/WXExtEnvDef 访问。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.SlotMask(System.Int32)">
+            <summary>
+            位置相关 XOR mask，必须与 wx_metadata_protect.c 中 slot_mask() 完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ScrambleSlot(System.Byte[],System.Int32)">
+            <summary>
+            对 slot 的每个字节做 XOR 混淆。
+            patch 后调用，使 HEAD_MAGIC/TAIL_MAGIC 不再以明文形式出现在最终 WASM 中。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.BuildNativeBridge">
+            <summary>
+            构建最小 JS 桥接 payload。
+            只调用 WASM 导出函数 wrt0()，不包含任何密钥、nonce 和解密算法。
+            fail-closed：wrt0 缺失 / 抛异常 / 返回非 0 时，抛出未捕获异常中断
+            启动，使 callMain(args) 不会在 metadata 仍是密文的状态下执行。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.BuildPermutation(System.Int32,System.UInt64)">
+            <summary>
+            由 seed 派生 [0,n) 的置换（Fisher–Yates + SplitMix64）。
+            必须与 wx_metadata_protect.c 中的实现完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ApplyMaskStream(System.Byte[],System.Int32,System.Int32,System.UInt64)">
+            <summary>
+            对 [offset, offset+window) 逐字节 XOR seed 派生的掩码流（自逆）。
+            必须与 wx_metadata_protect.c 中的实现完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.ScrambleMetadataHeader(System.Byte[],System.Int32,System.Int32,System.Byte[])">
+            <summary>
+            打乱 metadata 的 Il2CppGlobalMetadataHeader（前 256 字节）。
+            XOR 掩码流由 formatSeed 派生（与 body 掩码流不同的 XOR 常量，自逆）。
+            必须与 wx_metadata_protect.c 的 unscramble_metadata_header() 完全一致。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.SplitMix64(System.UInt64@)">
+            <summary>SplitMix64 variant that advances state and returns next value.</summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector">
+             <summary>
+             WASM 定向函数加固器（编译进 wx-editor.dll）。
+            
+             在 Unity/IL2CPP 已生成 webgl.wasm 后、微信转换压缩 wasmcode 前运行：
+             1. 读取构建前的 wx-wasm-obfuscation-markers.json；
+             2. 解析 WASM name custom section，建立函数索引与 IL2CPP 函数名的映射；
+             3. Light：指令替换（MBA）；
+             4. Medium：指令替换 + 局部变量噪声 + 虚假控制流；
+             5. Heavy：Medium 之上 + 控制流平坦化；
+             6. 校验改写后的结构后写回 webgl.wasm，后续 WXConvertCore 会将它压缩并复制至 minigame/wasmcode。
+            
+             这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryHijackMetadataLoaderForEncryption(System.Byte[],System.Byte[]@,System.String@)">
+            <summary>
+            metadata 加载器劫持（路线 A，供 WXMetadataEncryptor 在构建期调用）：
+            将 il2cpp::vm::MetadataLoader::LoadMetadataFile 的整个函数体替换为对
+            原生 C 函数 wrt1 的透传调用，使 IL2CPP 在内存中拿到解密后的标准
+            metadata，而磁盘文件永远保持加密 + header 打乱状态，不再有落盘明文。
+            任一步骤失败都返回 false（调用方回落 JS 桥接 wrt0 方案）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryRedirectMetadataCacheInit(System.Byte[],System.Byte[]@,System.String@)">
+             <summary>
+             Phase 1: MetadataCache::Initialize 重定向
+            
+             将 il2cpp::vm::MetadataCache::Initialize() 的函数体替换为对
+             原生 C 函数 mc_init() 的透传调用。
+            
+             mc_init 的签名：() -> void，与 MetadataCache::Initialize 一致。
+            
+             Phase 1 的 mc_init 是 no-op，验证重定向机制本身。
+             Phase 2 起，mc_init 内部将实现自定义格式的 metadata 解码逻辑。
+            
+             任一步骤失败返回 false（调用方记日志后继续，不影响加密流程）。
+             </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
+            <summary>
+            足够覆盖当前 WebGL/团结引擎产物的精简 WASM 二进制解析器。
+            解析 type、import、function、name、code section，并保持其他 section 的原始字节不变。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindExactFunctionIndex(System.String)">
+            <summary>
+            在 WASM name section 中精确查找指定名称的函数。
+            用于定位 C 原生插件编译的函数（如 wrt0、sc_process），与前缀匹配互补。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindFunctionIndexContaining(System.String,System.Int32@)">
+            <summary>
+            按子串在 name section 中查找函数（IL2CPP C++ 符号为完整签名文本，
+            如 il2cpp::vm::MetadataLoader::LoadMetadataFile(char const*)）。
+            返回第一个命中的索引；matchCount 输出命中总数（调用方应要求恰好 1 个）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceFunctionBodyWithCall(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+            <summary>
+            将目标函数的函数体整体替换为「透传调用」：
+              0 locals; local.get 0; call callee; end
+            要求 target 与 callee 的 WASM 签名一致且均为本模块定义的 (i32) -> i32。
+            code section 重建逻辑与 InsertProtections 保持一致（body 尺寸可变）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceVoidVoidBody(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+            <summary>
+            将目标函数（() -> void 或 () -> i32）的函数体整体替换为对 callee（同签名）的无参透传调用：
+              0 locals; call callee; end
+            供 MetadataCache::Initialize → mc_init 重定向使用。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryRedirectInitializeViaClone(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
+             <summary>
+             方案 A：把 MetadataCache::Initialize 的原始函数体 clone 到新函数，
+             再把 Initialize 替换为：call mc_init; call clone; end
+            
+             这样 mc_init 完成 name heap un-XOR 后，原始 Initialize 逻辑紧接着运行。
+            
+             步骤：
+               1. 读取 target 函数的签名类型索引 (typeIdx)
+               2. 读取 target 函数体原始字节
+               3. 重建 WASM：
+                  a. type section 不变（新函数复用同一 typeIdx）
+                  b. function section 追加 1 条 typeIdx 记录
+                  c. code section 末尾追加 1 个函数体（clone 的原始字节）
+                  d. target 函数体替换为 call mc_init; call newFuncIndex; end
+               4. 返回重建后的 wasm 字节
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionBodyBytes(System.Int32,System.String@)">
+            <summary>
+            读取第 definedBodyIndex 个本模块函数（0-based, 不含 import）的完整函数体字节。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionParameterCount(System.UInt32)">
+            <summary>
+            获取指定函数（按全局 function index）的参数数量。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetFunctionResultCount(System.UInt32)">
+            <summary>
+            获取指定函数（按全局 function index）的返回值个数。
+            控制流平坦化需要它来决定"最后一个块 / return 处"是否要 return 栈顶返回值。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.BuildFuncSigMap">
+            <summary>
+            构建 funcIdx → (paramCount, resultTypes) 的映射，供 CFF MiniInterpreter 精确追踪 call 指令的栈效果。
+            resultTypes 使用 byte[] 存储 WASM value type（0x7f=i32, 0x7e=i64, 0x7d=f32, 0x7c=f64）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryGetTypeSignature(System.UInt32,System.Int32@,System.Byte[]@)">
+            <summary>
+            通过 typeIdx 直接查签名（供 call_indirect 使用）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.StripFunctionNames(System.Collections.Generic.HashSet{System.UInt32})">
+            <summary>
+            从 name section 中剥离指定函数的名称。
+            返回重新构建的完整 name section（含 section header），或 null 表示整个 section 为空可删除。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.SkipBlockType(System.Byte[],System.Int32@,System.Int32)">
+            <summary>
+            跳过 blocktype immediate，返回 block 体内第一条指令的偏移。
+            blocktype: 0x40 (void) 或一个 value type (0x7f/0x7e/0x7d/0x7c) 或一个 s33 type index (LEB128)。
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WeChatWASM.WXWasmFunctionProtector.WasmModule.BuildBogusBlock(System.Int32,System.Int32,System.Int32)" -->
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.VerifyFunctionStackBalance(System.Byte[])">
+             <summary>
+             平坦化产出后的本地栈平衡兜底校验。
+            
+             这不是完整的 WASM 类型检查器，而是一个"分支目标栈高度一致性"的保守校验，
+             专门拦截平坦化最容易引入的错误——"br/br_if/br_table 跳到某个 block 时，
+             当前栈高度与该 block 期望的入口/结果栈高度不一致"（正是运行时报
+             "expected N elements on the stack for br to @X, found M" 的根源）。
+            
+             校验思路（单遍线性 + 结构化控制流栈）：
+               - 维护值栈高度 stack 与控制流 frame 栈（每层记录：类型、进入时栈高、
+                 该 label 作为 br 目标时期望的栈高）；
+               - 对 block/if：br 到它 = 跳到它的 end 之后，目标栈高 = 进入前栈 + 产出值数；
+               - 对 loop：br 到它 = 跳回 loop 入口，目标栈高 = 进入时栈（loop 无参数时为进入前栈）；
+               - 遇到 br/br_if/br_table，比对"当前栈高 - (br 消耗)"是否等于目标 label 期望栈高；
+               - 任何不一致 / 无法确定（遇到 call 等改变栈且无法精确推断结果时用保守放行）→
+                 只在"能确定的地方"报不平衡；不能确定的地方不误杀（保守放行，交由真实引擎兜底）。
+            
+             返回 true = 未发现明确的栈不平衡（可接受）；false = 发现明确不平衡（应回退）。
+             注意：为避免误杀正常函数，遇到无法精确建模的指令时倾向于"放行"，
+             真正的最终防线仍是微信/浏览器引擎的 WebAssembly 校验；此处只拦截高置信度的错误。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.GetPreciseStackEffect(System.Byte)">
+            <summary>
+            计算单条顶层指令对值栈深度的净效果。
+            返回 int.MinValue 表示无法确定（call 等指令的栈效果取决于函数签名）。
+            </summary>
+        </member>
+        <member name="T:WeChatWASM.WXWasmObfuscationMarkerCollector">
+             <summary>
+             WASM 混淆标记采集器（编译进 wx-editor.dll）。
+            
+             第一阶段只做可靠采集：在 WebGL 构建开始前扫描用户程序集内带
+             [WeChatWASM.WasmObfuscate] 的方法，输出 Console 日志和 JSON 报告。
+            
+             目的：先确认 Runtime DLL 的 Attribute 能被游戏工程正确引用、
+             标记方法在构建时能被稳定发现，并记录后续 WASM 函数映射/重写所需的
+             方法签名、IL 大小、异常处理区数量等信息。
+            
+             本类不修改用户程序集，不改变游戏行为。
+             </summary>
+        </member>
         <member name="T:WeChatWASM.JsonFormatter">
             <summary>
             JSON 格式化工具类
@@ -320,9 +588,9 @@
         </member>
         <member name="M:WeChatWASM.UnityUtil.GetWxSDKRootPath">
             <summary>
-            获取当前插件模式下 WX-WASM-SDK-V2 的真实绝对路径；
-                如果是 Unity 版本，则返回的是 ...../Assets/WX-WASM-SDK-V2
-                如果是 Tuanjie 版本，若是导入插件模式，则也返回 ...../Assets/WX-WASM-SDK-V2
+            获取当前插件模式下 WX-WASM-SDK-V3 的真实绝对路径；
+                如果是 Unity 版本，则返回的是 ...../Assets/WX-WASM-SDK-V3
+                如果是 Tuanjie 版本，若是导入插件模式，则也返回 ...../Assets/WX-WASM-SDK-V3
                                    若是Package模式，则返回插件的真实路径，如 ..../temp/xxxxx/com.qq.wx.minigame
             </summary>
             <returns></returns>

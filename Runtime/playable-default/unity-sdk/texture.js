@@ -6,7 +6,7 @@ const downloadedTextures = {};
 const downloadingTextures = {};
 const downloadFailedTextures = {};
 let hasCheckSupportedExtensions = false;
-
+// 不让外部使用
 if (typeof window !== 'undefined' && window.indexedDB) {
     Object.defineProperty(window, 'indexedDB', {
         get() {
@@ -60,7 +60,10 @@ const mod = {
             noneLimitSupportedTextures.push('astc');
             GameGlobal.TextureCompressedFormat = 'astc';
         }
-                hasCheckSupportedExtensions = true;
+        /* else if(list.indexOf('WEBGL_compressed_texture_etc1')!==-1){ //ect1不支持透明通道，先屏蔽
+                    GameGlobal.TextureCompressedFormat = 'etc1';
+                }*/
+        hasCheckSupportedExtensions = true;
         GameGlobal.NoneLimitSupportedTexture = noneLimitSupportedTextures.pop();
         return GameGlobal.TextureCompressedFormat;
     },
