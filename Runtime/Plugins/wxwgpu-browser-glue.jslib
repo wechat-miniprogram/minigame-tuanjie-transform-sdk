@@ -2079,7 +2079,7 @@ var LibraryWebGPU = {
 
   // In webgpu.h offset and size are passed in as size_t.
   // And library_webgpu assumes that size_t is always 32bit in emscripten.
-  wxwgpu_browser_wgpuBufferGetConstMappedRange__deps: ['$wxwgpuWarnOnce'],
+  wxwgpu_browser_wgpuBufferGetConstMappedRange__deps: ['$wxwgpuWarnOnce', 'memalign', 'free'],
   wxwgpu_browser_wgpuBufferGetConstMappedRange: function(bufferId, offset, size) {
     var bufferWrapper = WebGPU.mgrBuffer.objects[bufferId];
     {{{ gpu.makeCheckDefined('bufferWrapper') }}}
@@ -2112,7 +2112,7 @@ var LibraryWebGPU = {
 
   // In webgpu.h offset and size are passed in as size_t.
   // And library_webgpu assumes that size_t is always 32bit in emscripten.
-  wxwgpu_browser_wgpuBufferGetMappedRange__deps: ['$wxwgpuWarnOnce', '$wxwgpuZeroMemory'],
+  wxwgpu_browser_wgpuBufferGetMappedRange__deps: ['$wxwgpuWarnOnce', '$wxwgpuZeroMemory', 'memalign', 'free'],
   wxwgpu_browser_wgpuBufferGetMappedRange: function(bufferId, offset, size) {
     var bufferWrapper = WebGPU.mgrBuffer.objects[bufferId];
     {{{ gpu.makeCheckDefined('bufferWrapper') }}}
@@ -3136,7 +3136,7 @@ var LibraryWxwgpuBrowserExtra = {
   },
 
   // webgpu.cpp: 释放 wgpuAdapterGetInfo 中 stringToNewUTF8 分配的字符串
-  wxwgpu_browser_wgpuAdapterInfoFreeMembers__deps: [],
+  wxwgpu_browser_wgpuAdapterInfoFreeMembers__deps: ['free'],
   wxwgpu_browser_wgpuAdapterInfoFreeMembers: function(adapterInfo) {
     if (!adapterInfo) return;
     var fields = [
