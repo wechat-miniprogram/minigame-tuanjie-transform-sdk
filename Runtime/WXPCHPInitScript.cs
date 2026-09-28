@@ -101,8 +101,8 @@ namespace WeChatWASM
         /// <summary>
         /// PC高性能模式 SDK 版本号，每次发版时同步更新 PCHP_VERSION 和 PCHP_BUILD_DATE
         /// </summary>
-        public const string PCHP_VERSION = "0.1.44";
-        public const string PCHP_BUILD_DATE = "2026-09-22 (EventSystem 焦点兜底)";
+        public const string PCHP_VERSION = "0.1.45";
+        public const string PCHP_BUILD_DATE = "2026-09-28 (ShowError Editor 不弹 MessageBox)";
 
         #region DLL Imports
 
@@ -1802,11 +1802,16 @@ namespace WeChatWASM
         }
 
         /// <summary>
-        /// 显示错误弹窗（仅 Windows）
+        /// 显示错误提示:Editor 仅打 LogError(避免打断业务调试,且 Editor 无原生 Win32 窗口);
+        /// 打包 exe 弹 MessageBox 提示用户。
         /// </summary>
         private void ShowError(string message)
         {
             Debug.LogError($"[WXPCHPInitScript] {message}");
+
+            // Editor 预览状态不弹窗,业务调试时 DLL 缺失只看 Console 日志即可
+            if (Application.isEditor) return;
+
 #if UNITY_STANDALONE_WIN
             try
             {
