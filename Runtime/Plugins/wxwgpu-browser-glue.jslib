@@ -219,6 +219,26 @@ var LibraryWebGPU = {
   $WebGPU__postset: 'WebGPU.initManagers();',
   $WebGPU__deps: ['$wxwgpuStringToUTF8OnStack'],
   $WebGPU: {
+    getErrorType: function(error) {
+      if (!error) return {{{ gpu.ErrorType.NoError }}};
+      if (typeof GPUValidationError === 'function' && error instanceof GPUValidationError) {
+        return {{{ gpu.ErrorType.Validation }}};
+      }
+      if (typeof GPUOutOfMemoryError === 'function' && error instanceof GPUOutOfMemoryError) {
+        return {{{ gpu.ErrorType.OutOfMemory }}};
+      }
+      if (typeof GPUInternalError === 'function' && error instanceof GPUInternalError) {
+        return {{{ gpu.ErrorType.Internal }}};
+      }
+      // wx.getGPU() 的 JS wrapper 返回错误记录，不提供浏览器错误构造函数。
+      switch (error.__wgpu_error_name || error.name) {
+        case 'GPUValidationError': return {{{ gpu.ErrorType.Validation }}};
+        case 'GPUOutOfMemoryError': return {{{ gpu.ErrorType.OutOfMemory }}};
+        case 'GPUInternalError': return {{{ gpu.ErrorType.Internal }}};
+        default: return {{{ gpu.ErrorType.Unknown }}};
+      }
+    },
+
     errorCallback: (callback, type, message, userdata) => {
       var sp = stackSave();
       var messagePtr = wxwgpuStringToUTF8OnStack(message);
@@ -227,6 +247,13 @@ var LibraryWebGPU = {
     },
 
     initManagers: () => {
+      WebGPU.useTypedArrayDynamicOffsets =
+        typeof wx === 'undefined' && typeof GameGlobal === 'undefined' &&
+        typeof NativeGlobal === 'undefined';
+      WebGPU.TextureFormatString2Enum = Object.create(null);
+      for (var index = 1; index < WebGPU.TextureFormat.length; ++index) {
+        WebGPU.TextureFormatString2Enum[WebGPU.TextureFormat[index]] = index;
+      }
 #if ASSERTIONS
       assert(!WebGPU.mgrDevice, 'initManagers already called');
 #endif
@@ -836,7 +863,7 @@ var LibraryWebGPU = {
     {{{ gpu.makeCheckDefined('bufferWrapper') }}}
     if (bufferWrapper.onUnmap) {
       for (var f of bufferWrapper.onUnmap) {
-        f();
+        f(true);
       }
       bufferWrapper.onUnmap = undefined;
     }
@@ -907,15 +934,8 @@ var LibraryWebGPU = {
         if (!gpuError) {
           {{{ makeDynCall('viii', 'callback') }}}(
             {{{ gpu.ErrorType.NoError }}}, 0, userdata);
-        } else if (gpuError instanceof GPUOutOfMemoryError) {
-          {{{ makeDynCall('viii', 'callback') }}}(
-            {{{ gpu.ErrorType.OutOfMemory }}}, 0, userdata);
         } else {
-#if ASSERTIONS
-          // TODO: Implement GPUInternalError
-          assert(gpuError instanceof GPUValidationError);
-#endif
-          WebGPU.errorCallback(callback, {{{ gpu.ErrorType.Validation }}}, gpuError.message, userdata);
+          WebGPU.errorCallback(callback, WebGPU.getErrorType(gpuError), gpuError.message, userdata);
         }
       });
     }, (ex) => {
@@ -942,19 +962,7 @@ var LibraryWebGPU = {
     device.onuncapturederror = function(ev) {
       // This will skip the callback if the runtime is no longer alive.
       wxwgpuCallUserCallback(() => {
-        // WGPUErrorType type, const char* message, void* userdata
-        var Validation = 0x00000001;
-        var OutOfMemory = 0x00000002;
-        var type;
-#if ASSERTIONS
-        assert(typeof GPUValidationError != 'undefined');
-        assert(typeof GPUOutOfMemoryError != 'undefined');
-#endif
-        if (ev.error instanceof GPUValidationError) type = Validation;
-        else if (ev.error instanceof GPUOutOfMemoryError) type = OutOfMemory;
-        // TODO: Implement GPUInternalError
-
-        WebGPU.errorCallback(callback, type, ev.error.message, userdata);
+        WebGPU.errorCallback(callback, WebGPU.getErrorType(ev.error), ev.error.message, userdata);
       });
     };
   },
@@ -1676,8 +1684,11 @@ var LibraryWebGPU = {
 #endif
     var queue = WebGPU.mgrQueue.get(queueId);
     if (!queue) return;
-    var cmds = Array.from({{{ makeHEAPView(`${POINTER_BITS}`, 'commands', `commands + commandCount * ${POINTER_SIZE}`)}}},
-      (id) => WebGPU.mgrCommandBuffer.get(id));
+    var cmds = new Array(commandCount);
+    var start = commands >>> 2;
+    for (var i = 0; i < commandCount; ++i) {
+      cmds[i] = WebGPU.mgrCommandBuffer.get(HEAPU32[start + i]);
+    }
     queue.submit(cmds);
   },
 
@@ -2112,7 +2123,7 @@ var LibraryWebGPU = {
 
   // In webgpu.h offset and size are passed in as size_t.
   // And library_webgpu assumes that size_t is always 32bit in emscripten.
-  wxwgpu_browser_wgpuBufferGetMappedRange__deps: ['$wxwgpuWarnOnce', '$wxwgpuZeroMemory', 'memalign', 'free'],
+  wxwgpu_browser_wgpuBufferGetMappedRange__deps: ['$wxwgpuWarnOnce', 'memalign', 'free'],
   wxwgpu_browser_wgpuBufferGetMappedRange: function(bufferId, offset, size) {
     var bufferWrapper = WebGPU.mgrBuffer.objects[bufferId];
     {{{ gpu.makeCheckDefined('bufferWrapper') }}}
@@ -2141,9 +2152,9 @@ var LibraryWebGPU = {
     }
 
     var data = _memalign(16, mapped.byteLength);
-    wxwgpuZeroMemory(data, mapped.byteLength);
-    bufferWrapper.onUnmap.push(() => {
-      new Uint8Array(mapped).set(HEAPU8.subarray(data, data + mapped.byteLength));
+    HEAPU8.set(new Uint8Array(mapped), data);
+    bufferWrapper.onUnmap.push((discard) => {
+      if (!discard) new Uint8Array(mapped).set(HEAPU8.subarray(data, data + mapped.byteLength));
       _free(data);
     });
     return data;
@@ -2232,7 +2243,9 @@ var LibraryWebGPU = {
     var texture = WebGPU.mgrTexture.get(textureId);
     if (!texture) return;
     // Should return the enum integer instead of string.
-    return WebGPU.TextureFormat.indexOf(texture.format);
+    if (texture.format === undefined) return 0;
+    var value = WebGPU.TextureFormatString2Enum[texture.format];
+    return value === undefined ? -1 : value;
   },
 
   wxwgpu_browser_wgpuTextureGetHeight: function(textureId) {
@@ -2315,11 +2328,12 @@ var LibraryWebGPU = {
     if (!group) return;
     if (dynamicOffsetCount == 0) {
       pass.setBindGroup(groupIndex, group);
+    } else if (WebGPU.useTypedArrayDynamicOffsets) {
+      pass.setBindGroup(groupIndex, group, HEAPU32, dynamicOffsetsPtr >>> 2, dynamicOffsetCount);
     } else {
-      var offsets = [];
-      for (var i = 0; i < dynamicOffsetCount; i++, dynamicOffsetsPtr += 4) {
-        offsets.push({{{ gpu.makeGetU32('dynamicOffsetsPtr', 0) }}});
-      }
+      var offsets = new Array(dynamicOffsetCount);
+      var start = dynamicOffsetsPtr >>> 2;
+      for (var i = 0; i < dynamicOffsetCount; ++i) offsets[i] = HEAPU32[start + i];
       pass.setBindGroup(groupIndex, group, offsets);
     }
   },
@@ -2394,11 +2408,12 @@ var LibraryWebGPU = {
     if (!group) return;
     if (dynamicOffsetCount == 0) {
       pass.setBindGroup(groupIndex, group);
+    } else if (WebGPU.useTypedArrayDynamicOffsets) {
+      pass.setBindGroup(groupIndex, group, HEAPU32, dynamicOffsetsPtr >>> 2, dynamicOffsetCount);
     } else {
-      var offsets = [];
-      for (var i = 0; i < dynamicOffsetCount; i++, dynamicOffsetsPtr += 4) {
-        offsets.push({{{ gpu.makeGetU32('dynamicOffsetsPtr', 0) }}});
-      }
+      var offsets = new Array(dynamicOffsetCount);
+      var start = dynamicOffsetsPtr >>> 2;
+      for (var i = 0; i < dynamicOffsetCount; ++i) offsets[i] = HEAPU32[start + i];
       pass.setBindGroup(groupIndex, group, offsets);
     }
   },
@@ -2480,8 +2495,11 @@ var LibraryWebGPU = {
     assert(bundlesPtr % 4 === 0);
 #endif
 
-    var bundles = Array.from({{{ makeHEAPView(`${POINTER_BITS}`, 'bundlesPtr', `bundlesPtr + count * ${POINTER_SIZE}`) }}},
-      (id) => WebGPU.mgrRenderBundle.get(id));
+    var bundles = new Array(count);
+    var start = bundlesPtr >>> 2;
+    for (var i = 0; i < count; ++i) {
+      bundles[i] = WebGPU.mgrRenderBundle.get(HEAPU32[start + i]);
+    }
     pass.executeBundles(bundles);
   },
 
@@ -2548,11 +2566,12 @@ var LibraryWebGPU = {
     if (!group) return;
     if (dynamicOffsetCount == 0) {
       pass.setBindGroup(groupIndex, group);
+    } else if (WebGPU.useTypedArrayDynamicOffsets) {
+      pass.setBindGroup(groupIndex, group, HEAPU32, dynamicOffsetsPtr >>> 2, dynamicOffsetCount);
     } else {
-      var offsets = [];
-      for (var i = 0; i < dynamicOffsetCount; i++, dynamicOffsetsPtr += 4) {
-        offsets.push({{{ gpu.makeGetU32('dynamicOffsetsPtr', 0) }}});
-      }
+      var offsets = new Array(dynamicOffsetCount);
+      var start = dynamicOffsetsPtr >>> 2;
+      for (var i = 0; i < dynamicOffsetCount; ++i) offsets[i] = HEAPU32[start + i];
       pass.setBindGroup(groupIndex, group, offsets);
     }
   },
@@ -2891,6 +2910,7 @@ var LibraryWebGPU = {
     adapter.requestDevice(desc).then((device) => {
       {{{ runtimeKeepalivePop() }}}
       wxwgpuCallUserCallback(() => {
+        WebGPU.useTypedArrayDynamicOffsets = WebGPU.useTypedArrayDynamicOffsets && HEAPU32.buffer instanceof ArrayBuffer;
         var deviceWrapper = { queueId: WebGPU.mgrQueue.create(device.queue) };
         var deviceId = WebGPU.mgrDevice.create(device, deviceWrapper);
         if (deviceLostCallbackPtr) {
