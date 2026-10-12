@@ -39,6 +39,12 @@
 #endif
 
 /* ================================================================
+ * Forward declarations for internal helpers
+ * (avoid implicit declaration conflicts when caller precedes definition)
+ * ================================================================ */
+static void unscramble_metadata_header(uint8_t *header, const uint8_t *seed);
+
+/* ================================================================
  * Key Slot Layout (256 bytes, fixed length)
  * ================================================================
  * Offset  Size   Field
@@ -114,15 +120,15 @@ static const uint8_t VMAGIC[4] = { 0xAF, 0x1B, 0xB1, 0xFA };
 /*
  * Shared state between wrt1() and mc_init().
  * wrt1() stores a pointer to the MAP_PRIVATE buffer it returns to IL2CPP,
- * along with the name-heap coordinates and the derived ChaCha20 sub-key.
- * mc_init() decrypts the name heap directly in that buffer.
+ * along with the name-heap coordinates.  mc_init() XORs the name heap
+ * directly in that buffer — no second mmap is needed or correct.
+ *
  * Zeroed by mc_init() after use.
  */
-static uint8_t  *g_meta_buf          = NULL;
-static uint32_t  g_meta_nh_off       = 0;
-static uint32_t  g_meta_nh_size      = 0;
-static uint8_t   g_meta_nh_key[32]   = {0};
-static uint8_t   g_meta_nh_nonce[12] = {0};
+static uint8_t  *g_meta_buf     = NULL;
+static uint32_t  g_meta_nh_off  = 0;
+static uint32_t  g_meta_nh_size = 0;
+static uint64_t  g_meta_nh_seed = 0;
 
 /* Head and tail magic (slot boundary markers).
  * Must match WXMetadataEncryptor.cs SLOT_HEAD_MAGIC / SLOT_TAIL_MAGIC. */
@@ -361,9 +367,6 @@ static uint64_t splitmix64(uint64_t *state)
  * window: multiple of 4, 0 < window <= size (caller guarantees).
  * Returns 0 on success, negative on internal error.
  */
-/* Forward declarations for helpers defined later in this file */
-static void unscramble_metadata_header(uint8_t *header, const uint8_t *seed);
-
 static int reverse_custom_format(uint8_t *data, uint32_t window, const uint8_t *seed)
 {
     static uint16_t perm[WX_HEADER_WINDOW / 4];
@@ -633,31 +636,30 @@ int wrt0(void)
         goto cleanup;
     }
 
-    /* 6b. Phase 2: decrypt name heap before writing back to FS.
-     * ChaCha20 is self-inverse: sc_process with same derived sub-key decrypts. */
+    /* 6b. Phase 2: un-XOR name heap before writing back to FS.
+     * wrt0 writes plaintext back to disk; IL2CPP reads the file directly (no
+     * MAP_PRIVATE buffer).  The XOR applied at build time must be reversed here
+     * so class/method names are readable when MetadataCache::Initialize runs.
+     * (In the wrt1 path this is done in mc_init() on the MAP_PRIVATE buffer.) */
     if ((m.name_heap_flags & WX_NAME_HEAP_FLAG_XOR) != 0 &&
         m.name_heap_off < (uint32_t)file_size &&
         m.name_heap_size > 0 &&
         m.name_heap_off + m.name_heap_size <= (uint32_t)file_size)
     {
-        static const uint8_t NH_KEY_TWEAK[32] = {
-            0x4E,0x48,0x5F,0x4B,0x45,0x59,0x5F,0x54,
-            0x57,0x45,0x41,0x4B,0x5F,0x76,0x31,0x00,
-            0xA3,0xB7,0xC1,0xD5,0xE9,0xFD,0x11,0x25,
-            0x39,0x4D,0x61,0x75,0x89,0x9D,0xB1,0xC5
-        };
-        static const uint8_t NH_NONCE_TWEAK[12] = {
-            0x4E,0x48,0x5F,0x4E,0x4F,0x4E,
-            0x43,0x45,0x5F,0x76,0x31,0x00
-        };
-        uint8_t nh_key[32];
-        uint8_t nh_nonce[12];
-        uint32_t ti;
-        for (ti = 0; ti < 32; ti++) nh_key[ti]   = m.key[ti]   ^ NH_KEY_TWEAK[ti];
-        for (ti = 0; ti < 12; ti++) nh_nonce[ti]  = m.nonce[ti] ^ NH_NONCE_TWEAK[ti];
-        sc_process(buf + m.name_heap_off, m.name_heap_size, nh_key, nh_nonce);
-        secure_zero(nh_key,   32);
-        secure_zero(nh_nonce, 12);
+        uint8_t *nh = buf + m.name_heap_off;
+        uint32_t nh_size = m.name_heap_size;
+        uint64_t rng_state = load_le64(m.fmt_seed) ^ 0x5A3C1E9F7B2D4068ULL;
+        uint64_t rng_block = 0;
+        uint32_t hi;
+        for (hi = 0; hi < nh_size; hi++) {
+            if ((hi & 7u) == 0) {
+                uint64_t z = (rng_state += 0x9E3779B97F4A7C15ULL);
+                z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+                z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+                rng_block = z ^ (z >> 31);
+            }
+            nh[hi] ^= (uint8_t)((rng_block >> ((hi & 7u) * 8)) & 0xFFu);
+        }
     }
 
     /* 7. Write decrypted metadata back */
@@ -707,26 +709,48 @@ static void unscramble_metadata_header(uint8_t *header, const uint8_t *seed)
 }
 
 /* ================================================================
- * mc_init: decrypt name heap (MetadataCache::Initialize hijack)
+ * mc_init: un-XOR name heap (MetadataCache::Initialize hijack)
  * ================================================================
- * wrt1 ChaCha20-encrypted the name heap and stashed the sub-key in
- * g_meta_nh_key/nonce. ChaCha20 is self-inverse: sc_process decrypts.
+ * Called just before the original MetadataCache::Initialize body runs.
+ * wrt1 garbled the name heap in the MAP_PRIVATE buffer and stashed the
+ * pointer in g_meta_buf; here we restore it so IL2CPP can read names.
  * Signature: () -> i32  (matches MetadataCache::Initialize)
  * ================================================================ */
 EMSCRIPTEN_KEEPALIVE
 int mc_init(void)
 {
+    uint8_t *heap;
+    uint32_t heap_size;
+    uint64_t rng_state;
+    uint64_t rng_block = 0;
+    uint32_t hi;
+
+    /* If wrt1() did not arm name-heap XOR, nothing to do. */
     if (g_meta_buf == NULL || g_meta_nh_size == 0)
         return 0;
 
-    sc_process(g_meta_buf + g_meta_nh_off, g_meta_nh_size,
-               g_meta_nh_key, g_meta_nh_nonce);
+    heap      = g_meta_buf + g_meta_nh_off;
+    heap_size = g_meta_nh_size;
 
+    /* Identical derivation to wrt1 — self-inverse, no warm-up. */
+    rng_state = g_meta_nh_seed ^ 0x5A3C1E9F7B2D4068ULL;
+
+    for (hi = 0; hi < heap_size; hi++) {
+        if ((hi & 7u) == 0) {
+            uint64_t z = (rng_state += 0x9E3779B97F4A7C15ULL);
+            z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+            z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+            rng_block = z ^ (z >> 31);
+        }
+        heap[hi] ^= (uint8_t)((rng_block >> ((hi & 7u) * 8)) & 0xFFu);
+    }
+
+    /* Zero the shared state; the pointer is no longer valid after this. */
     g_meta_buf     = NULL;
     g_meta_nh_off  = 0;
     g_meta_nh_size = 0;
-    secure_zero(g_meta_nh_key,   sizeof(g_meta_nh_key));
-    secure_zero(g_meta_nh_nonce, sizeof(g_meta_nh_nonce));
+    g_meta_nh_seed = 0;
+
     return 0;
 }
 
@@ -806,39 +830,43 @@ void *wrt1(const char *fileName)
         buf[2] != VMAGIC[2] || buf[3] != VMAGIC[3])
         goto fail_mapped;
 
-    /* 5. Phase 2: ChaCha20-encrypt name heap (class/method names → cipher).
-     * Key derivation: domain-separate from bulk key via XOR tweak constants.
-     * Self-inverse: mc_init() calls sc_process again to decrypt. */
+    /* 5. Phase 2: XOR name heap in-place (class/method names → random bytes).
+     * Reversed in mc_init() just before MetadataCache::Initialize uses them.
+     * name_heap_flags == 0 for old builds → skip (back-compat).
+     *
+     * IMPORTANT: mc_init() must operate on THIS same MAP_PRIVATE buffer, not
+     * a second mmap.  We stash the buffer pointer + coordinates in module-level
+     * globals so mc_init() can find them without going through the filesystem. */
     if ((m.name_heap_flags & WX_NAME_HEAP_FLAG_XOR) != 0 &&
         m.name_heap_off < (uint32_t)file_size &&
         m.name_heap_size > 0 &&
         m.name_heap_off + m.name_heap_size <= (uint32_t)file_size)
     {
-        static const uint8_t NH_KEY_TWEAK[32] = {
-            0x4E,0x48,0x5F,0x4B,0x45,0x59,0x5F,0x54,
-            0x57,0x45,0x41,0x4B,0x5F,0x76,0x31,0x00,
-            0xA3,0xB7,0xC1,0xD5,0xE9,0xFD,0x11,0x25,
-            0x39,0x4D,0x61,0x75,0x89,0x9D,0xB1,0xC5
-        };
-        static const uint8_t NH_NONCE_TWEAK[12] = {
-            0x4E,0x48,0x5F,0x4E,0x4F,0x4E,
-            0x43,0x45,0x5F,0x76,0x31,0x00
-        };
-        uint8_t nh_key[32];
-        uint8_t nh_nonce[12];
-        uint32_t ti;
-        for (ti = 0; ti < 32; ti++) nh_key[ti]   = m.key[ti]   ^ NH_KEY_TWEAK[ti];
-        for (ti = 0; ti < 12; ti++) nh_nonce[ti]  = m.nonce[ti] ^ NH_NONCE_TWEAK[ti];
+        uint8_t *heap = buf + m.name_heap_off;
+        uint32_t heap_size = m.name_heap_size;
+        uint64_t rng_state;
+        uint64_t rng_block = 0;
+        uint32_t hi;
 
-        sc_process(buf + m.name_heap_off, m.name_heap_size, nh_key, nh_nonce);
+        /* Derive name heap XOR stream (no warm-up; matches C# side). */
+        rng_state = load_le64(m.fmt_seed);
+        rng_state ^= 0x5A3C1E9F7B2D4068ULL;
 
-        g_meta_buf     = buf;
-        g_meta_nh_off  = m.name_heap_off;
-        g_meta_nh_size = m.name_heap_size;
-        memcpy(g_meta_nh_key,   nh_key,   32);
-        memcpy(g_meta_nh_nonce, nh_nonce, 12);
-        secure_zero(nh_key,   32);
-        secure_zero(nh_nonce, 12);
+        for (hi = 0; hi < heap_size; hi++) {
+            if ((hi & 7u) == 0) {
+                uint64_t z = (rng_state += 0x9E3779B97F4A7C15ULL);
+                z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+                z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+                rng_block = z ^ (z >> 31);
+            }
+            heap[hi] ^= (uint8_t)((rng_block >> ((hi & 7u) * 8)) & 0xFFu);
+        }
+
+        /* Stash the pointer so mc_init() can un-XOR the same memory. */
+        g_meta_buf    = buf;
+        g_meta_nh_off = m.name_heap_off;
+        g_meta_nh_size= m.name_heap_size;
+        g_meta_nh_seed= load_le64(m.fmt_seed);
     }
 
     secure_zero(&m, sizeof(m));
