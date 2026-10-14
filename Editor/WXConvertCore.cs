@@ -1349,7 +1349,7 @@ namespace WeChatWASM
             PlayerSettings.WebGL.emscriptenArgs = string.Empty;
             if (WXExtEnvDef.GETDEF("UNITY_2021_2_OR_NEWER"))
             {
-                PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end,_wrt0,_wrt1";
+                PlayerSettings.WebGL.emscriptenArgs += " -s EXPORTED_FUNCTIONS=_sbrk,_emscripten_stack_get_base,_emscripten_stack_get_end";
                 if (config.CompileOptions.enablePerfAnalysis)
                 {
                     PlayerSettings.WebGL.emscriptenArgs += ",_WxPerfFrameIntervalCallback";
@@ -1358,6 +1358,7 @@ namespace WeChatWASM
                 PlayerSettings.WebGL.emscriptenArgs += ",_main";
 #endif
                 PlayerSettings.WebGL.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
+                WXMetadataEncryptor.ConfigureProtectedWebGLBuild();
             }
 #endif
             PlayerSettings.runInBackground = false;
