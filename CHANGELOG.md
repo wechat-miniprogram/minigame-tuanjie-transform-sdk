@@ -6,11 +6,14 @@ Removed - 删除功能/接口
 Fixed - 修复问题
 Others - 其他 
 -->
-## 2026-9-22 v0.1.35 【重要更新】
+## 2026-10-15 v0.1.35 【重要更新】
 ### Feature
-* 重要：转换插件升级为 WX-WASM-SDK-V3，适配 Unity Common
-* 重要：新增 WASM 定向函数加固能力
-* 重要：新增 global-metadata.dat 加密与运行期解密
+* 重要：转换插件升级为 WX-WASM-SDK-V3
+* 重要：WASM函数与global-metadata.dat加固
+* 普通：WX-WASM-SDK-V3 兼容小游戏试玩转换
+* 普通：试玩适配团结 em3.1.39
+### Fixed
+* 普通：修复 AutoStreaming 情况下 BuildProfile 不自动同步 CDN 地址的问题
 
 ## 2026-9-16 v0.1.34 【普通更新】
 ### Fixed

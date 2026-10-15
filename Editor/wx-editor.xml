@@ -249,10 +249,10 @@
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceFunctionBodyWithCall(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
             <summary>
-            将目标函数的函数体整体替换为「透传调用」：
-              0 locals; local.get 0; call callee; end
-            要求 target 与 callee 的 WASM 签名一致且均为本模块定义的 (i32) -> i32。
-            code section 重建逻辑与 InsertProtections 保持一致（body 尺寸可变）。
+            将原加载器改为调用 wrt1，并返回其结果。
+            原加载器有参数则转交参数，无参数则传入 0。
+            wrt1 必须忽略传入的路径参数，改用槽位中的路径。
+            仅替换目标函数体，其他函数保持不变。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceVoidVoidBody(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">

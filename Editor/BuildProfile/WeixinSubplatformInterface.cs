@@ -4,10 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Profile;
 using UnityEngine;
 using UnityEngine.Rendering;
-
 
 namespace WeChatWASM
 {
@@ -16,7 +16,25 @@ namespace WeChatWASM
     {
         static WeixinSubTargetManager()
         {
+            Register();
+        }
+
+        // 增加playable适配
+        internal static void Register()
+        {
             MiniGameSubplatformManager.RegisterSubplatform(new WeixinSubplatformInterface());
+            MiniGameSubplatformManager.RegisterSubplatform(new WeixinPlayableSubplatformInterface());
+        }
+    }
+
+    /// 参考团结侧demo 切平台后补注册
+    public class WeixinSubTargetRetargetHook : IActiveBuildTargetChanged
+    {
+        public int callbackOrder => 0;
+
+        public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget)
+        {
+            WeixinSubTargetManager.Register();
         }
     }
 

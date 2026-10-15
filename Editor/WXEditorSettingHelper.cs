@@ -51,7 +51,11 @@ namespace WeChatWASM
             }
 
             //loadData();
-            foldInstantGame = WXConvertCore.IsInstantGameAutoStreaming();
+            // 不能在构造函数（反序列化期间）调用 WXConvertCore.IsInstantGameAutoStreaming()，
+            // 其内部链路会读 PlayerSettings.autoStreaming，Unity 禁止在序列化期间访问该属性，
+            // 会抛出 "get_autoStreaming is not allowed to be called during serialization" 异常。
+            // 这个字段仅用于控制 Instant Game 折叠框的默认展开态，初始化为 false 不影响后续业务。
+            foldInstantGame = false;
 
             projectRootPath = System.IO.Path.GetFullPath(Application.dataPath + "/../");
         }
@@ -595,24 +599,30 @@ namespace WeChatWASM
             serializedObject.UpdateIfRequiredOrScript();
             var ProjectConf = miniGameProperty.FindPropertyRelative("ProjectConf");
 
-            // Instant Game
+            // Instant Game: BP 面板 UI 未暴露 m_AutomaticFillInstantGame 勾选框，用户无法手动控制该字段。
+            // 为保证 AutoStreaming 启用后 CDN 一定能自动同步，这里不再依赖 m_AutomaticFillInstantGame.boolValue：
+            //   1) IsInstantGameAutoStreaming()=true（意味着 Instant Game Package 已启用且 CDN 可取）时无条件兜底填 CDN；
+            //   2) 同步把 m_AutomaticFillInstantGame 强置为 true 并写入勾选框缓存，避免 saveData 把 false 回写导致下一帧守卫失败；
+            //   3) 老 BP 面板遗留的 m_AutomaticFillInstantGame=false 磁盘值被覆盖为 true，彻底解决导入旧 .asset 时 CDN 为空的问题。
             if (WXConvertCore.IsInstantGameAutoStreaming())
             {
                 var automaticfillinstantgame = miniGameProperty.FindPropertyRelative("m_AutomaticFillInstantGame");
-                if (automaticfillinstantgame.boolValue)
+                automaticfillinstantgame.boolValue = true;
+
+                ProjectConf.FindPropertyRelative("CDN").stringValue = WXConvertCore.GetInstantGameAutoStreamingCDN();
+                if (!ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue.Contains("AS;"))
                 {
-                    ProjectConf.FindPropertyRelative("CDN").stringValue = WXConvertCore.GetInstantGameAutoStreamingCDN();
-                    if (!ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue.Contains("AS;"))
-                    {
-                        ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue += "AS;";
-                    }
-                    if (!ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue.Contains("CUS/CustomAB;"))
-                    {
-                        ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue += "CUS/CustomAB;";
-                    }
-                    ProjectConf.FindPropertyRelative("dataFileSubPrefix").stringValue = "CUS";
+                    ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue += "AS;";
                 }
+                if (!ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue.Contains("CUS/CustomAB;"))
+                {
+                    ProjectConf.FindPropertyRelative("bundlePathIdentifier").stringValue += "CUS/CustomAB;";
+                }
+                ProjectConf.FindPropertyRelative("dataFileSubPrefix").stringValue = "CUS";
             }
+
+            // 同步 m_AutomaticFillInstantGame 到勾选框缓存
+            this.setData("m_AutomaticFillInstantGame", miniGameProperty.FindPropertyRelative("m_AutomaticFillInstantGame").boolValue);
 
             var _ProjectConf = new WXProjectConf();
             deserializeProjectConf(_ProjectConf, ProjectConf);
