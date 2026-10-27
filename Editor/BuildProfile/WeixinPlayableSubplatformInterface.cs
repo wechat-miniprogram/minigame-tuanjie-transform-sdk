@@ -14,12 +14,8 @@ namespace WeChatWASM
     public class WeixinPlayableSubplatformInterface : MiniGameSubplatformInterface
     {
         public override string GetSubplatformName() => "WeChat:微信试玩广告";
-        // 团结 1.6~1.8 的 MiniGameSubplatformInterface 还没有这两个虚方法，写上会报 CS0115；
-        // 试玩广告子平台本身也依赖团结 1.9+ 的 Playable Ads 支持，低版本直接跳过。
-#if TUANJIE_1_9_OR_NEWER
         public override bool SupportsMiniGamePlatform() => false;
         public override bool SupportsPlayableAdsPlatform() => true;
-#endif
 
         public override MiniGameSettings GetSubplatformSettings()
             => new WeixinPlayableMiniGameSettings(new WeixinPlayableMiniGameSettingsEditor());

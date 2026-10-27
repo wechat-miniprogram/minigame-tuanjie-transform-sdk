@@ -23,10 +23,7 @@ namespace WeChatWASM
         internal static void Register()
         {
             MiniGameSubplatformManager.RegisterSubplatform(new WeixinSubplatformInterface());
-            // 试玩广告子平台只在团结 1.9+ 存在，低版本注册进来会缺少平台归属判定（Supports* 方法不可用）
-#if TUANJIE_1_9_OR_NEWER
             MiniGameSubplatformManager.RegisterSubplatform(new WeixinPlayableSubplatformInterface());
-#endif
         }
     }
 
