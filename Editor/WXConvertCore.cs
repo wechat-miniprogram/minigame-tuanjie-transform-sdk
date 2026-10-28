@@ -1142,6 +1142,7 @@ namespace WeChatWASM
                     PlayerSettings.WeixinMiniGame.emscriptenArgs += ",_WxPerfFrameIntervalCallback";
                 }
                 PlayerSettings.WeixinMiniGame.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
+                WXMetadataEncryptor.ConfigureProtectedWeixinMiniGameBuild();
             }
 
 #else
@@ -1157,6 +1158,7 @@ namespace WeChatWASM
                 PlayerSettings.WebGL.emscriptenArgs += ",_main";
 #endif
                 PlayerSettings.WebGL.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
+                WXMetadataEncryptor.ConfigureProtectedWebGLBuild();
             }
 #endif
             PlayerSettings.runInBackground = false;
