@@ -159,6 +159,9 @@
             patch 后调用，使 HEAD_MAGIC/TAIL_MAGIC 不再以明文形式出现在最终 WASM 中。
             </summary>
         </member>
+        <member name="M:WeChatWASM.WXMetadataEncryptor.WasmDataImage.Describe">
+            <summary>数据段统计，用于密钥槽定位失败时的诊断输出。</summary>
+        </member>
         <member name="M:WeChatWASM.WXMetadataEncryptor.BuildNativeBridge">
             <summary>
             构建最小 JS 桥接 payload。
@@ -210,7 +213,7 @@
             将 il2cpp::vm::MetadataLoader::LoadMetadataFile 的整个函数体替换为对
             原生 C 函数 wrt1 的透传调用，使 IL2CPP 在内存中拿到解密后的标准
             metadata，而磁盘文件永远保持加密 + header 打乱状态，不再有落盘明文。
-            任一步骤失败都返回 false（调用方回落 JS 桥接 wrt0 方案）。
+            任一步骤失败都返回 false，调用方终止受保护构建。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.TryRedirectMetadataCacheInit(System.Byte[],System.Byte[]@,System.String@)">
@@ -220,12 +223,10 @@
              将 il2cpp::vm::MetadataCache::Initialize() 的函数体替换为对
              原生 C 函数 mc_init() 的透传调用。
             
-             mc_init 的签名：() -> void，与 MetadataCache::Initialize 一致。
+             mc_init 的签名：() -> i32，调用结果在执行原初始化逻辑前丢弃。
             
-             Phase 1 的 mc_init 是 no-op，验证重定向机制本身。
-             Phase 2 起，mc_init 内部将实现自定义格式的 metadata 解码逻辑。
-            
-             任一步骤失败返回 false（调用方记日志后继续，不影响加密流程）。
+             mc_init 在元数据读取前还原 name heap。
+             对已施加字符串区加密的产物，调用方必须在接管失败时终止构建。
              </summary>
         </member>
         <member name="T:WeChatWASM.WXWasmFunctionProtector.WasmModule">
@@ -236,8 +237,9 @@
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindExactFunctionIndex(System.String)">
             <summary>
-            在 WASM name section 中精确查找指定名称的函数。
-            用于定位 C 原生插件编译的函数（如 wrt0、sc_process），与前缀匹配互补。
+            在 WASM name section 或 export section 中精确查找指定名称的函数。
+            用于定位 C 原生插件编译的函数（如 wrt0、mc_init、sc_process）。
+            name 表被剥离时仍可命中强制导出（EXPORTED_FUNCTIONS）的符号。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindFunctionIndexContaining(System.String,System.Int32@)">
@@ -245,6 +247,28 @@
             按子串在 name section 中查找函数（IL2CPP C++ 符号为完整签名文本，
             如 il2cpp::vm::MetadataLoader::LoadMetadataFile(char const*)）。
             返回第一个命中的索引；matchCount 输出命中总数（调用方应要求恰好 1 个）。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FindFunctionIndexByCandidates(System.String[],System.Int32@,System.String@)">
+             <summary>
+             多形态符号定位：依次按候选片段在 name 表与 export 表中匹配，
+             所有候选合计恰好命中 1 个不同函数索引才算成功。
+            
+             背景：name section 的 C++ 符号可能是 demangled 全签名
+             （il2cpp::vm::MetadataCache::Initialize()），也可能是 mangled 符号
+             （_ZN6il2cpp2vm13MetadataCache10InitializeEv），视工具链与剥离配置而定；
+             且目标函数被内联后 name 表条目可能消失，仅强制导出的 export 条目仍在。
+             matchedForm 输出实际命中所用候选，用于失败诊断。
+             </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.DescribeNameSection(System.String[])">
+            <summary>
+            生成 name section 的统计描述，用于失败时区分「符号被剥离」与「符号存在但未命中」。
+            </summary>
+        </member>
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.FormatSignature(WeChatWASM.WXWasmFunctionProtector.WasmModule.WasmFunctionSignature)">
+            <summary>
+            将函数签名格式化为可读文本，用于签名不匹配时的诊断输出。
             </summary>
         </member>
         <member name="M:WeChatWASM.WXWasmFunctionProtector.WasmModule.TryReplaceFunctionBodyWithCall(System.UInt32,System.UInt32,System.Byte[]@,System.String@)">
