@@ -28,8 +28,8 @@ namespace WeChatWASM
         {
             string templateHeader = "PROJECT:";
 #if TUANJIE_2022_3_OR_NEWER
-            PlayerSettings.WeixinMiniGame.threadsSupport = WXConvertCore.EnableRenderThread;
-            PlayerSettings.runInBackground = false;
+            PlayerSettings.WeixinMiniGame.threadsSupport = false;
+            // PlayerSettings.runInBackground = false;
             PlayerSettings.WeixinMiniGame.compressionFormat = WeixinMiniGameCompressionFormat.Disabled;
             if(UnityUtil.GetEngineVersion() == UnityUtil.EngineVersion.Tuanjie)
             {
@@ -52,7 +52,7 @@ namespace WeChatWASM
             PlayerSettings.WeixinMiniGame.debugSymbolMode = WeixinMiniGameDebugSymbolMode.External;
 #else
             PlayerSettings.WebGL.threadsSupport = false;
-            PlayerSettings.runInBackground = false;
+            // PlayerSettings.runInBackground = false;
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
 #if UNITY_2022_3_OR_NEWER
         PlayerSettings.WebGL.template = $"{templateHeader}WXTemplate2022";
@@ -136,6 +136,41 @@ namespace WeChatWASM
             }
         }
 
+        /// <summary>
+        /// 当前是否为 WebGPU 导出。
+        /// 团结引擎（2026 起）取消了 useWxWebGPU / miniGameWxWebGPUBuild 打包开关，改为运行时分发，
+        /// 因此这里以工程实际的 Graphics API 为准：列表里出现 WebGPU 即视为 WebGPU 包。
+        /// 用 ToString() 比较是为了兼容不同引擎版本对 WebGPU 的枚举定义（Unity 本身没有该值）。
+        /// </summary>
+        public static bool UseWxWebGPU
+        {
+            get
+            {
+                try
+                {
+#if PLATFORM_WEIXINMINIGAME
+                    var target = BuildTarget.WeixinMiniGame;
+#else
+                    var target = BuildTarget.WebGL;
+#endif
+                    var apis = PlayerSettings.GetGraphicsAPIs(target);
+                    if (apis == null) return false;
+                    foreach (var api in apis)
+                    {
+                        if (api.ToString().IndexOf("WebGPU", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch (System.Exception)
+                {
+                    // 低版本引擎没有 WeixinMiniGame 目标 / 读取失败时，退回 WebGL 语义
+                }
+                return false;
+            }
+        }
+
         private static bool EnableWasmException
         {
             get
@@ -206,7 +241,7 @@ namespace WeChatWASM
             MakeEnvForLuaAdaptor();
             // JSLib
             SettingWXTextureMinJSLib();
-            UpdateGraphicAPI();
+            // UpdateGraphicAPI();
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
         }
@@ -316,6 +351,7 @@ namespace WeChatWASM
                 }
                 File.Copy(dataFilePath, dataFilePathBackupPath);
 
+                string streamingAssetsDir = Path.Combine(config.ProjectConf.DST, webglDir, "StreamingAssets");
                 if (UnityUtil.GetEngineVersion() == 0 && config.CompileOptions.fbslim && !IsInstantGameAutoStreaming())
                 {
                     WXAssetsTextTools.FirstBundleSlim(dataFilePath, (result, info) =>
@@ -325,11 +361,13 @@ namespace WeChatWASM
                             Debug.LogWarning("[首资源包跳过优化]：因处理失败自动跳过" + info);
                         }
 
+                        WXWebGPUAssetOpt.ProcessBundleAssets(dataFilePath, streamingAssetsDir, UseWxWebGPU);
                         finishExport();
                     });
                 }
                 else
                 {
+                    WXWebGPUAssetOpt.ProcessBundleAssets(dataFilePath, streamingAssetsDir, UseWxWebGPU);
                     finishExport();
                 }
             }
@@ -750,28 +788,28 @@ namespace WeChatWASM
 #if PLATFORM_WEIXINMINIGAME
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.WeixinMiniGame, false);
             // 启用 iOS Metal 渲染
-            if (UseiOSMetal)
-            {
-                if (config.CompileOptions.Webgl2)
-                {
-                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES3 });
-                }
-                else
-                {
-                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES2 });
-                }
-            }
-            else
-            {
-                if (config.CompileOptions.Webgl2)
-                {
-                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.OpenGLES3 });
-                }
-                else
-                {
-                    PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.OpenGLES2 });
-                }
-            }
+            // if (UseiOSMetal)
+            // {
+            //     if (config.CompileOptions.Webgl2)
+            //     {
+            //         PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES3 });
+            //     }
+            //     else
+            //     {
+            //         PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.Metal, GraphicsDeviceType.OpenGLES2 });
+            //     }
+            // }
+            // else 
+            // {
+            //     if (config.CompileOptions.Webgl2)
+            //     {
+            //         PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.OpenGLES3 });
+            //     }
+            //     else
+            //     {
+            //         PlayerSettings.SetGraphicsAPIs(BuildTarget.WeixinMiniGame, new GraphicsDeviceType[] { GraphicsDeviceType.OpenGLES2 });
+            //     }
+            // }
 #else
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.WebGL, false);
             if (config.CompileOptions.Webgl2)
@@ -1013,6 +1051,86 @@ namespace WeChatWASM
                     text = Regex.Replace(text, rule.old, rule.newStr);
                 }
             }
+#if TUANJIE_EMSCRIPTEN_3_1_39
+            if (UseIL2CPP)
+            {
+                Rule[] em3139Rules =
+                {
+                    new Rule()
+                    {
+                        old = @"return *handleException\(e\);?",
+                        newStr = "return handleException(e);} finally {if (ABORT === true) return; if (Module.calledMainCb) Module.calledMainCb(); if (GameGlobal.unityNamespace.enableProfileStats) {setTimeout(() => {SendMessage('WXSDKManagerHandler', 'OpenProfileStats');}, 10000);}"
+                    },
+                    new Rule()
+                    {
+                        old = @"return WebAssembly\.instantiate *\(binary *, *imports\)",
+                        newStr = @"if(Module[""wasmBin""]){return WebAssembly.instantiate(Module[""wasmBin""], imports);}return WebAssembly.instantiate(Module[""wasmPath""], imports)"
+                    },
+                    new Rule()
+                    {
+                        old = @"var result *= *WebAssembly\.instantiate *\(binary *, *imports\)",
+                        newStr = @"if(Module[""wasmBin""]){return WebAssembly.instantiate(Module[""wasmBin""], imports);}return WebAssembly.instantiate(Module[""wasmPath""], imports)"
+                    },
+                    new Rule()
+                    {
+                        old = @"performance\.timeOrigin *\+ *performance\.now\(\)",
+                        newStr = @"(performance.timeOrigin||0)+performance.now()"
+                    },
+                    new Rule()
+                    {
+                        old = @"addRunDependency\(""wasm-instantiate""\);addRunDependency\(""wasm-preloadAssets""\);",
+                        newStr = @"addRunDependency(""wasm-instantiate"");if (typeof ENVIRONMENT_IS_PTHREAD === 'undefined' ||!ENVIRONMENT_IS_PTHREAD) {addRunDependency(""wasm-preloadAssets"");}"
+                    },
+                    new Rule()
+                    {
+                        old = @"if\(Module\.wasmInstantiated\)\{Module\.wasmInstantiated\(\);removeRunDependency\(""wasm-instantiate""\)\}",
+                        newStr = @"(Module.wasmInstantiated&&Module.wasmInstantiated(),removeRunDependency(""wasm-instantiate""))"
+                    },
+                    new Rule()
+                    {
+                        old = @"Module\[['""]monitorRunDependencies['""]\]\(runDependencies\)",
+                        newStr = @"Module[""monitorRunDependencies""](runDependencies, id)"
+                    },
+                    new Rule()
+                    {
+                        old = @"function *initRandomFill *\( *\)(\s)*{",
+                        newStr = "function initRandomFill(){if(Module.IsWxGame)return (view)=>{for(var i=0;i<view.length;i++)view[i]=Math.random()*256|0;return view;};"
+                    },
+                    new Rule()
+                    {
+                        old = @"abort\(([""'])no cryptographic support found for randomDevice[\s\S]*?\);",
+                        newStr = @"if(Module.IsWxGame)return (view)=>{for(var i=0;i<view.length;i++)view[i]=Math.random()*256|0;return view;};abort(""no cryptographic support found for randomDevice"");"
+                    },
+                    new Rule()
+                    {
+                        old = @"path *= *SYSCALLS\.calculateAt\(dirfd, *path\);\s*if *\(amode *& *~7\)",
+                        newStr = @"path = SYSCALLS.calculateAt(dirfd, path);if(typeof WXFS!==""undefined""&&WXFS.isWXAssetBundle(path)){if(WXFS.path2fd.has(path))return 0;return WXFS.doWXAccess(path,amode)}if (amode & ~7)"
+                    },
+                    new Rule()
+                    {
+                        old = @"if *\(PATH\.isAbs\(path\)\)",
+                        newStr = "if(path.startsWith('http:')||path.startsWith('wxfile:')||path[0] === '/'||PATH.isAbs(path))"
+                    },
+                    new Rule()
+                    {
+                        old = @"_emscripten_set_main_loop_timing\(1/\*EM_TIMING_RAF\*/, 1\);",
+                        newStr = "_emscripten_set_main_loop_timing(1, 1);if (typeof ENVIRONMENT_IS_PTHREAD === 'undefined' || !ENVIRONMENT_IS_PTHREAD && !GameGlobal.unityNamespace.isLoopRunnerEnable) return;"
+                    },
+                };
+                for (i = 0; i < em3139Rules.Length; i++)
+                {
+                    var current = i + 1;
+                    var total = em3139Rules.Length;
+                    EditorUtility.DisplayProgressBar($"Converting(em3.1.39)...，{current}/{total}", "Replace holder...", current * 1.0f / total);
+                    var rule = em3139Rules[i];
+                    if (ShowMatchFailedWarning(text, rule.old, "WXReplaceRules-Em3.1.39") == false)
+                    {
+                        text = Regex.Replace(text, rule.old, rule.newStr);
+                    }
+                }
+                EditorUtility.ClearProgressBar();
+            }
+#endif
             if (EnableRenderThread)
             {
                 UnityEngine.Debug.Log("[WX] EnableRenderThread=true, applying MainThreadRules");
@@ -1159,7 +1277,7 @@ namespace WeChatWASM
                 PlayerSettings.WebGL.emscriptenArgs += " -s ERROR_ON_UNDEFINED_SYMBOLS=0";
             }
 #endif
-            PlayerSettings.runInBackground = false;
+            // PlayerSettings.runInBackground = false;
             if (config.ProjectConf.MemorySize != 0)
             {
                 if (config.ProjectConf.MemorySize >= 1024)
@@ -1664,6 +1782,7 @@ namespace WeChatWASM
             ModifySDKFile();
             ClearFriendRelationCode();
             GameJsPlugins();
+            WXWebGPUAssetOpt.InjectGameJsSwitch(Path.Combine(config.ProjectConf.DST, miniGameDir), UseWxWebGPU);
 
             // 如果没有StreamingAssets目录，默认生成
             if (!Directory.Exists(Path.Combine(config.ProjectConf.DST, webglDir, "StreamingAssets")))
@@ -2227,7 +2346,7 @@ namespace WeChatWASM
                 config.ProjectConf.bundleHashLength.ToString(),
                 bundlePathIdentifierStr,
                 excludeFileExtensionsStr,
-                config.CompileOptions.Webgl2 ? "2" : "1",
+                GetContextTypeValue(),
                 Application.unityVersion,
                 WXExtEnvDef.pluginVersion,
                 config.ProjectConf.dataFileSubPrefix,
@@ -2308,6 +2427,19 @@ namespace WeChatWASM
             Emit(LifeCycle.afterBuildTemplate);
 
             UnityEngine.Debug.LogFormat("[Converter] that to modify configs ended");
+        }
+
+        /// <summary>
+        /// $WEBGL_VERSION 的取值，写进 game.js 的 managerConfig.contextConfig.contextType。
+        /// 与基础库 CanvasContextTypeEnum / MainCanvasTypeMap 对齐：
+        /// 1=webgl1，2=webgl2/WebGL2.0，5=wxmetal（iOS Metal），6=webgpu。
+        /// WebGPU 包必须给 6：插件据此不创建 GL/Metal 上下文，否则主画布会被先占成 webgl，
+        /// 导致后续 canvas.getContext('webgpu') 返回 null。
+        /// </summary>
+        private static string GetContextTypeValue()
+        {
+            if (UseWxWebGPU) return "6";
+            return config.CompileOptions.Webgl2 ? "2" : "1";
         }
 
         /// <summary>

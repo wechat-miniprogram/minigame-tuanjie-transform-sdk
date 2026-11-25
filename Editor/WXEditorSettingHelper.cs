@@ -77,7 +77,7 @@ namespace WeChatWASM
         public Texture tex;
         public void OnSettingsGUI(EditorWindow window)
         {
-            PluginUpdateManager.CheckUpdateOnce();
+            // PluginUpdateManager.CheckUpdateOnce();
             scrollRoot = EditorGUILayout.BeginScrollView(scrollRoot);
 
             GUIStyle linkStyle = GetLinkStyle();
@@ -405,6 +405,9 @@ namespace WeChatWASM
             this.formCheckbox("enableProfileStats", "显示性能面板");
             this.formCheckbox("enableRenderAnalysis", "显示渲染日志(dev only)");
             this.formCheckbox("brotliMT", "brotli多线程压缩(?)", "开启多线程压缩可以提高出包速度，但会降低压缩率。如若不使用wasm代码分包请勿用多线程出包上线");
+            this.formCheckbox("webgpuDebugLibs", "WebGPU Debug 库(?)", "链接微信 WebGPU SDK 的 -debug 静态库：对象会带 label，validation error 更易定位。有额外开销，上线前请关闭", false, null, WXWebGPUDebugLibs.Set);
+            this.formCheckbox("webgpuZeroCostOpt", "资源无损/微损瘦身(?)", "离线执行 ASTC LZ-RDO 与 Mesh/AnimationClip 浮点尾数舍入优化，降低 14%~16% 首包与 AB 体积，零运行时开销", false, null, WXWebGPUAssetOpt.SetZeroCost);
+            this.formCheckbox("webgpuComputeOpt", "WebGPU Compute 超压缩(?)", "使用 WebGPU Compute Shader 在 GPU 显存内实时解压紧凑网格(WXMSH2)与纹理(WXASTC)，网格体积再降 55%+（仅 WebGPU 模式生效）", false, null, WXWebGPUAssetOpt.SetComputeOpt);
 #if UNITY_6000_0_OR_NEWER
             this.formCheckbox("enableWasm2023", "WebAssembly 2023(?)", "WebAssembly 2023包括对WebAssembly.Table和BigInt的支持。（Android (Android 10 or later recommended), iOS (iOS 15 or later recommended)）");
 #endif
@@ -699,6 +702,9 @@ namespace WeChatWASM
             this.setData("enableProfileStats", CompileOptions.enableProfileStats);
             this.setData("enableRenderAnalysis", CompileOptions.enableRenderAnalysis);
             this.setData("brotliMT", CompileOptions.brotliMT);
+            this.setData("webgpuDebugLibs", WXWebGPUDebugLibs.Enabled); // 状态存在 .a 的 meta 里，不进 config
+            this.setData("webgpuZeroCostOpt", WXWebGPUAssetOpt.ZeroCostEnabled);
+            this.setData("webgpuComputeOpt", WXWebGPUAssetOpt.ComputeOptEnabled);
 #if UNITY_6000_0_OR_NEWER
             this.setData("enableWasm2023", CompileOptions.enableWasm2023);
 #endif      

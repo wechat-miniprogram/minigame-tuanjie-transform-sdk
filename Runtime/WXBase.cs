@@ -1107,6 +1107,32 @@ namespace WeChatWASM
             WXSDKManagerHandler.Instance.SetDevicePixelRatio(ratio);
         }
 
+        /// <summary>
+        /// WebGPU 截帧（异步）
+        /// 底层调用 canvas.getContext('webgpu').webgpu.captureFrame()，
+        /// 截帧产物写入用户目录，完成后通过回调返回文件保存路径；
+        /// 失败或当前环境不支持 WebGPU 截帧时返回空字符串。
+        /// </summary>
+        /// <param name="callback">完成回调，参数为截帧文件的保存路径</param>
+        /// <param name="timeoutMs">超时时间（毫秒），小于等于 0 时使用基础库默认值</param>
+        /// <example>
+        /// WX.CaptureWebGPUFrame((path) =>
+        /// {
+        ///     if (string.IsNullOrEmpty(path))
+        ///     {
+        ///         Debug.Log("CaptureWebGPUFrame failed");
+        ///     }
+        ///     else
+        ///     {
+        ///         Debug.Log("CaptureWebGPUFrame saved: " + path);
+        ///     }
+        /// });
+        /// </example>
+        public static void CaptureWebGPUFrame(Action<string> callback, int timeoutMs = 0)
+        {
+            WXWebGPUFrameCapture.CaptureWebGPUFrame(callback, timeoutMs);
+        }
+
         public static void CallJSFunction(string sdkName, string functionName, params object[] args)
         {
             WXSDKManagerHandler.CallJSFunction(sdkName, functionName, args);
