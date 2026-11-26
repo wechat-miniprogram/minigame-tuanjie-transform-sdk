@@ -207,7 +207,7 @@
              这里不依赖 Bee 或 IL2CPP 的中间 DLL 时序，不修改开发者的脚本/Library 文件。
              </summary>
         </member>
-        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryHijackMetadataLoaderForEncryption(System.Byte[],System.Byte[]@,System.String@)">
+        <member name="M:WeChatWASM.WXWasmFunctionProtector.TryProtectMetadataLoading(System.Byte[],System.String,System.Boolean,System.Byte[]@,System.String@,System.String@)">
             <summary>
             metadata 加载器劫持（路线 A，供 WXMetadataEncryptor 在构建期调用）：
             将 il2cpp::vm::MetadataLoader::LoadMetadataFile 的整个函数体替换为对
